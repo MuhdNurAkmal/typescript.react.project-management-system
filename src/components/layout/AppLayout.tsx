@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
+  BarChart3,
   CalendarClock,
   FolderKanban,
   LayoutDashboard,
@@ -26,6 +27,7 @@ const nav = [
   { to: "/projects", label: "Projects", icon: FolderKanban },
   { to: "/my-tasks", label: "My Tasks", icon: ListChecks },
   { to: "/attendance", label: "Attendance", icon: CalendarClock },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/profile", label: "Profile", icon: User },
 ];
 

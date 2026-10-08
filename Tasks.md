@@ -100,9 +100,9 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 7: Dashboard and reports
 
-- [ ] **[CLAUDE]** Dashboard: for PMs show project cards with task progress, overdue task count, and who is clocked in now. For others show my upcoming tasks and today's attendance.
-- [ ] **[CLAUDE]** Attendance report per month, with total hours per person, and CSV export.
-- [ ] **[CLAUDE]** Task report: tasks by status and by assignee, with CSV export.
+- [x] **[CLAUDE]** Dashboard: for PMs show project cards with task progress, overdue task count, and who is clocked in now. For others show my upcoming tasks and today's attendance.
+- [x] **[CLAUDE]** Attendance report per month, with total hours per person, and CSV export.
+- [x] **[CLAUDE]** Task report: tasks by status and by assignee, with CSV export.
 
 ## Phase 8: Polish and quality
 
