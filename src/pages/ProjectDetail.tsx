@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { OverviewTab } from '@/components/projects/OverviewTab'
+import { TasksTab } from '@/components/tasks/TasksTab'
 import { RoleBadge, StatusBadge } from '@/components/projects/badges'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePermissions } from '@/hooks/usePermissions'
@@ -55,7 +56,9 @@ export default function ProjectDetail() {
         <TabsContent value="members" className="pt-4">
           <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
         </TabsContent>
-        <TabsContent value="tasks" className="pt-4"><Soon phase="Phase 4" /></TabsContent>
+        <TabsContent value="tasks" className="pt-4">
+          <TasksTab projectId={project.id} canManage={perms.canManageTasks} />
+        </TabsContent>
         <TabsContent value="gantt" className="pt-4"><Soon phase="Phase 5" /></TabsContent>
         <TabsContent value="attendance" className="pt-4"><Soon phase="Phase 6" /></TabsContent>
       </Tabs>

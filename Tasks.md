@@ -76,11 +76,11 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 4: Tasks (job scope)
 
-- [ ] **[CLAUDE]** Tasks tab: table view with filters (assignee, status, priority) and search.
-- [ ] **[CLAUDE]** "Create/Edit Task" dialog (PM only): title, description, assignee (project members only), start date, due date, priority, parent task, dependencies.
-- [ ] **[CLAUDE]** Assignees can update the status and progress of their own tasks.
-- [ ] **[CLAUDE]** "My Tasks" page: all tasks assigned to the current user across projects, grouped by due date, with overdue highlighted.
-- [ ] **[CLAUDE]** Validation: due date must not be before start date; a task must not depend on itself or create circular dependencies.
+- [x] **[CLAUDE]** Tasks tab: table view with filters (assignee, status, priority) and search.
+- [x] **[CLAUDE]** "Create/Edit Task" dialog (PM only): title, description, assignee (project members only), start date, due date, priority, parent task, dependencies.
+- [x] **[CLAUDE]** Assignees can update the status and progress of their own tasks.
+- [x] **[CLAUDE]** "My Tasks" page: all tasks assigned to the current user across projects, grouped by due date, with overdue highlighted.
+- [x] **[CLAUDE]** Validation: due date must not be before start date; a task must not depend on itself or create circular dependencies.
 
 ## Phase 5: Gantt chart
 
@@ -131,3 +131,12 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [ ] Audit log of changes.
 - [ ] Keep-alive ping or upgrade plan so the free Supabase project is not paused from inactivity.
 - [ ] Periodic database backup/export routine.
+
+---
+
+## Additional requests (added during the build)
+
+- [x] Roles live in their own `roles` table (CRUD-able); `project_members.role_id` is a foreign key to it (`005_roles_table.sql`).
+- [x] After registering, the user is signed out and must log in again to confirm the account works.
+- [x] All table primary keys use `bigint` identity instead of `uuid` (`profiles.id` stays `uuid` because it mirrors the Supabase Auth user id). `000_reset.sql` rebuilds the schema; `007_backfill_profiles.sql` restores profile rows.
+- [x] PM can add registered users to a project by email (`006_add_member_rpc.sql`).
