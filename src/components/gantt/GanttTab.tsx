@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { supabase } from '@/lib/supabase'
 
@@ -28,6 +29,7 @@ function useMilestones(projectId: number) {
 
 export function GanttTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const { data, isLoading, error } = useProjectTasks(projectId)
   const { data: milestones } = useMilestones(projectId)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -213,7 +215,7 @@ export function GanttTab({ projectId, canManage }: { projectId: number; canManag
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.confirm(`Delete milestone "${m.title}"?`) && removeMilestone.mutate(m.id)}
+                    onClick={async () => (await confirm({ title: `Delete milestone "${m.title}"?`, confirmLabel: 'Delete' })) && removeMilestone.mutate(m.id)}
                   >
                     Delete
                   </Button>

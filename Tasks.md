@@ -106,15 +106,15 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 8: Polish and quality
 
-- [ ] **[CLAUDE]** Loading states, empty states, error toasts, and confirmation dialogs for destructive actions.
-- [ ] **[CLAUDE]** Make layouts responsive (interns will likely clock in from their phones).
+- [x] **[CLAUDE]** Loading states, empty states, error toasts, and confirmation dialogs for destructive actions.
+- [x] **[CLAUDE]** Make layouts responsive (interns will likely clock in from their phones).
 - [ ] **[CLAUDE]** Run through `supabase/tests/rls_checklist.md` with at least three test accounts (PM, developer, intern) and fix any policy gaps.
-- [ ] **[CLAUDE]** Add basic tests for key logic (permissions hook, date validation, duration calculation).
-- [ ] **[CLAUDE]** Write a `README.md` with setup and run instructions.
+- [x] **[CLAUDE]** Add basic tests for key logic (permissions hook, date validation, duration calculation).
+- [x] **[CLAUDE]** Write a `README.md` with setup and run instructions.
 
 ## Phase 9: Deployment to Netlify
 
-- [ ] **[CLAUDE]** Add `netlify.toml` with build command `npm run build`, publish directory `dist`, and an SPA redirect (`/*` to `/index.html`, status 200).
+- [x] **[CLAUDE]** Add `netlify.toml` with build command `npm run build`, publish directory `dist`, and an SPA redirect (`/*` to `/index.html`, status 200).
 - [ ] **[HUMAN]** Push the code to GitHub. In Netlify: Add new site > Import from Git, then select the repo.
 - [ ] **[HUMAN]** In Netlify site settings > Environment variables, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, then trigger a deploy.
 - [ ] **[HUMAN]** In Supabase: Authentication > URL Configuration, set the Site URL to the Netlify URL and add it to the redirect URLs.
@@ -143,5 +143,6 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] PM can add, complete and delete milestones from the Gantt tab (shown as purple bars on the chart).
 - [x] PM can correct a member's clock-out time (`008_attendance_correction.sql`, `pm_set_clock_out`), used for the forgot-to-clock-out case.
 - [x] Attendance is general (no project): `009_general_attendance_and_leave.sql` drops `attendance.project_id`; managers (PMs) see and review the people who share a project with them. The project Attendance tab was removed.
+- [x] Confirmation dialogs (shared `ConfirmProvider`), error boundary and a 404 page.
 - [x] Floating Clock in / Clock out button at the bottom right of every page (shows Clock out while clocked in, otherwise Clock in).
 - [x] Leave and absence: users declare Annual leave, MC, Emergency, Unpaid or Other in advance (`leave_types`, `leave_requests`); managers approve or reject; clocking in is blocked on days with approved leave.

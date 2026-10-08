@@ -1,12 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from '@/components/AuthProvider'
+import { ConfirmProvider } from '@/components/ConfirmProvider'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import AppLayout from '@/components/layout/AppLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/sonner'
 import Dashboard from '@/pages/Dashboard'
 import ForgotPassword from '@/pages/ForgotPassword'
 import Attendance from '@/pages/Attendance'
+import NotFound from '@/pages/NotFound'
 import Login from '@/pages/Login'
 import ProjectDetail from '@/pages/ProjectDetail'
 import Projects from '@/pages/Projects'
@@ -20,8 +23,10 @@ const queryClient = new QueryClient()
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <ConfirmProvider>
         <BrowserRouter>
           <Routes>
             <Route element={<PublicOnlyRoute />}>
@@ -39,12 +44,15 @@ export default function App() {
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Route>
           </Routes>
         </BrowserRouter>
+        </ConfirmProvider>
       </AuthProvider>
       <Toaster richColors />
     </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

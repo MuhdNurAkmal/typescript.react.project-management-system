@@ -10,12 +10,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useProjectMembers, useRoles } from '@/hooks/useProjectData'
 import { supabase } from '@/lib/supabase'
 
 export function MembersTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
   const { user } = useAuth()
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const { data: members, isLoading, error } = useProjectMembers(projectId)
   const { data: roles } = useRoles()
   const [email, setEmail] = useState('')
@@ -56,8 +58,13 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
     add.mutate()
   }
 
-  function deactivate(id: number, name: string) {
-    if (window.confirm(`Deactivate ${name}? They will lose access to this project.`)) {
+  async function deactivate(id: number, name: string) {
+    const ok = await confirm({
+      title: `Deactivate ${name}?`,
+      description: 'They will lose access to this project. You can reactivate them later.',
+      confirmLabel: 'Deactivate',
+    })
+    if (ok) {
       update.mutate({ id, patch: { is_active: false } })
     }
   }

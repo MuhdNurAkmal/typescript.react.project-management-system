@@ -12,12 +12,14 @@ export default function Attendance() {
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Attendance</h1>
       <Tabs defaultValue="mine">
-        <TabsList>
+        <div className="overflow-x-auto">
+          <TabsList>
           <TabsTrigger value="mine">My attendance</TabsTrigger>
           <TabsTrigger value="leave">Leave &amp; absence</TabsTrigger>
           {isManager && <TabsTrigger value="team">Team attendance</TabsTrigger>}
           {isManager && <TabsTrigger value="team-leave">Team leave</TabsTrigger>}
         </TabsList>
+        </div>
         <TabsContent value="mine" className="pt-4">
           <MyAttendance />
         </TabsContent>

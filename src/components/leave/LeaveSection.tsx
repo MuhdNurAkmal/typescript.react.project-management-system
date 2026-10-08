@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useLeaveTypes, useMyLeave } from '@/hooks/useLeave'
 import { leaveDays, overlapsExisting, validateLeaveDates } from '@/lib/leaveUtils'
 import { supabase } from '@/lib/supabase'
@@ -16,6 +17,7 @@ import { todayString } from '@/lib/taskValidation'
 /** Declare MC / annual leave / other absence in advance, and see your own requests. */
 export function LeaveSection() {
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const { data: types } = useLeaveTypes()
   const { data: mine, isLoading, error } = useMyLeave()
   const [typeId, setTypeId] = useState<number | null>(null)
@@ -134,7 +136,7 @@ export function LeaveSection() {
                     <TableCell className="max-w-48 truncate">{r.review_note}</TableCell>
                     <TableCell className="text-right">
                       {r.status === 'pending' && (
-                        <Button size="sm" variant="outline" onClick={() => window.confirm('Cancel this request?') && cancel.mutate(r.id)}>
+                        <Button size="sm" variant="outline" onClick={async () => (await confirm({ title: 'Cancel this leave request?', confirmLabel: 'Cancel request' })) && cancel.mutate(r.id)}>
                           Cancel
                         </Button>
                       )}

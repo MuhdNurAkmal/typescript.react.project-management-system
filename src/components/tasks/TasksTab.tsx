@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { isOverdue } from '@/lib/taskValidation'
@@ -20,6 +21,7 @@ import type { Task } from '@/types/database'
 export function TasksTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
   const { user } = useAuth()
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const { data, isLoading, error } = useProjectTasks(projectId)
   const { data: members } = useProjectMembers(projectId)
   const [search, setSearch] = useState('')
@@ -58,8 +60,9 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
     onError: (e: Error) => toast.error(e.message),
   })
 
-  function onDelete(t: Task) {
-    if (window.confirm(`Delete task "${t.title}"? This cannot be undone.`)) remove.mutate(t.id)
+  async function onDelete(t: Task) {
+    const ok = await confirm({ title: `Delete task "${t.title}"?`, description: 'This cannot be undone.', confirmLabel: 'Delete' })
+    if (ok) remove.mutate(t.id)
   }
 
   return (

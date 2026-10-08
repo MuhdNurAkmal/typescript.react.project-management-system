@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { permissionsFor } from '@/lib/permissions'
 
 /**
  * The current user's role in a project plus permission flags used to hide UI.
@@ -27,15 +28,5 @@ export function usePermissions(projectId: number | undefined) {
     },
   })
 
-  const isMember = !!query.data
-  const isPm = query.data?.role.is_pm ?? false
-  return {
-    loading: query.isLoading,
-    isMember,
-    roleName: query.data?.role.name ?? null,
-    isPm,
-    canManageProject: isPm,
-    canManageMembers: isPm,
-    canManageTasks: isPm,
-  }
+  return { loading: query.isLoading, ...permissionsFor(query.data?.role ?? null) }
 }

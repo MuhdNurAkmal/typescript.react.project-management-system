@@ -40,12 +40,14 @@ export default function ProjectDetail() {
       </div>
 
       <Tabs defaultValue="overview">
+        <div className="overflow-x-auto">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
         </TabsList>
+        </div>
         <TabsContent value="overview" className="pt-4">
           <OverviewTab project={project} canManage={perms.canManageProject} />
         </TabsContent>
