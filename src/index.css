@@ -128,3 +128,14 @@
     @apply font-sans;
     }
 }
+/* Gantt bar colours by task status */
+.gantt-container .bar-wrapper.gantt-todo .bar { fill: #94a3b8; }
+.gantt-container .bar-wrapper.gantt-todo .bar-progress { fill: #64748b; }
+.gantt-container .bar-wrapper.gantt-in-progress .bar { fill: #93c5fd; }
+.gantt-container .bar-wrapper.gantt-in-progress .bar-progress { fill: #3b82f6; }
+.gantt-container .bar-wrapper.gantt-review .bar { fill: #fcd34d; }
+.gantt-container .bar-wrapper.gantt-review .bar-progress { fill: #f59e0b; }
+.gantt-container .bar-wrapper.gantt-done .bar { fill: #86efac; }
+.gantt-container .bar-wrapper.gantt-done .bar-progress { fill: #22c55e; }
+.gantt-container .bar-wrapper.gantt-milestone .bar,
+.gantt-container .bar-wrapper.gantt-milestone .bar-progress { fill: #a855f7; }

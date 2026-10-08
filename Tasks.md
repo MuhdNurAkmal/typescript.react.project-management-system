@@ -84,11 +84,11 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 5: Gantt chart
 
-- [ ] **[CLAUDE]** Install `frappe-gantt` (or `gantt-task-react`, whichever integrates more cleanly with React 18+) and render the project's tasks.
-- [ ] **[CLAUDE]** Map task fields to Gantt bars: name, start, end, progress, dependencies. Colour by status.
-- [ ] **[CLAUDE]** View modes: Day, Week, Month.
-- [ ] **[CLAUDE]** PM only: drag/resize bars to reschedule and save changes to the database. Everyone else gets a read-only chart.
-- [ ] **[CLAUDE]** Show project milestones as markers and a "today" line.
+- [x] **[CLAUDE]** Install `frappe-gantt` (or `gantt-task-react`, whichever integrates more cleanly with React 18+) and render the project's tasks.
+- [x] **[CLAUDE]** Map task fields to Gantt bars: name, start, end, progress, dependencies. Colour by status.
+- [x] **[CLAUDE]** View modes: Day, Week, Month.
+- [x] **[CLAUDE]** PM only: drag/resize bars to reschedule and save changes to the database. Everyone else gets a read-only chart.
+- [x] **[CLAUDE]** Show project milestones as markers and a "today" line.
 
 ## Phase 6: Attendance (clock in/out)
 
@@ -140,3 +140,4 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] After registering, the user is signed out and must log in again to confirm the account works.
 - [x] All table primary keys use `bigint` identity instead of `uuid` (`profiles.id` stays `uuid` because it mirrors the Supabase Auth user id). `000_reset.sql` rebuilds the schema; `007_backfill_profiles.sql` restores profile rows.
 - [x] PM can add registered users to a project by email (`006_add_member_rpc.sql`).
+- [x] PM can add, complete and delete milestones from the Gantt tab (shown as purple bars on the chart).

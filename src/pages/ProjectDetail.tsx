@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { OverviewTab } from '@/components/projects/OverviewTab'
 import { TasksTab } from '@/components/tasks/TasksTab'
@@ -59,7 +60,9 @@ export default function ProjectDetail() {
         <TabsContent value="tasks" className="pt-4">
           <TasksTab projectId={project.id} canManage={perms.canManageTasks} />
         </TabsContent>
-        <TabsContent value="gantt" className="pt-4"><Soon phase="Phase 5" /></TabsContent>
+        <TabsContent value="gantt" className="pt-4">
+          <GanttTab projectId={project.id} canManage={perms.canManageTasks} />
+        </TabsContent>
         <TabsContent value="attendance" className="pt-4"><Soon phase="Phase 6" /></TabsContent>
       </Tabs>
     </div>
