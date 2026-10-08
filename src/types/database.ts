@@ -129,6 +129,7 @@ export type Database = {
         Args: { p_project_id: number; p_email: string; p_role_id: number }
         Returns: ProjectMember
       }
+      pm_set_clock_out: { Args: { p_attendance_id: number; p_clock_out: string }; Returns: Attendance }
       clock_in: { Args: { p_project_id: number }; Returns: Attendance }
       clock_out: { Args: { p_project_id: number }; Returns: Attendance }
     }

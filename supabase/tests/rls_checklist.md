@@ -57,3 +57,9 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A PM can create a custom role (`is_system` and `is_pm` false); a user who is not a PM anywhere cannot.
 - [ ] Nobody can create a role with `is_pm = true` or edit/delete system roles.
 - [ ] Only the creator can edit/delete their custom role; deleting a role still assigned to a member fails (restrict).
+
+## Attendance correction
+- [ ] PM-A can correct Intern-A's clock-out via the Review dialog; the time cannot be before clock-in or in the future.
+- [ ] PM-A cannot correct their own attendance rows.
+- [ ] Intern-A calling `pm_set_clock_out` directly fails; PM-B cannot correct rows in Project A.
+- [ ] A direct `update attendance set clock_out = ...` as a PM on someone else's row fails (only the RPC may change it).

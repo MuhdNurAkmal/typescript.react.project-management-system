@@ -42,9 +42,3 @@ export function createsParentCycle(taskId: number, parentId: number | null, pare
   }
   return false
 }
-
-/** Duration in whole minutes between two ISO timestamps (clock out defaults to now). */
-export function durationMinutes(clockIn: string, clockOut: string | null, now = new Date()) {
-  const end = clockOut ? new Date(clockOut) : now
-  return Math.max(0, Math.round((end.getTime() - new Date(clockIn).getTime()) / 60000))
-}

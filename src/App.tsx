@@ -6,6 +6,7 @@ import { ProtectedRoute, PublicOnlyRoute } from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/sonner'
 import ComingSoon from '@/pages/ComingSoon'
 import ForgotPassword from '@/pages/ForgotPassword'
+import Attendance from '@/pages/Attendance'
 import Login from '@/pages/Login'
 import ProjectDetail from '@/pages/ProjectDetail'
 import Projects from '@/pages/Projects'
@@ -34,7 +35,7 @@ export default function App() {
                 <Route path="projects" element={<Projects />} />
                 <Route path="projects/:projectId" element={<ProjectDetail />} />
                 <Route path="my-tasks" element={<MyTasks />} />
-                <Route path="attendance" element={<ComingSoon title="Attendance" />} />
+                <Route path="attendance" element={<Attendance />} />
                 <Route path="profile" element={<Profile />} />
               </Route>
             </Route>

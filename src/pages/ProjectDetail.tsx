@@ -1,5 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { MyAttendance } from '@/components/attendance/MyAttendance'
+import { PmAttendance } from '@/components/attendance/PmAttendance'
 import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { OverviewTab } from '@/components/projects/OverviewTab'
@@ -8,10 +10,6 @@ import { RoleBadge, StatusBadge } from '@/components/projects/badges'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useProject } from '@/hooks/useProjectData'
-
-function Soon({ phase }: { phase: string }) {
-  return <p className="text-muted-foreground">Coming in {phase}.</p>
-}
 
 export default function ProjectDetail() {
   const params = useParams()
@@ -63,7 +61,15 @@ export default function ProjectDetail() {
         <TabsContent value="gantt" className="pt-4">
           <GanttTab projectId={project.id} canManage={perms.canManageTasks} />
         </TabsContent>
-        <TabsContent value="attendance" className="pt-4"><Soon phase="Phase 6" /></TabsContent>
+        <TabsContent value="attendance" className="space-y-8 pt-4">
+          <MyAttendance projectId={project.id} />
+          {perms.canViewAllAttendance && (
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Team attendance</h2>
+              <PmAttendance projectId={project.id} />
+            </section>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   )

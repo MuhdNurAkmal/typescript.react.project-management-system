@@ -92,11 +92,11 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 6: Attendance (clock in/out)
 
-- [ ] **[CLAUDE]** Attendance tab/page with a large Clock In / Clock Out button per project, calling the `clock_in` / `clock_out` RPC functions (never use the browser clock).
-- [ ] **[CLAUDE]** Show the current session timer if the user is clocked in, plus today's total hours.
-- [ ] **[CLAUDE]** Personal history table: date, clock in, clock out, duration, status.
-- [ ] **[CLAUDE]** PM view: all members' attendance for the project, filter by person and date range, approve/reject records, and add a note.
-- [ ] **[CLAUDE]** Handle edge cases: user forgot to clock out (show a warning on the next day and let the PM correct it), double clock-in is blocked with a clear message.
+- [x] **[CLAUDE]** Attendance tab/page with a large Clock In / Clock Out button per project, calling the `clock_in` / `clock_out` RPC functions (never use the browser clock).
+- [x] **[CLAUDE]** Show the current session timer if the user is clocked in, plus today's total hours.
+- [x] **[CLAUDE]** Personal history table: date, clock in, clock out, duration, status.
+- [x] **[CLAUDE]** PM view: all members' attendance for the project, filter by person and date range, approve/reject records, and add a note.
+- [x] **[CLAUDE]** Handle edge cases: user forgot to clock out (show a warning on the next day and let the PM correct it), double clock-in is blocked with a clear message.
 
 ## Phase 7: Dashboard and reports
 
@@ -141,3 +141,4 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] All table primary keys use `bigint` identity instead of `uuid` (`profiles.id` stays `uuid` because it mirrors the Supabase Auth user id). `000_reset.sql` rebuilds the schema; `007_backfill_profiles.sql` restores profile rows.
 - [x] PM can add registered users to a project by email (`006_add_member_rpc.sql`).
 - [x] PM can add, complete and delete milestones from the Gantt tab (shown as purple bars on the chart).
+- [x] PM can correct a member's clock-out time (`008_attendance_correction.sql`, `pm_set_clock_out`), used for the forgot-to-clock-out case.
