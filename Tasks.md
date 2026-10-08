@@ -32,7 +32,7 @@ A project management system for lecturers running grant or industrial projects. 
 
 Create SQL files in `supabase/migrations/`. The user can run them via the Supabase SQL Editor (paste and run, in order) or the Supabase CLI.
 
-- [ ] **[CLAUDE]** `001_schema.sql`: create tables
+- [x] **[CLAUDE]** `001_schema.sql`: create tables
   - `profiles` (id references auth.users, full_name, email, avatar_url, created_at)
   - `projects` (id, name, description, type ['grant','industrial'], sponsor, start_date, end_date, budget, status ['planning','active','on_hold','completed'], created_by, created_at)
   - `project_members` (id, project_id, user_id, role ['pm','developer','intern','tester','designer','viewer'], is_active, joined_at, unique(project_id, user_id))
@@ -41,21 +41,21 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
   - `attendance` (id, project_id, user_id, clock_in default now(), clock_out, note, status ['pending','approved','rejected'])
   - `milestones` (id, project_id, title, due_date, completed)
   - Add useful indexes on foreign keys and on `attendance(user_id, clock_out)`.
-- [ ] **[CLAUDE]** `002_triggers.sql`:
+- [x] **[CLAUDE]** `002_triggers.sql`:
   - Trigger to auto-create a `profiles` row when a new `auth.users` row is created.
   - Trigger so the creator of a project is automatically added to `project_members` as `pm`.
   - Unique partial index so a user can have only one open attendance row (`clock_out is null`) at a time.
-- [ ] **[CLAUDE]** `003_rls.sql`: enable Row Level Security on every table and add policies using helper functions `is_project_member(project_id)` and `is_project_pm(project_id)` (both `security definer`, with a fixed `search_path`):
+- [x] **[CLAUDE]** `003_rls.sql`: enable Row Level Security on every table and add policies using helper functions `is_project_member(project_id)` and `is_project_pm(project_id)` (both `security definer`, with a fixed `search_path`):
   - `profiles`: users can read profiles of people who share a project with them; update only their own.
   - `projects`: members can select; any authenticated user can insert; only PMs can update/delete.
   - `project_members`: members can select; only PMs can insert/update/delete.
   - `tasks`: members can select; PMs can insert/update/delete; assignees can update only the `status` and `progress` of their own tasks.
   - `attendance`: users can insert and update (clock out) only their own rows within projects they belong to; members can select their own rows; PMs can select all rows in their projects and update `status`.
   - `milestones`: members select; PMs write.
-- [ ] **[CLAUDE]** `004_functions.sql`: RPC functions `clock_in(project_id)` and `clock_out(project_id)` that use server time (`now()`) and enforce the single-open-session rule.
+- [x] **[CLAUDE]** `004_functions.sql`: RPC functions `clock_in(project_id)` and `clock_out(project_id)` that use server time (`now()`) and enforce the single-open-session rule.
 - [ ] **[HUMAN]** Run the migration files in order in the Supabase SQL Editor and confirm there are no errors.
-- [ ] **[CLAUDE]** Generate TypeScript types from the schema (`supabase gen types typescript`, or hand-write `src/types/database.ts` if the CLI is not set up).
-- [ ] **[CLAUDE]** Write `supabase/tests/rls_checklist.md` listing manual RLS test cases (e.g. a developer in project A cannot read project B; an intern cannot edit tasks they don't own; a user cannot clock in for someone else).
+- [x] **[CLAUDE]** Generate TypeScript types from the schema (`supabase gen types typescript`, or hand-write `src/types/database.ts` if the CLI is not set up).
+- [x] **[CLAUDE]** Write `supabase/tests/rls_checklist.md` listing manual RLS test cases (e.g. a developer in project A cannot read project B; an intern cannot edit tasks they don't own; a user cannot clock in for someone else).
 
 ## Phase 2: Authentication and app shell
 

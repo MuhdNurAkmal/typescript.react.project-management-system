@@ -1,0 +1,124 @@
+// Hand-written types mirroring supabase/migrations. Regenerate with
+// `supabase gen types typescript` once the CLI is set up.
+
+export type ProjectType = 'grant' | 'industrial'
+export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed'
+export type MemberRole = 'pm' | 'developer' | 'intern' | 'tester' | 'designer' | 'viewer'
+export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done'
+export type TaskPriority = 'low' | 'medium' | 'high'
+export type AttendanceStatus = 'pending' | 'approved' | 'rejected'
+
+export interface Profile {
+  id: string
+  full_name: string | null
+  email: string | null
+  avatar_url: string | null
+  created_at: string
+}
+
+export interface Project {
+  id: string
+  name: string
+  description: string | null
+  type: ProjectType
+  sponsor: string | null
+  start_date: string | null
+  end_date: string | null
+  budget: number | null
+  status: ProjectStatus
+  created_by: string
+  created_at: string
+}
+
+export interface ProjectMember {
+  id: string
+  project_id: string
+  user_id: string
+  role: MemberRole
+  is_active: boolean
+  joined_at: string
+}
+
+export interface Task {
+  id: string
+  project_id: string
+  title: string
+  description: string | null
+  assignee_id: string | null
+  start_date: string | null
+  due_date: string | null
+  status: TaskStatus
+  priority: TaskPriority
+  progress: number
+  parent_task_id: string | null
+  created_by: string
+  created_at: string
+}
+
+export interface TaskDependency {
+  task_id: string
+  depends_on_task_id: string
+}
+
+export interface Attendance {
+  id: string
+  project_id: string
+  user_id: string
+  clock_in: string
+  clock_out: string | null
+  note: string | null
+  status: AttendanceStatus
+}
+
+export interface Milestone {
+  id: string
+  project_id: string
+  title: string
+  due_date: string
+  completed: boolean
+}
+
+type Table<Row, Insert> = {
+  Row: Row
+  Insert: Insert
+  Update: Partial<Insert>
+  Relationships: []
+}
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: Table<Profile, Pick<Profile, 'id'> & Partial<Profile>>
+      projects: Table<
+        Project,
+        Pick<Project, 'name' | 'type'> & Partial<Omit<Project, 'name' | 'type'>>
+      >
+      project_members: Table<
+        ProjectMember,
+        Pick<ProjectMember, 'project_id' | 'user_id'> &
+          Partial<Omit<ProjectMember, 'project_id' | 'user_id'>>
+      >
+      tasks: Table<
+        Task,
+        Pick<Task, 'project_id' | 'title'> & Partial<Omit<Task, 'project_id' | 'title'>>
+      >
+      task_dependencies: Table<TaskDependency, TaskDependency>
+      attendance: Table<
+        Attendance,
+        Pick<Attendance, 'project_id'> & Partial<Omit<Attendance, 'project_id'>>
+      >
+      milestones: Table<
+        Milestone,
+        Pick<Milestone, 'project_id' | 'title' | 'due_date'> &
+          Partial<Omit<Milestone, 'project_id' | 'title' | 'due_date'>>
+      >
+    }
+    Views: Record<string, never>
+    Functions: {
+      clock_in: { Args: { p_project_id: string }; Returns: Attendance }
+      clock_out: { Args: { p_project_id: string }; Returns: Attendance }
+    }
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
+  }
+}
