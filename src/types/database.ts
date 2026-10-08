@@ -7,7 +7,7 @@ export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high'
 export type AttendanceStatus = 'pending' | 'approved' | 'rejected'
 
-export interface Profile {
+export type Profile = {
   id: string
   full_name: string | null
   email: string | null
@@ -15,7 +15,7 @@ export interface Profile {
   created_at: string
 }
 
-export interface Project {
+export type Project = {
   id: string
   name: string
   description: string | null
@@ -29,7 +29,7 @@ export interface Project {
   created_at: string
 }
 
-export interface Role {
+export type Role = {
   id: string
   name: string
   description: string | null
@@ -39,7 +39,7 @@ export interface Role {
   created_at: string
 }
 
-export interface ProjectMember {
+export type ProjectMember = {
   id: string
   project_id: string
   user_id: string
@@ -48,7 +48,7 @@ export interface ProjectMember {
   joined_at: string
 }
 
-export interface Task {
+export type Task = {
   id: string
   project_id: string
   title: string
@@ -64,12 +64,12 @@ export interface Task {
   created_at: string
 }
 
-export interface TaskDependency {
+export type TaskDependency = {
   task_id: string
   depends_on_task_id: string
 }
 
-export interface Attendance {
+export type Attendance = {
   id: string
   project_id: string
   user_id: string
@@ -79,7 +79,7 @@ export interface Attendance {
   status: AttendanceStatus
 }
 
-export interface Milestone {
+export type Milestone = {
   id: string
   project_id: string
   title: string
@@ -94,7 +94,7 @@ type Table<Row, Insert> = {
   Relationships: []
 }
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: Table<Profile, Pick<Profile, 'id'> & Partial<Profile>>

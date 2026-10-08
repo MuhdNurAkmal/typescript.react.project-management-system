@@ -60,10 +60,10 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 ## Phase 2: Authentication and app shell
 
 - [ ] **[HUMAN]** In Supabase: Authentication > Providers, make sure Email is enabled. For development, optionally turn off "Confirm email" to speed up testing (turn it back on before going live).
-- [ ] **[CLAUDE]** Build `AuthProvider` context and `useAuth` hook (session, user, signIn, signUp, signOut).
-- [ ] **[CLAUDE]** Pages: Login, Register, Forgot Password. Add a `ProtectedRoute` wrapper.
-- [ ] **[CLAUDE]** App layout: sidebar (Dashboard, Projects, My Tasks, Attendance, Profile) and top bar with the user menu.
-- [ ] **[CLAUDE]** Profile page to edit the user's full name.
+- [x] **[CLAUDE]** Build `AuthProvider` context and `useAuth` hook (session, user, signIn, signUp, signOut).
+- [x] **[CLAUDE]** Pages: Login, Register, Forgot Password. Add a `ProtectedRoute` wrapper.
+- [x] **[CLAUDE]** App layout: sidebar (Dashboard, Projects, My Tasks, Attendance, Profile) and top bar with the user menu.
+- [x] **[CLAUDE]** Profile page to edit the user's full name.
 
 ## Phase 3: Projects and members
 
