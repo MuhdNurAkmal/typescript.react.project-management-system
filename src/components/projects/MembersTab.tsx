@@ -78,7 +78,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
   return (
     <div className="space-y-4">
       {canManage && (
-        <Card>
+        <Card className="overflow-visible">
           <CardHeader>
             <CardTitle>Add member</CardTitle>
           </CardHeader>

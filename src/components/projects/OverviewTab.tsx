@@ -72,7 +72,7 @@ export function OverviewTab({ project, canManage }: { project: Project; canManag
     <Card>
       <CardContent className="space-y-6">
         <p className="whitespace-pre-wrap">{project.description || 'No description'}</p>
-        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           <Field label="Type"><span className="capitalize">{project.type}</span></Field>
           <Field label="Status"><StatusBadge status={project.status} /></Field>
           <Field label="Sponsor">{project.sponsor}</Field>

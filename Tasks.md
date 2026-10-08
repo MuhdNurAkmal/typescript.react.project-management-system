@@ -148,3 +148,5 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] Leave and absence: users declare Annual leave, MC, Emergency, Unpaid or Other in advance (`leave_types`, `leave_requests`); managers approve or reject; clocking in is blocked on days with approved leave.
 - [x] Inviting people to a project suggests registered users as you type, searching by name or email (`010_search_users.sql`, PM only, already-active members are left out).
 - [x] UI refresh: calm slate-blue theme (low saturation), brand header and gradient sign-in screen, tinted sidebar with active pill, user avatars, soft coloured status pills, dashboard KPI tiles and task status bars.
+- [x] Project Overview tab is now two columns: Gantt timeline and Members on the left, project details on the right (stacked on phones, details first). The Members tab was removed; the Gantt tab is kept (chart plus milestones).
+- [x] Fixed the invite suggestion list being clipped inside its card.

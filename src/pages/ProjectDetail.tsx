@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { GanttChart } from '@/components/gantt/GanttChart'
 import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { OverviewTab } from '@/components/projects/OverviewTab'
@@ -43,16 +44,27 @@ export default function ProjectDetail() {
         <div className="overflow-x-auto">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
         </TabsList>
         </div>
         <TabsContent value="overview" className="pt-4">
-          <OverviewTab project={project} canManage={perms.canManageProject} />
-        </TabsContent>
-        <TabsContent value="members" className="pt-4">
-          <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+            {/* On phones the project details come first; on wide screens they sit on the right */}
+            <div className="order-first lg:order-last">
+              <OverviewTab project={project} canManage={perms.canManageProject} />
+            </div>
+            <div className="min-w-0 space-y-8">
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold">Timeline</h2>
+                <GanttChart projectId={project.id} canManage={perms.canManageTasks} />
+              </section>
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold">Members</h2>
+                <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
+              </section>
+            </div>
+          </div>
         </TabsContent>
         <TabsContent value="tasks" className="pt-4">
           <TasksTab projectId={project.id} canManage={perms.canManageTasks} />
