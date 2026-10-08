@@ -16,7 +16,7 @@ export type Profile = {
 }
 
 export type Project = {
-  id: string
+  id: number
   name: string
   description: string | null
   type: ProjectType
@@ -30,7 +30,7 @@ export type Project = {
 }
 
 export type Role = {
-  id: string
+  id: number
   name: string
   description: string | null
   is_pm: boolean
@@ -40,17 +40,17 @@ export type Role = {
 }
 
 export type ProjectMember = {
-  id: string
-  project_id: string
+  id: number
+  project_id: number
   user_id: string
-  role_id: string
+  role_id: number
   is_active: boolean
   joined_at: string
 }
 
 export type Task = {
-  id: string
-  project_id: string
+  id: number
+  project_id: number
   title: string
   description: string | null
   assignee_id: string | null
@@ -59,19 +59,19 @@ export type Task = {
   status: TaskStatus
   priority: TaskPriority
   progress: number
-  parent_task_id: string | null
+  parent_task_id: number | null
   created_by: string
   created_at: string
 }
 
 export type TaskDependency = {
-  task_id: string
-  depends_on_task_id: string
+  task_id: number
+  depends_on_task_id: number
 }
 
 export type Attendance = {
-  id: string
-  project_id: string
+  id: number
+  project_id: number
   user_id: string
   clock_in: string
   clock_out: string | null
@@ -80,8 +80,8 @@ export type Attendance = {
 }
 
 export type Milestone = {
-  id: string
-  project_id: string
+  id: number
+  project_id: number
   title: string
   due_date: string
   completed: boolean
@@ -126,11 +126,11 @@ export type Database = {
     Views: Record<string, never>
     Functions: {
       add_project_member: {
-        Args: { p_project_id: string; p_email: string; p_role_id: string }
+        Args: { p_project_id: number; p_email: string; p_role_id: number }
         Returns: ProjectMember
       }
-      clock_in: { Args: { p_project_id: string }; Returns: Attendance }
-      clock_out: { Args: { p_project_id: string }; Returns: Attendance }
+      clock_in: { Args: { p_project_id: number }; Returns: Attendance }
+      clock_out: { Args: { p_project_id: number }; Returns: Attendance }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>

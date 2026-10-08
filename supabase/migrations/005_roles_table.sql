@@ -2,7 +2,7 @@
 -- project_members.role_id -> roles.id, so each user's role in a project is a foreign key.
 
 create table public.roles (
-  id uuid primary key default gen_random_uuid(),
+  id bigint generated always as identity primary key,
   name text not null unique,
   description text,
   is_pm boolean not null default false,   -- grants project-manager powers in RLS
@@ -20,13 +20,13 @@ insert into public.roles (name, description, is_pm, is_system) values
   ('viewer', 'Read-only viewer', false, true);
 
 -- Migrate project_members from the text column to a foreign key
-alter table public.project_members add column role_id uuid references public.roles (id) on delete restrict;
+alter table public.project_members add column role_id bigint references public.roles (id) on delete restrict;
 update public.project_members pm set role_id = r.id from public.roles r where r.name = pm.role;
 alter table public.project_members alter column role_id set not null;
 create index on public.project_members (role_id);
 
 -- PM checks now go through the roles table
-create or replace function public.is_project_pm(p_project_id uuid)
+create or replace function public.is_project_pm(p_project_id bigint)
 returns boolean
 language sql
 stable

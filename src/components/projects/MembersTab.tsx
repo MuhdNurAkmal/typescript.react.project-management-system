@@ -13,15 +13,15 @@ import { useAuth } from '@/hooks/useAuth'
 import { useProjectMembers, useRoles } from '@/hooks/useProjectData'
 import { supabase } from '@/lib/supabase'
 
-export function MembersTab({ projectId, canManage }: { projectId: string; canManage: boolean }) {
+export function MembersTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
   const { user } = useAuth()
   const qc = useQueryClient()
   const { data: members, isLoading, error } = useProjectMembers(projectId)
   const { data: roles } = useRoles()
   const [email, setEmail] = useState('')
-  const [roleId, setRoleId] = useState('')
+  const [roleId, setRoleId] = useState<number | null>(null)
 
-  const defaultRoleId = roleId || roles?.find((r) => r.name === 'developer')?.id || ''
+  const defaultRoleId = roleId ?? roles?.find((r) => r.name === 'developer')?.id ?? null
   const refresh = () => qc.invalidateQueries({ queryKey: ['members', projectId] })
   const pmCount = members?.filter((m) => m.member.is_active && roles?.find((r) => r.id === m.member.role_id)?.is_pm).length ?? 0
 
@@ -30,7 +30,7 @@ export function MembersTab({ projectId, canManage }: { projectId: string; canMan
       const { error } = await supabase.rpc('add_project_member', {
         p_project_id: projectId,
         p_email: email,
-        p_role_id: defaultRoleId,
+        p_role_id: defaultRoleId!,
       })
       if (error) throw error
     },
@@ -43,7 +43,7 @@ export function MembersTab({ projectId, canManage }: { projectId: string; canMan
   })
 
   const update = useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: { role_id?: string; is_active?: boolean } }) => {
+    mutationFn: async ({ id, patch }: { id: number; patch: { role_id?: number; is_active?: boolean } }) => {
       const { error } = await supabase.from('project_members').update(patch).eq('id', id)
       if (error) throw error
     },
@@ -56,7 +56,7 @@ export function MembersTab({ projectId, canManage }: { projectId: string; canMan
     add.mutate()
   }
 
-  function deactivate(id: string, name: string) {
+  function deactivate(id: number, name: string) {
     if (window.confirm(`Deactivate ${name}? They will lose access to this project.`)) {
       update.mutate({ id, patch: { is_active: false } })
     }
@@ -77,7 +77,7 @@ export function MembersTab({ projectId, canManage }: { projectId: string; canMan
               </div>
               <div className="space-y-2">
                 <Label htmlFor="m-role">Role</Label>
-                <select id="m-role" className={`${selectClass} w-40 capitalize`} value={defaultRoleId} onChange={(e) => setRoleId(e.target.value)}>
+                <select id="m-role" className={`${selectClass} w-40 capitalize`} value={defaultRoleId ?? ''} onChange={(e) => setRoleId(Number(e.target.value))}>
                   {roles?.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.name}
@@ -85,7 +85,7 @@ export function MembersTab({ projectId, canManage }: { projectId: string; canMan
                   ))}
                 </select>
               </div>
-              <Button type="submit" disabled={add.isPending || !defaultRoleId}>
+              <Button type="submit" disabled={add.isPending || defaultRoleId === null}>
                 {add.isPending ? 'Adding…' : 'Add'}
               </Button>
             </form>
@@ -127,7 +127,7 @@ export function MembersTab({ projectId, canManage }: { projectId: string; canMan
                             className={`${selectClass} w-32 capitalize`}
                             value={member.role_id}
                             disabled={lastPm}
-                            onChange={(e) => update.mutate({ id: member.id, patch: { role_id: e.target.value } })}
+                            onChange={(e) => update.mutate({ id: member.id, patch: { role_id: Number(e.target.value) } })}
                           >
                             {roles?.map((r) => (
                               <option key={r.id} value={r.id}>

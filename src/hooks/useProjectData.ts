@@ -45,7 +45,7 @@ export function useMyProjects() {
   })
 }
 
-export function useProject(projectId: string | undefined) {
+export function useProject(projectId: number | undefined) {
   return useQuery({
     queryKey: ['project', projectId],
     enabled: !!projectId,
@@ -57,7 +57,7 @@ export function useProject(projectId: string | undefined) {
   })
 }
 
-export function useProjectMembers(projectId: string | undefined) {
+export function useProjectMembers(projectId: number | undefined) {
   return useQuery({
     queryKey: ['members', projectId],
     enabled: !!projectId,

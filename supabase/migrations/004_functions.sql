@@ -1,6 +1,6 @@
 -- 004_functions.sql: clock in / clock out RPCs using server time
 
-create or replace function public.clock_in(p_project_id uuid)
+create or replace function public.clock_in(p_project_id bigint)
 returns public.attendance
 language plpgsql
 security invoker
@@ -25,7 +25,7 @@ begin
 end;
 $$;
 
-create or replace function public.clock_out(p_project_id uuid)
+create or replace function public.clock_out(p_project_id bigint)
 returns public.attendance
 language plpgsql
 security invoker
@@ -48,5 +48,5 @@ begin
 end;
 $$;
 
-revoke all on function public.clock_in(uuid), public.clock_out(uuid) from public, anon;
-grant execute on function public.clock_in(uuid), public.clock_out(uuid) to authenticated;
+revoke all on function public.clock_in(bigint), public.clock_out(bigint) from public, anon;
+grant execute on function public.clock_in(bigint), public.clock_out(bigint) to authenticated;

@@ -9,7 +9,7 @@ create table public.profiles (
 );
 
 create table public.projects (
-  id uuid primary key default gen_random_uuid(),
+  id bigint generated always as identity primary key,
   name text not null,
   description text,
   type text not null check (type in ('grant', 'industrial')),
@@ -25,8 +25,8 @@ create table public.projects (
 );
 
 create table public.project_members (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.projects (id) on delete cascade,
+  id bigint generated always as identity primary key,
+  project_id bigint not null references public.projects (id) on delete cascade,
   user_id uuid not null references public.profiles (id) on delete cascade,
   role text not null default 'developer'
     check (role in ('pm', 'developer', 'intern', 'tester', 'designer', 'viewer')),
@@ -36,8 +36,8 @@ create table public.project_members (
 );
 
 create table public.tasks (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.projects (id) on delete cascade,
+  id bigint generated always as identity primary key,
+  project_id bigint not null references public.projects (id) on delete cascade,
   title text not null,
   description text,
   assignee_id uuid references public.profiles (id) on delete set null,
@@ -48,22 +48,22 @@ create table public.tasks (
   priority text not null default 'medium'
     check (priority in ('low', 'medium', 'high')),
   progress integer not null default 0 check (progress between 0 and 100),
-  parent_task_id uuid references public.tasks (id) on delete set null,
+  parent_task_id bigint references public.tasks (id) on delete set null,
   created_by uuid not null default auth.uid() references public.profiles (id),
   created_at timestamptz not null default now(),
   check (due_date is null or start_date is null or due_date >= start_date)
 );
 
 create table public.task_dependencies (
-  task_id uuid not null references public.tasks (id) on delete cascade,
-  depends_on_task_id uuid not null references public.tasks (id) on delete cascade,
+  task_id bigint not null references public.tasks (id) on delete cascade,
+  depends_on_task_id bigint not null references public.tasks (id) on delete cascade,
   primary key (task_id, depends_on_task_id),
   check (task_id <> depends_on_task_id)
 );
 
 create table public.attendance (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.projects (id) on delete cascade,
+  id bigint generated always as identity primary key,
+  project_id bigint not null references public.projects (id) on delete cascade,
   user_id uuid not null default auth.uid() references public.profiles (id) on delete cascade,
   clock_in timestamptz not null default now(),
   clock_out timestamptz,
@@ -74,8 +74,8 @@ create table public.attendance (
 );
 
 create table public.milestones (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.projects (id) on delete cascade,
+  id bigint generated always as identity primary key,
+  project_id bigint not null references public.projects (id) on delete cascade,
   title text not null,
   due_date date not null,
   completed boolean not null default false

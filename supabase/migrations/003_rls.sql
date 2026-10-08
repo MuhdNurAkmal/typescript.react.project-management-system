@@ -1,7 +1,7 @@
 -- 003_rls.sql: Row Level Security
 
 -- Helper functions (security definer so policies don't recurse into project_members RLS)
-create or replace function public.is_project_member(p_project_id uuid)
+create or replace function public.is_project_member(p_project_id bigint)
 returns boolean
 language sql
 stable
@@ -14,7 +14,7 @@ as $$
   );
 $$;
 
-create or replace function public.is_project_pm(p_project_id uuid)
+create or replace function public.is_project_pm(p_project_id bigint)
 returns boolean
 language sql
 stable
@@ -42,9 +42,9 @@ as $$
   );
 $$;
 
-revoke all on function public.is_project_member(uuid), public.is_project_pm(uuid),
+revoke all on function public.is_project_member(bigint), public.is_project_pm(bigint),
   public.shares_project_with(uuid) from public, anon;
-grant execute on function public.is_project_member(uuid), public.is_project_pm(uuid),
+grant execute on function public.is_project_member(bigint), public.is_project_pm(bigint),
   public.shares_project_with(uuid) to authenticated;
 
 alter table public.profiles enable row level security;

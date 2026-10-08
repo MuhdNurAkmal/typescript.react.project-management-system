@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
  * The current user's role in a project plus permission flags used to hide UI.
  * The database (RLS) remains the real enforcement.
  */
-export function usePermissions(projectId: string | undefined) {
+export function usePermissions(projectId: number | undefined) {
   const { user } = useAuth()
   const query = useQuery({
     queryKey: ['membership', projectId, user?.id],

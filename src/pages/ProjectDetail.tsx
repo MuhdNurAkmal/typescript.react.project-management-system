@@ -12,7 +12,8 @@ function Soon({ phase }: { phase: string }) {
 }
 
 export default function ProjectDetail() {
-  const { projectId } = useParams()
+  const params = useParams()
+  const projectId = params.projectId && /^\d+$/.test(params.projectId) ? Number(params.projectId) : undefined
   const { data: project, isLoading, error } = useProject(projectId)
   const perms = usePermissions(projectId)
 

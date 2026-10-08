@@ -3,9 +3,9 @@
 -- share a project, so the lookup runs in a security definer function that checks PM rights itself.
 
 create or replace function public.add_project_member(
-  p_project_id uuid,
+  p_project_id bigint,
   p_email text,
-  p_role_id uuid
+  p_role_id bigint
 )
 returns public.project_members
 language plpgsql
@@ -36,5 +36,5 @@ begin
 end;
 $$;
 
-revoke all on function public.add_project_member(uuid, text, uuid) from public, anon;
-grant execute on function public.add_project_member(uuid, text, uuid) to authenticated;
+revoke all on function public.add_project_member(bigint, text, bigint) from public, anon;
+grant execute on function public.add_project_member(bigint, text, bigint) to authenticated;
