@@ -41,7 +41,7 @@ export default function ProjectDetail() {
       </div>
 
       <Tabs defaultValue="overview">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden pb-1">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>

@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { TypeToConfirmDialog } from '@/components/TypeToConfirmDialog'
 import { ProjectForm, selectClass } from '@/components/projects/ProjectForm'
 import { StatusBadge } from '@/components/projects/badges'
 import { Button } from '@/components/ui/button'
@@ -23,6 +25,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 export function OverviewTab({ project, canManage }: { project: Project; canManage: boolean }) {
   const qc = useQueryClient()
+  const navigate = useNavigate()
+  const [deleting, setDeleting] = useState(false)
   const [editing, setEditing] = useState(false)
   const [status, setStatus] = useState<ProjectStatus>(project.status)
 
@@ -35,6 +39,23 @@ export function OverviewTab({ project, canManage }: { project: Project; canManag
       await qc.invalidateQueries({ queryKey: ['project', project.id] })
       await qc.invalidateQueries({ queryKey: ['projects'] })
       toast.success('Project updated')
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const del = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('projects').delete().eq('id', project.id)
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      toast.success(`Project "${project.name}" deleted`)
+      setDeleting(false)
+      navigate('/projects', { replace: true })
+      qc.removeQueries({ queryKey: ['project', project.id] })
+      await qc.invalidateQueries({ queryKey: ['projects'] })
+      await qc.invalidateQueries({ queryKey: ['my-tasks'] })
+      await qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -98,7 +119,28 @@ export function OverviewTab({ project, canManage }: { project: Project; canManag
             <Button onClick={() => setEditing(true)}>Edit details</Button>
           </div>
         )}
+        {canManage && (
+          <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+            <div className="font-medium text-destructive">Danger zone</div>
+            <p className="text-sm text-muted-foreground">
+              Deleting a project permanently removes its tasks, dependencies, milestones and member list. This cannot be undone.
+            </p>
+            <Button variant="destructive" onClick={() => setDeleting(true)}>
+              Delete this project
+            </Button>
+          </div>
+        )}
       </CardContent>
+      <TypeToConfirmDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        title="Delete this project?"
+        description={`This permanently deletes "${project.name}" with all its tasks, milestones and members.`}
+        expected={project.name}
+        confirmLabel="I understand, delete this project"
+        pending={del.isPending}
+        onConfirm={() => del.mutate()}
+      />
     </Card>
   )
 }

@@ -59,6 +59,29 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
     onError: (e: Error) => toast.error(e.message),
   })
 
+  const remove = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('project_members').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      toast.success('Member removed. Their tasks are now unassigned.')
+      await refresh()
+      await qc.invalidateQueries({ queryKey: ['tasks', projectId] })
+      await qc.invalidateQueries({ queryKey: ['my-tasks'] })
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  async function removeMember(id: number, name: string) {
+    const ok = await confirm({
+      title: `Remove ${name} from this project?`,
+      description: 'Their tasks in this project become unassigned. They can be added again later.',
+      confirmLabel: 'Remove',
+    })
+    if (ok) remove.mutate(id)
+  }
+
   function onAdd(e: FormEvent) {
     e.preventDefault()
     add.mutate()
@@ -170,7 +193,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                         <Pill tone={member.is_active ? 'teal' : 'slate'}>{member.is_active ? 'Active' : 'Inactive'}</Pill>
                       </TableCell>
                       {canManage && (
-                        <TableCell className="text-right">
+                        <TableCell className="space-x-2 text-right whitespace-nowrap">
                           {member.is_active ? (
                             <Button variant="outline" size="sm" disabled={lastPm} onClick={() => deactivate(member.id, name)}>
                               Deactivate
@@ -178,6 +201,11 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                           ) : (
                             <Button variant="outline" size="sm" onClick={() => update.mutate({ id: member.id, patch: { is_active: true } })}>
                               Reactivate
+                            </Button>
+                          )}
+                          {member.user_id !== user?.id && (
+                            <Button variant="outline" size="sm" disabled={lastPm} onClick={() => removeMember(member.id, name)}>
+                              Remove
                             </Button>
                           )}
                         </TableCell>

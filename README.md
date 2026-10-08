@@ -51,6 +51,7 @@ A project management system for lecturers running grant or industrial projects. 
    | `008_attendance_correction.sql` | PM can correct a member's clock-out time |
    | `009_general_attendance_and_leave.sql` | Attendance without projects; leave types and requests |
 | `010_search_users.sql` | User search (by name or email) for the invite suggestions |
+| `011_member_removal.sql` | Removing a member unassigns their tasks; the last PM cannot be removed |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 

@@ -12,7 +12,7 @@ export default function Attendance() {
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold">Attendance</h1>
       <Tabs defaultValue="mine">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden pb-1">
           <TabsList>
           <TabsTrigger value="mine">My attendance</TabsTrigger>
           <TabsTrigger value="leave">Leave &amp; absence</TabsTrigger>

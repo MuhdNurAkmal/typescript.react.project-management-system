@@ -74,3 +74,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A PM of project A can call `search_users` for project A and gets matches by name or email (min 2 characters, max 8, excludes active members).
 - [ ] A developer (non-PM) calling `search_users` for project A gets an error.
 - [ ] Typing `%` or `_` matches those characters literally instead of acting as wildcards.
+
+## Member removal and project deletion
+- [ ] PM-A removes Dev-A from Project A: Dev-A's tasks in Project A have `assignee_id = null`; Dev-A's tasks in other projects are untouched.
+- [ ] Removing the only PM of a project fails with "cannot remove the last project manager"; with a second PM it succeeds.
+- [ ] A developer cannot delete a `project_members` row or a project.
+- [ ] PM-A deleting Project A removes its tasks, dependencies, milestones and members (even though PM-A is the last PM).
+- [ ] PM-B cannot delete Project A.

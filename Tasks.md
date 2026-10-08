@@ -150,3 +150,6 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] UI refresh: calm slate-blue theme (low saturation), brand header and gradient sign-in screen, tinted sidebar with active pill, user avatars, soft coloured status pills, dashboard KPI tiles and task status bars.
 - [x] Project Overview tab is now two columns: Gantt timeline and Members on the left, project details on the right (stacked on phones, details first). The Members tab was removed; the Gantt tab is kept (chart plus milestones).
 - [x] Fixed the invite suggestion list being clipped inside its card.
+- [x] Taller, easier-to-click tabs with no stray scrollbar.
+- [x] PM can remove a member from a project; their tasks in that project become unassigned (`011_member_removal.sql`). The last PM cannot be removed.
+- [x] PM can delete a project from a Danger zone, after typing the project name to confirm (GitHub style).
