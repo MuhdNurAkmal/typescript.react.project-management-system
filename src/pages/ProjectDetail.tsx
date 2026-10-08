@@ -1,7 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { MyAttendance } from '@/components/attendance/MyAttendance'
-import { PmAttendance } from '@/components/attendance/PmAttendance'
 import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { OverviewTab } from '@/components/projects/OverviewTab'
@@ -47,7 +45,6 @@ export default function ProjectDetail() {
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="pt-4">
           <OverviewTab project={project} canManage={perms.canManageProject} />
@@ -60,15 +57,6 @@ export default function ProjectDetail() {
         </TabsContent>
         <TabsContent value="gantt" className="pt-4">
           <GanttTab projectId={project.id} canManage={perms.canManageTasks} />
-        </TabsContent>
-        <TabsContent value="attendance" className="space-y-8 pt-4">
-          <MyAttendance projectId={project.id} />
-          {perms.canViewAllAttendance && (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold">Team attendance</h2>
-              <PmAttendance projectId={project.id} />
-            </section>
-          )}
         </TabsContent>
       </Tabs>
     </div>

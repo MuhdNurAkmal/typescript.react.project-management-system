@@ -10,16 +10,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useProjectAttendance } from '@/hooks/useAttendance'
-import { useProjectMembers } from '@/hooks/useProjectData'
+import { useTeamAttendance } from '@/hooks/useAttendance'
 import { durationMinutes, formatDate, formatDuration, formatTime, isStaleSession, toLocalInput } from '@/lib/attendanceUtils'
 import { supabase } from '@/lib/supabase'
 import type { Attendance, AttendanceStatus } from '@/types/database'
 
-export function PmAttendance({ projectId }: { projectId: number }) {
+/** Manager view: attendance of everyone on the projects you manage. */
+export function PmAttendance() {
   const qc = useQueryClient()
-  const { data: rows, isLoading, error } = useProjectAttendance(projectId, true)
-  const { data: members } = useProjectMembers(projectId)
+  const { data, isLoading, error } = useTeamAttendance(true)
   const [person, setPerson] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -27,17 +26,17 @@ export function PmAttendance({ projectId }: { projectId: number }) {
   const now = new Date()
 
   const nameOf = (userId: string) => {
-    const p = members?.find((m) => m.member.user_id === userId)?.profile
+    const p = data?.profiles.find((x) => x.id === userId)
     return p?.full_name || p?.email || 'Unknown'
   }
 
   const filtered = useMemo(
     () =>
-      (rows ?? []).filter((r) => {
+      (data?.rows ?? []).filter((r) => {
         const day = format(new Date(r.clock_in), 'yyyy-MM-dd')
         return (!person || r.user_id === person) && (!from || day >= from) && (!to || day <= to)
       }),
-    [rows, person, from, to],
+    [data, person, from, to],
   )
   const total = filtered.reduce((sum, r) => sum + durationMinutes(r.clock_in, r.clock_out, now), 0)
 
@@ -48,9 +47,9 @@ export function PmAttendance({ projectId }: { projectId: number }) {
           <Label htmlFor="a-person">Person</Label>
           <select id="a-person" className={`${selectClass} w-48`} value={person} onChange={(e) => setPerson(e.target.value)}>
             <option value="">Everyone</option>
-            {members?.map(({ member, profile }) => (
-              <option key={member.id} value={member.user_id}>
-                {profile?.full_name || profile?.email}
+            {data?.profiles.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name || p.email}
               </option>
             ))}
           </select>
@@ -70,7 +69,7 @@ export function PmAttendance({ projectId }: { projectId: number }) {
 
       {isLoading && <p className="text-muted-foreground">Loading…</p>}
       {error && <p className="text-destructive">{error.message}</p>}
-      {rows && filtered.length === 0 && <p className="text-muted-foreground">No attendance records match.</p>}
+      {data && filtered.length === 0 && <p className="text-muted-foreground">No attendance records match.</p>}
       {filtered.length > 0 && (
         <Card>
           <CardContent className="overflow-x-auto">
@@ -94,7 +93,13 @@ export function PmAttendance({ projectId }: { projectId: number }) {
                     <TableCell>{formatDate(r.clock_in)}</TableCell>
                     <TableCell>{formatTime(r.clock_in)}</TableCell>
                     <TableCell>
-                      {r.clock_out ? formatTime(r.clock_out) : <em className={isStaleSession(r, now) ? 'text-destructive' : ''}>{isStaleSession(r, now) ? 'forgot to clock out?' : 'in progress'}</em>}
+                      {r.clock_out ? (
+                        formatTime(r.clock_out)
+                      ) : (
+                        <em className={isStaleSession(r, now) ? 'text-destructive' : ''}>
+                          {isStaleSession(r, now) ? 'forgot to clock out?' : 'in progress'}
+                        </em>
+                      )}
                     </TableCell>
                     <TableCell>{formatDuration(durationMinutes(r.clock_in, r.clock_out, now))}</TableCell>
                     <TableCell><AttendanceStatusBadge status={r.status} /></TableCell>

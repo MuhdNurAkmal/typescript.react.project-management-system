@@ -92,16 +92,16 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 6: Attendance (clock in/out)
 
-- [x] **[CLAUDE]** Attendance tab/page with a large Clock In / Clock Out button per project, calling the `clock_in` / `clock_out` RPC functions (never use the browser clock).
+- [x] **[CLAUDE]** Attendance page with a large Clock In / Clock Out button, calling the `clock_in` / `clock_out` RPC functions (never use the browser clock). Attendance is general, not tied to a project.
 - [x] **[CLAUDE]** Show the current session timer if the user is clocked in, plus today's total hours.
 - [x] **[CLAUDE]** Personal history table: date, clock in, clock out, duration, status.
-- [x] **[CLAUDE]** PM view: all members' attendance for the project, filter by person and date range, approve/reject records, and add a note.
+- [x] **[CLAUDE]** Manager view (PMs): attendance of everyone on projects they manage, filter by person and date range, approve/reject records, and add a note.
 - [x] **[CLAUDE]** Handle edge cases: user forgot to clock out (show a warning on the next day and let the PM correct it), double clock-in is blocked with a clear message.
 
 ## Phase 7: Dashboard and reports
 
 - [ ] **[CLAUDE]** Dashboard: for PMs show project cards with task progress, overdue task count, and who is clocked in now. For others show my upcoming tasks and today's attendance.
-- [ ] **[CLAUDE]** Attendance report per project and month, with total hours per member, and CSV export.
+- [ ] **[CLAUDE]** Attendance report per month, with total hours per person, and CSV export.
 - [ ] **[CLAUDE]** Task report: tasks by status and by assignee, with CSV export.
 
 ## Phase 8: Polish and quality
@@ -127,7 +127,7 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [ ] Notifications for new task assignments and approaching deadlines.
 - [ ] Task comments and file attachments (Supabase Storage).
 - [ ] Kanban board view.
-- [ ] Leave/absence requests.
+- [x] Leave/absence requests (done early, see Additional requests).
 - [ ] Audit log of changes.
 - [ ] Keep-alive ping or upgrade plan so the free Supabase project is not paused from inactivity.
 - [ ] Periodic database backup/export routine.
@@ -142,3 +142,6 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] PM can add registered users to a project by email (`006_add_member_rpc.sql`).
 - [x] PM can add, complete and delete milestones from the Gantt tab (shown as purple bars on the chart).
 - [x] PM can correct a member's clock-out time (`008_attendance_correction.sql`, `pm_set_clock_out`), used for the forgot-to-clock-out case.
+- [x] Attendance is general (no project): `009_general_attendance_and_leave.sql` drops `attendance.project_id`; managers (PMs) see and review the people who share a project with them. The project Attendance tab was removed.
+- [x] Floating Clock in / Clock out button at the bottom right of every page (shows Clock out while clocked in, otherwise Clock in).
+- [x] Leave and absence: users declare Annual leave, MC, Emergency, Unpaid or Other in advance (`leave_types`, `leave_requests`); managers approve or reject; clocking in is blocked on days with approved leave.

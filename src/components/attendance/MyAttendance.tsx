@@ -1,33 +1,30 @@
 import { useEffect, useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle } from 'lucide-react'
-import { toast } from 'sonner'
+import { AlertTriangle, Info } from 'lucide-react'
 import { AttendanceStatusBadge } from '@/components/attendance/badges'
-import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useMyAttendance, useOpenSession } from '@/hooks/useAttendance'
-import { useMyProjects } from '@/hooks/useProjectData'
+import { useMyAttendance } from '@/hooks/useAttendance'
+import { useClock } from '@/hooks/useClock'
+import { useLeaveTypes, useMyLeave } from '@/hooks/useLeave'
 import {
   durationMinutes,
   formatDate,
   formatDuration,
   formatElapsed,
   formatTime,
-  friendlyClockError,
   isStaleSession,
   minutesToday,
 } from '@/lib/attendanceUtils'
-import { supabase } from '@/lib/supabase'
+import { leaveOnDay } from '@/lib/leaveUtils'
+import { todayString } from '@/lib/taskValidation'
 
-/** Clock in/out controls plus personal history. Pass projectId to fix it, or omit to pick a project. */
-export function MyAttendance({ projectId }: { projectId?: number }) {
-  const qc = useQueryClient()
-  const { data: projects } = useMyProjects()
-  const { data: open } = useOpenSession()
-  const { data: rows, isLoading, error } = useMyAttendance(projectId)
-  const [picked, setPicked] = useState<number | null>(null)
+/** Clock in/out card plus personal history. Attendance is general: it is not tied to a project. */
+export function MyAttendance() {
+  const { open, pending, toggle } = useClock()
+  const { data: rows, isLoading, error } = useMyAttendance()
+  const { data: leave } = useMyLeave()
+  const { data: types } = useLeaveTypes()
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -35,27 +32,12 @@ export function MyAttendance({ projectId }: { projectId?: number }) {
     return () => clearInterval(id)
   }, [])
 
-  const projectName = (id: number) => projects?.find((p) => p.project.id === id)?.project.name ?? `Project ${id}`
-  const targetId = projectId ?? open?.project_id ?? picked ?? projects?.[0]?.project.id ?? null
-  const clockedInElsewhere = !!open && open.project_id !== targetId
+  const today = todayString()
+  const approvedToday = leaveOnDay(leave ?? [], 'approved', today)
+  const pendingToday = leaveOnDay(leave ?? [], 'pending', today)
+  const leaveName = (id: number) => types?.find((t) => t.id === id)?.name ?? 'leave'
   const stale = open && isStaleSession(open, now)
-
-  const refresh = async () => {
-    await qc.invalidateQueries({ queryKey: ['attendance'] })
-  }
-  const clock = useMutation({
-    mutationFn: async (kind: 'clock_in' | 'clock_out') => {
-      const { error } = await supabase.rpc(kind, { p_project_id: kind === 'clock_out' ? (open?.project_id ?? targetId!) : targetId! })
-      if (error) throw Object.assign(new Error(friendlyClockError(error.message, error.code)), { code: error.code })
-    },
-    onSuccess: async (_d, kind) => {
-      toast.success(kind === 'clock_in' ? 'Clocked in' : 'Clocked out')
-      await refresh()
-    },
-    onError: (e: Error) => toast.error(e.message),
-  })
-
-  const todayRows = (rows ?? []).filter((r) => !projectId || r.project_id === projectId)
+  const blocked = !open && !!approvedToday
 
   return (
     <div className="space-y-4">
@@ -63,54 +45,45 @@ export function MyAttendance({ projectId }: { projectId?: number }) {
         <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" />
           <div>
-            You are still clocked in from <strong>{formatDate(open.clock_in)} {formatTime(open.clock_in)}</strong> in{' '}
-            {projectName(open.project_id)}. You probably forgot to clock out. Ask your project manager to correct the
-            end time, or clock out now.
+            You are still clocked in from{' '}
+            <strong>
+              {formatDate(open.clock_in)} {formatTime(open.clock_in)}
+            </strong>
+            . You probably forgot to clock out. Ask your manager to correct the end time, or clock out now.
+          </div>
+        </div>
+      )}
+      {approvedToday && (
+        <div className="flex items-start gap-2 rounded-lg border border-blue-500/50 bg-blue-500/10 p-3 text-sm">
+          <Info className="mt-0.5 size-4 shrink-0 text-blue-600" />
+          <div>You are on approved {leaveName(approvedToday.leave_type_id)} today, so clocking in is disabled.</div>
+        </div>
+      )}
+      {!approvedToday && pendingToday && (
+        <div className="flex items-start gap-2 rounded-lg border bg-muted/50 p-3 text-sm">
+          <Info className="mt-0.5 size-4 shrink-0" />
+          <div>
+            You have a pending {leaveName(pendingToday.leave_type_id)} request covering today. You can still clock in until it is
+            approved.
           </div>
         </div>
       )}
 
       <Card>
         <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
-          {!projectId && (
-            <select
-              className={`${selectClass} max-w-xs`}
-              value={targetId ?? ''}
-              disabled={!!open}
-              onChange={(e) => setPicked(Number(e.target.value))}
-              aria-label="Project"
-            >
-              {projects?.map(({ project }) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          )}
           {open ? (
             <>
               <div className="font-mono text-4xl tabular-nums">{formatElapsed(now.getTime() - new Date(open.clock_in).getTime())}</div>
-              <p className="text-sm text-muted-foreground">
-                Clocked in at {formatTime(open.clock_in)} in {projectName(open.project_id)}
-              </p>
+              <p className="text-sm text-muted-foreground">Clocked in at {formatTime(open.clock_in)}</p>
             </>
           ) : (
             <p className="text-muted-foreground">You are not clocked in.</p>
           )}
-          {clockedInElsewhere && (
-            <p className="text-sm text-amber-600">You are clocked in to another project. Clock out there first.</p>
-          )}
-          <Button
-            size="lg"
-            className="h-14 min-w-48 text-lg"
-            variant={open ? 'destructive' : 'default'}
-            disabled={clock.isPending || targetId === null || clockedInElsewhere}
-            onClick={() => clock.mutate(open ? 'clock_out' : 'clock_in')}
-          >
-            {clock.isPending ? 'Please wait…' : open ? 'Clock out' : 'Clock in'}
+          <Button size="lg" className="h-14 min-w-48 text-lg" variant={open ? 'destructive' : 'default'} disabled={pending || blocked} onClick={toggle}>
+            {pending ? 'Please wait…' : open ? 'Clock out' : 'Clock in'}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Today's total: <strong>{formatDuration(minutesToday(todayRows, now))}</strong>
+            Today's total: <strong>{formatDuration(minutesToday(rows ?? [], now))}</strong>
           </p>
         </CardContent>
       </Card>
@@ -128,7 +101,6 @@ export function MyAttendance({ projectId }: { projectId?: number }) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
-                  {!projectId && <TableHead>Project</TableHead>}
                   <TableHead>Clock in</TableHead>
                   <TableHead>Clock out</TableHead>
                   <TableHead>Duration</TableHead>
@@ -140,7 +112,6 @@ export function MyAttendance({ projectId }: { projectId?: number }) {
                 {rows.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>{formatDate(r.clock_in)}</TableCell>
-                    {!projectId && <TableCell>{projectName(r.project_id)}</TableCell>}
                     <TableCell>{formatTime(r.clock_in)}</TableCell>
                     <TableCell>{r.clock_out ? formatTime(r.clock_out) : <em>in progress</em>}</TableCell>
                     <TableCell>{formatDuration(durationMinutes(r.clock_in, r.clock_out, now))}</TableCell>

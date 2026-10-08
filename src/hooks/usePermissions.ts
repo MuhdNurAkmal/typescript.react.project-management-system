@@ -37,6 +37,5 @@ export function usePermissions(projectId: number | undefined) {
     canManageProject: isPm,
     canManageMembers: isPm,
     canManageTasks: isPm,
-    canViewAllAttendance: isPm,
   }
 }

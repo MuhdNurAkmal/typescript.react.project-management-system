@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { FloatingClock } from "@/components/attendance/FloatingClock";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -120,6 +121,7 @@ export default function AppLayout() {
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
+        <FloatingClock />
       </div>
     </div>
   );

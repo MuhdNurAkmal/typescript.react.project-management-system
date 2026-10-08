@@ -34,16 +34,15 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Members can read dependencies; only PM-A can add or remove them.
 - [ ] PM-A cannot add a task depending on itself (check constraint).
 
-## Attendance
-- [ ] Intern-A can `clock_in` for Project A; server time is used (the client cannot supply the timestamp via the RPC).
-- [ ] A second `clock_in` (same or other project) while clocked in fails with a clear message.
+## Attendance (general, not per project)
+- [ ] Intern-A can `clock_in`; server time is used (the client cannot supply the timestamp).
+- [ ] A second `clock_in` while clocked in fails with a clear message.
 - [ ] Direct insert with another user's `user_id` fails.
-- [ ] Intern-A cannot clock in to Project B (not a member).
 - [ ] Intern-A can `clock_out`; cannot edit `clock_in` or `status` on their own row.
-- [ ] Intern-A cannot read Dev-A's attendance rows.
-- [ ] PM-A can read all attendance rows in Project A, and change `status` and `note`.
-- [ ] PM-A cannot change `clock_in` or `clock_out` via the status/note update path (trigger raises an error).
-- [ ] PM-B cannot read or update attendance in Project A.
+- [ ] Intern-A cannot read Dev-A's attendance rows (no shared PM relationship via attendance).
+- [ ] PM-A can read attendance of everyone who shares a project with PM-A, and change `status` and `note`.
+- [ ] PM-B (no shared project) cannot read or update attendance of Project A members.
+- [ ] A PM cannot approve their own attendance.
 
 ## Milestones
 - [ ] Members can read milestones; only PM-A can create, update or delete them.
@@ -63,3 +62,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] PM-A cannot correct their own attendance rows.
 - [ ] Intern-A calling `pm_set_clock_out` directly fails; PM-B cannot correct rows in Project A.
 - [ ] A direct `update attendance set clock_out = ...` as a PM on someone else's row fails (only the RPC may change it).
+
+## Leave
+- [ ] A user can create a pending leave request for themselves only; inserting with status `approved` fails.
+- [ ] A user can cancel (delete) their own pending request, but not an approved or rejected one.
+- [ ] PM-A can approve or reject Intern-A's request; PM-A cannot change its dates or type, and cannot review their own request.
+- [ ] PM-B (no shared project) cannot see or review Intern-A's request.
+- [ ] After approval covering today, `clock_in` fails with the leave message; it works again on other days.
