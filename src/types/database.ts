@@ -152,6 +152,10 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      search_users: {
+        Args: { p_project_id: number; p_query: string }
+        Returns: { id: string; full_name: string | null; email: string | null }[]
+      }
       add_project_member: {
         Args: { p_project_id: number; p_email: string; p_role_id: number }
         Returns: ProjectMember

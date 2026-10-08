@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom'
 import { StatusBadge } from '@/components/projects/badges'
 import { PriorityBadge, TaskStatusBadge } from '@/components/tasks/badges'
-import { Badge } from '@/components/ui/badge'
+import { AlertTriangle, CalendarCheck, Clock, ListTodo } from 'lucide-react'
+import { KpiTile } from '@/components/KpiTile'
+import { Pill } from '@/components/Pill'
+import { StatusBar } from '@/components/tasks/StatusBar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyAttendance, useOpenSession } from '@/hooks/useAttendance'
@@ -9,7 +12,8 @@ import { useManagedOverview } from '@/hooks/useDashboard'
 import { useMyProjects } from '@/hooks/useProjectData'
 import { useMyTasks } from '@/hooks/useTasks'
 import { formatDuration, formatTime, minutesToday } from '@/lib/attendanceUtils'
-import { projectProgress } from '@/lib/reportUtils'
+import { projectProgress, summarizeTasks } from '@/lib/reportUtils'
+import { addDays, format } from 'date-fns'
 import { isOverdue, todayString } from '@/lib/taskValidation'
 
 export default function Dashboard() {
@@ -21,6 +25,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Hello, {profile?.full_name || user?.email}</h1>
+      <Kpis today={today} />
       {managed.length > 0 && <ManagedProjects projects={managed} today={today} />}
       <div className="grid gap-6 lg:grid-cols-2">
         <UpcomingTasks today={today} />
@@ -50,12 +55,12 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
           const clockedIn = data?.open.filter((o) => memberIds.has(o.user_id)) ?? []
           return (
             <Link key={project.id} to={`/projects/${project.id}`}>
-              <Card className="h-full transition-colors hover:bg-muted/50">
+              <Card className="h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <CardHeader>
                   <CardTitle>{project.name}</CardTitle>
                   <div className="flex gap-2 pt-1">
                     <StatusBadge status={project.status} />
-                    {stats.overdue > 0 && <Badge variant="destructive">{stats.overdue} overdue</Badge>}
+                    {stats.overdue > 0 && <Pill tone="red">{stats.overdue} overdue</Pill>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
@@ -67,9 +72,10 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
                       <span>{stats.avgProgress}%</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full bg-primary" style={{ width: `${stats.avgProgress}%` }} />
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${stats.avgProgress}%` }} />
                     </div>
                   </div>
+                  <StatusBar counts={summarizeTasks(tasks, today).byStatus} />
                   <div>
                     <span className="text-muted-foreground">Clocked in now: </span>
                     {clockedIn.length === 0 ? 'nobody' : clockedIn.map((o) => nameOf(o.user_id)).join(', ')}
@@ -81,6 +87,24 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
         })}
       </div>
     </section>
+  )
+}
+
+function Kpis({ today }: { today: string }) {
+  const { data } = useMyTasks()
+  const { data: rows } = useMyAttendance()
+  const weekEnd = format(addDays(new Date(), 7), 'yyyy-MM-dd')
+  const open = (data ?? []).map((d) => d.task).filter((t) => t.status !== 'done')
+  const overdue = open.filter((t) => isOverdue(t, today)).length
+  const dueSoon = open.filter((t) => t.due_date && t.due_date >= today && t.due_date <= weekEnd).length
+
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <KpiTile icon={ListTodo} label="Open tasks" value={open.length} />
+      <KpiTile icon={AlertTriangle} label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'green'} />
+      <KpiTile icon={CalendarCheck} label="Due in 7 days" value={dueSoon} tone="amber" />
+      <KpiTile icon={Clock} label="Hours today" value={formatDuration(minutesToday(rows ?? []))} tone="green" />
+    </div>
   )
 }
 

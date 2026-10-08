@@ -49,75 +49,46 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    /* Calm slate-blue theme: low chroma so blue is felt, not shouted */
+    --background: oklch(0.972 0.008 250);
+    --foreground: oklch(0.24 0.03 258);
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --card-foreground: oklch(0.24 0.03 258);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --popover-foreground: oklch(0.24 0.03 258);
+    --primary: oklch(0.48 0.09 255);
+    --primary-foreground: oklch(0.985 0.005 250);
+    --secondary: oklch(0.94 0.018 250);
+    --secondary-foreground: oklch(0.32 0.05 256);
+    --muted: oklch(0.955 0.012 250);
+    --muted-foreground: oklch(0.5 0.03 256);
+    --accent: oklch(0.93 0.025 250);
+    --accent-foreground: oklch(0.3 0.05 256);
+    --destructive: oklch(0.577 0.2 27);
+    --border: oklch(0.9 0.015 252);
+    --input: oklch(0.88 0.018 252);
+    --ring: oklch(0.62 0.07 255);
+    --chart-1: oklch(0.62 0.09 250);
+    --chart-2: oklch(0.66 0.08 200);
+    --chart-3: oklch(0.7 0.09 165);
+    --chart-4: oklch(0.72 0.1 80);
+    --chart-5: oklch(0.62 0.1 300);
+    --radius: 0.75rem;
+    --sidebar: oklch(0.955 0.014 250);
+    --sidebar-foreground: oklch(0.28 0.04 257);
+    --sidebar-primary: oklch(0.48 0.09 255);
+    --sidebar-primary-foreground: oklch(0.985 0.005 250);
+    --sidebar-accent: oklch(0.925 0.025 250);
+    --sidebar-accent-foreground: oklch(0.28 0.05 257);
+    --sidebar-border: oklch(0.9 0.015 252);
+    --sidebar-ring: oklch(0.62 0.07 255);
 }
-
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
+  /* soft page backdrop so white cards lift off the page */
+  body {
+    background-image: radial-gradient(60rem 30rem at 100% -10%, oklch(0.93 0.03 250 / 0.6), transparent 60%);
+    background-attachment: fixed;
+  }
   * {
     @apply border-border outline-ring/50;
     }

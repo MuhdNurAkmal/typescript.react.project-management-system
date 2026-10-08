@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   BarChart3,
   CalendarClock,
+  Layers,
   FolderKanban,
   LayoutDashboard,
   ListChecks,
@@ -11,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Avatar } from "@/components/Avatar";
 import { FloatingClock } from "@/components/attendance/FloatingClock";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,12 +52,17 @@ export default function AppLayout() {
     <div className="min-h-screen md:grid md:grid-cols-[14rem_1fr]">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-56 border-r bg-background p-4 transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-56 border-r bg-sidebar p-4 transition-transform md:static md:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="mb-6 flex items-center justify-between px-2 text-lg font-semibold">
-          UrusProgres
+          <span className="flex items-center gap-2">
+            <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+              <Layers className="size-4" />
+            </span>
+            UrusProgres
+          </span>
           <Button
             variant="ghost"
             size="icon"
@@ -75,8 +82,8 @@ export default function AppLayout() {
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted",
-                  isActive && "bg-muted font-medium",
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent",
+                  isActive && "bg-primary/10 font-medium text-primary hover:bg-primary/10",
                 )
               }
             >
@@ -94,7 +101,7 @@ export default function AppLayout() {
       )}
 
       <div className="flex min-w-0 flex-col">
-        <header className="flex h-14 items-center justify-between border-b px-4">
+        <header className="flex h-14 items-center justify-between border-b bg-card/80 px-4 backdrop-blur">
           <Button
             variant="ghost"
             size="icon"
@@ -106,8 +113,9 @@ export default function AppLayout() {
           </Button>
           <div className="ml-auto">
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="outline" />}>
-                {name}
+              <DropdownMenuTrigger render={<Button variant="outline" className="gap-2" />}>
+                <Avatar name={name} size="sm" />
+                <span className="max-w-40 truncate">{name}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => navigate("/profile")}>

@@ -1,11 +1,13 @@
-import { Badge } from '@/components/ui/badge'
+import { Pill, type Tone } from '@/components/Pill'
 import type { AttendanceStatus } from '@/types/database'
 
+const tone: Record<AttendanceStatus, Tone> = { pending: 'amber', approved: 'green', rejected: 'red' }
+
+/** Used for attendance and leave requests, which share the same three states. */
 export function AttendanceStatusBadge({ status }: { status: AttendanceStatus }) {
-  const variant = status === 'approved' ? 'default' : status === 'rejected' ? 'destructive' : 'secondary'
   return (
-    <Badge variant={variant} className="capitalize">
+    <Pill tone={tone[status]} className="capitalize">
       {status}
-    </Badge>
+    </Pill>
   )
 }

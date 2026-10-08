@@ -69,3 +69,8 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] PM-A can approve or reject Intern-A's request; PM-A cannot change its dates or type, and cannot review their own request.
 - [ ] PM-B (no shared project) cannot see or review Intern-A's request.
 - [ ] After approval covering today, `clock_in` fails with the leave message; it works again on other days.
+
+## User search
+- [ ] A PM of project A can call `search_users` for project A and gets matches by name or email (min 2 characters, max 8, excludes active members).
+- [ ] A developer (non-PM) calling `search_users` for project A gets an error.
+- [ ] Typing `%` or `_` matches those characters literally instead of acting as wildcards.

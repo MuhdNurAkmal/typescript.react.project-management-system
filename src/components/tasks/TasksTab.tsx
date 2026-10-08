@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { PriorityBadge, TaskStatusBadge, statusLabels } from '@/components/tasks/badges'
+import { StatusBar } from '@/components/tasks/StatusBar'
 import { QuickUpdateDialog } from '@/components/tasks/QuickUpdateDialog'
 import { TaskDialog } from '@/components/tasks/TaskDialog'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
-import { isOverdue } from '@/lib/taskValidation'
+import { summarizeTasks } from '@/lib/reportUtils'
+import { isOverdue, todayString } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
 
@@ -99,6 +101,13 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
         )}
       </div>
 
+      {data && data.tasks.length > 0 && (
+        <Card>
+          <CardContent>
+            <StatusBar counts={summarizeTasks(data.tasks, todayString()).byStatus} />
+          </CardContent>
+        </Card>
+      )}
       {isLoading && <p className="text-muted-foreground">Loading tasks…</p>}
       {error && <p className="text-destructive">{error.message}</p>}
       {data && filtered.length === 0 && (

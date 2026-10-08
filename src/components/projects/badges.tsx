@@ -1,18 +1,21 @@
-import { Badge } from '@/components/ui/badge'
+import { Pill, type Tone } from '@/components/Pill'
 import type { ProjectStatus } from '@/types/database'
 
-const statusLabel: Record<ProjectStatus, string> = {
-  planning: 'Planning',
-  active: 'Active',
-  on_hold: 'On hold',
-  completed: 'Completed',
+const status: Record<ProjectStatus, { label: string; tone: Tone }> = {
+  planning: { label: 'Planning', tone: 'slate' },
+  active: { label: 'Active', tone: 'teal' },
+  on_hold: { label: 'On hold', tone: 'amber' },
+  completed: { label: 'Completed', tone: 'blue' },
 }
 
-export function StatusBadge({ status }: { status: ProjectStatus }) {
-  const variant = status === 'active' ? 'default' : status === 'on_hold' ? 'destructive' : 'secondary'
-  return <Badge variant={variant}>{statusLabel[status]}</Badge>
+export function StatusBadge({ status: s }: { status: ProjectStatus }) {
+  return <Pill tone={status[s].tone}>{status[s].label}</Pill>
 }
 
 export function RoleBadge({ name }: { name: string | null }) {
-  return <Badge variant="outline" className="capitalize">{name ?? 'unknown'}</Badge>
+  return (
+    <Pill tone="violet" className="capitalize">
+      {name ?? 'unknown'}
+    </Pill>
+  )
 }

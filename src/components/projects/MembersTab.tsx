@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { Avatar } from '@/components/Avatar'
+import { UserSearch } from '@/components/projects/UserSearch'
 import { RoleBadge } from '@/components/projects/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
-import { Badge } from '@/components/ui/badge'
+import { Pill } from '@/components/Pill'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/hooks/useAuth'
@@ -20,7 +21,8 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
   const confirm = useConfirm()
   const { data: members, isLoading, error } = useProjectMembers(projectId)
   const { data: roles } = useRoles()
-  const [email, setEmail] = useState('')
+  const [query, setQuery] = useState('')
+  const [pickedEmail, setPickedEmail] = useState<string | null>(null)
   const [roleId, setRoleId] = useState<number | null>(null)
 
   const defaultRoleId = roleId ?? roles?.find((r) => r.name === 'developer')?.id ?? null
@@ -29,6 +31,9 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
 
   const add = useMutation({
     mutationFn: async () => {
+      // A suggestion was picked, or the PM typed a full email address
+      const email = pickedEmail ?? query.trim()
+      if (!email.includes('@')) throw new Error('Pick someone from the suggestions, or type their full email')
       const { error } = await supabase.rpc('add_project_member', {
         p_project_id: projectId,
         p_email: email,
@@ -37,7 +42,8 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
       if (error) throw error
     },
     onSuccess: async () => {
-      setEmail('')
+      setQuery('')
+      setPickedEmail(null)
       toast.success('Member added')
       await refresh()
     },
@@ -79,8 +85,19 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
           <CardContent>
             <form onSubmit={onAdd} className="flex flex-wrap items-end gap-3">
               <div className="min-w-56 flex-1 space-y-2">
-                <Label htmlFor="m-email">Email (must be registered)</Label>
-                <Input id="m-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Label htmlFor="m-search">Find a registered user</Label>
+                <UserSearch
+                  projectId={projectId}
+                  value={query}
+                  onChange={(v) => {
+                    setQuery(v)
+                    setPickedEmail(null)
+                  }}
+                  onPick={(u) => {
+                    setQuery(u.full_name ? `${u.full_name} (${u.email})` : (u.email ?? ''))
+                    setPickedEmail(u.email)
+                  }}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="m-role">Role</Label>
@@ -124,8 +141,11 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                   return (
                     <TableRow key={member.id} className={member.is_active ? '' : 'opacity-50'}>
                       <TableCell>
-                        {name}
-                        {member.user_id === user?.id && <span className="text-muted-foreground"> (you)</span>}
+                        <span className="flex items-center gap-2">
+                          <Avatar name={name} size="sm" />
+                          {name}
+                          {member.user_id === user?.id && <span className="text-muted-foreground"> (you)</span>}
+                        </span>
                       </TableCell>
                       <TableCell>{profile?.email}</TableCell>
                       <TableCell>
@@ -147,7 +167,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={member.is_active ? 'secondary' : 'outline'}>{member.is_active ? 'Active' : 'Inactive'}</Badge>
+                        <Pill tone={member.is_active ? 'teal' : 'slate'}>{member.is_active ? 'Active' : 'Inactive'}</Pill>
                       </TableCell>
                       {canManage && (
                         <TableCell className="text-right">

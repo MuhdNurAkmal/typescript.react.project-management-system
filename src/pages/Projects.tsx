@@ -57,7 +57,7 @@ export default function Projects() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data?.map(({ project, role }) => (
           <Link key={project.id} to={`/projects/${project.id}`}>
-            <Card className="h-full transition-colors hover:bg-muted/50">
+            <Card className="h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
               <CardHeader>
                 <CardTitle>{project.name}</CardTitle>
                 <CardDescription className="line-clamp-2">{project.description || 'No description'}</CardDescription>

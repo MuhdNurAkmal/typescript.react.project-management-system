@@ -146,3 +146,5 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] Confirmation dialogs (shared `ConfirmProvider`), error boundary and a 404 page.
 - [x] Floating Clock in / Clock out button at the bottom right of every page (shows Clock out while clocked in, otherwise Clock in).
 - [x] Leave and absence: users declare Annual leave, MC, Emergency, Unpaid or Other in advance (`leave_types`, `leave_requests`); managers approve or reject; clocking in is blocked on days with approved leave.
+- [x] Inviting people to a project suggests registered users as you type, searching by name or email (`010_search_users.sql`, PM only, already-active members are left out).
+- [x] UI refresh: calm slate-blue theme (low saturation), brand header and gradient sign-in screen, tinted sidebar with active pill, user avatars, soft coloured status pills, dashboard KPI tiles and task status bars.
