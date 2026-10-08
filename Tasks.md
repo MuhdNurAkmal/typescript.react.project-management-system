@@ -124,8 +124,8 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 ## Phase 10: Optional improvements (after the MVP works)
 
 - [ ] Email invite for people who have not registered yet (Supabase Edge Function).
-- [x] Notifications for new task assignments, comments, leave and attendance decisions (in-app bell). Approaching-deadline reminders are NOT done: they need a scheduled job.
-- [x] Task comments done; file attachments (Supabase Storage) NOT done yet.
+- [ ] Notifications. Partly done: in-app bell for task assignments, comments, leave and attendance decisions. Still to do: approaching-deadline reminders (need a scheduled job).
+- [ ] Task comments and file attachments. Partly done: comments. Still to do: file attachments (Supabase Storage).
 - [x] Kanban board view.
 - [x] Leave/absence requests (done early, see Additional requests).
 - [x] Audit log of changes.
