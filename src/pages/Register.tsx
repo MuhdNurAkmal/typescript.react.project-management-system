@@ -24,12 +24,12 @@ export default function Register() {
     setBusy(true)
     try {
       const { needsConfirmation } = await signUp(email.trim(), password, fullName.trim())
-      if (needsConfirmation) {
-        toast.success('Account created. Check your email to confirm, then sign in.')
-        navigate('/login')
-      } else {
-        navigate('/', { replace: true })
-      }
+      toast.success(
+        needsConfirmation
+          ? 'Account created. Check your email to confirm, then sign in.'
+          : 'Account created. Please sign in.',
+      )
+      navigate('/login', { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Registration failed')
     } finally {
