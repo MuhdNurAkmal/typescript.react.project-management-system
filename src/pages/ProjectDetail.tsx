@@ -1,5 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { ActivityTab } from '@/components/projects/ActivityTab'
+import { KanbanBoard } from '@/components/tasks/KanbanBoard'
 import { GanttChart } from '@/components/gantt/GanttChart'
 import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
@@ -45,7 +47,9 @@ export default function ProjectDetail() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="board">Board</TabsTrigger>
           <TabsTrigger value="gantt">Gantt</TabsTrigger>
+          {perms.isPm && <TabsTrigger value="activity">Activity</TabsTrigger>}
         </TabsList>
         </div>
         <TabsContent value="overview" className="pt-4">
@@ -69,9 +73,17 @@ export default function ProjectDetail() {
         <TabsContent value="tasks" className="pt-4">
           <TasksTab projectId={project.id} canManage={perms.canManageTasks} />
         </TabsContent>
+        <TabsContent value="board" className="pt-4">
+          <KanbanBoard projectId={project.id} canManage={perms.canManageTasks} />
+        </TabsContent>
         <TabsContent value="gantt" className="pt-4">
           <GanttTab projectId={project.id} canManage={perms.canManageTasks} />
         </TabsContent>
+        {perms.isPm && (
+          <TabsContent value="activity" className="pt-4">
+            <ActivityTab projectId={project.id} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

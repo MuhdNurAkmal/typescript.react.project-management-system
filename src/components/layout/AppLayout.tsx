@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Avatar } from "@/components/Avatar";
 import { FloatingClock } from "@/components/attendance/FloatingClock";
 import { Button } from "@/components/ui/button";
@@ -111,7 +112,8 @@ export default function AppLayout() {
           >
             <Menu />
           </Button>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline" className="gap-2" />}>
                 <Avatar name={name} size="sm" />

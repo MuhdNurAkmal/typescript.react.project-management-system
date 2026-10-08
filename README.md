@@ -13,6 +13,7 @@ A project management system for lecturers running grant or industrial projects. 
 - General attendance: floating Clock in / Clock out button on every page, server-side timestamps
 - Leave and absence requests (annual leave, MC, emergency, unpaid, other); approved leave blocks clock in
 - Manager views: team attendance, leave approval, clock-out correction
+- Kanban board, task comments, in-app notifications and a PM-only activity log
 - Dashboard, attendance report per month, task report, CSV export
 
 ## Prerequisites
@@ -52,6 +53,7 @@ A project management system for lecturers running grant or industrial projects. 
    | `009_general_attendance_and_leave.sql` | Attendance without projects; leave types and requests |
 | `010_search_users.sql` | User search (by name or email) for the invite suggestions |
 | `011_member_removal.sql` | Removing a member unassigns their tasks; the last PM cannot be removed |
+| `012_comments_notifications_audit.sql` | Task comments, in-app notifications, per-project activity log |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
@@ -110,3 +112,8 @@ npx supabase gen types typescript --project-id <your-project-ref> > src/types/da
 5. Re-enable "Confirm email" and consider a custom SMTP provider for reliable email delivery.
 
 Free Supabase projects pause after a period of inactivity; open the app now and then or upgrade the plan.
+
+## Keeping the free tier alive and backing up
+
+- `.github/workflows/keepalive.yml` pings the Supabase API daily so a free project is not paused for inactivity. Add two repository secrets in GitHub (Settings > Secrets and variables > Actions): `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+- `scripts/backup.sh` dumps the `public` schema with `pg_dump`. Set `DATABASE_URL` to the connection string from Supabase > Project Settings > Database and run it (needs the PostgreSQL client tools). Backups go to `backups/`, which is git-ignored. Keep them somewhere safe, as they contain all your data.

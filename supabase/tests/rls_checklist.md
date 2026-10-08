@@ -81,3 +81,12 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A developer cannot delete a `project_members` row or a project.
 - [ ] PM-A deleting Project A removes its tasks, dependencies, milestones and members (even though PM-A is the last PM).
 - [ ] PM-B cannot delete Project A.
+
+## Comments, notifications and activity log
+- [ ] A member can read and add comments on tasks in their project, not in other projects; nobody can post as someone else.
+- [ ] A user can delete their own comment; a PM can delete any comment in their project; others cannot.
+- [ ] A user sees only their own notifications and can change only the `read` flag; nobody can insert notifications directly.
+- [ ] Assigning a task notifies the assignee (not when assigning to yourself); a comment notifies the assignee and creator but not the commenter.
+- [ ] A new leave request notifies the managers; approving or rejecting it notifies the requester.
+- [ ] Only PMs of a project can read its `audit_log`; no one can insert, update or delete audit rows directly.
+- [ ] Deleting a project still works (audit triggers do not block the cascade).

@@ -78,6 +78,36 @@ export type Attendance = {
   status: AttendanceStatus
 }
 
+export type TaskComment = {
+  id: number
+  task_id: number
+  user_id: string
+  body: string
+  created_at: string
+}
+
+export type Notification = {
+  id: number
+  user_id: string
+  type: string
+  title: string
+  body: string | null
+  link: string | null
+  read: boolean
+  created_at: string
+}
+
+export type AuditLog = {
+  id: number
+  project_id: number
+  actor_id: string | null
+  action: 'create' | 'update' | 'delete'
+  entity: string
+  entity_id: number | null
+  summary: string
+  created_at: string
+}
+
 export type LeaveStatus = 'pending' | 'approved' | 'rejected'
 
 export type LeaveType = {
@@ -138,6 +168,9 @@ export type Database = {
       >
       task_dependencies: Table<TaskDependency, TaskDependency>
       attendance: Table<Attendance, Partial<Attendance>>
+      task_comments: Table<TaskComment, Pick<TaskComment, 'task_id' | 'body'> & Partial<TaskComment>>
+      notifications: Table<Notification, Pick<Notification, 'user_id' | 'type' | 'title'> & Partial<Notification>>
+      audit_log: Table<AuditLog, Pick<AuditLog, 'project_id' | 'action' | 'entity' | 'summary'> & Partial<AuditLog>>
       leave_types: Table<LeaveType, Pick<LeaveType, 'name'> & Partial<Omit<LeaveType, 'name'>>>
       leave_requests: Table<
         LeaveRequest,

@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { PriorityBadge, TaskStatusBadge, statusLabels } from '@/components/tasks/badges'
 import { StatusBar } from '@/components/tasks/StatusBar'
+import { TaskDetailDialog } from '@/components/tasks/TaskDetailDialog'
 import { QuickUpdateDialog } from '@/components/tasks/QuickUpdateDialog'
 import { TaskDialog } from '@/components/tasks/TaskDialog'
 import { Button } from '@/components/ui/button'
@@ -32,6 +33,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
   const [priority, setPriority] = useState('')
   const [editing, setEditing] = useState<Task | null | undefined>(undefined)
   const [updating, setUpdating] = useState<Task | null>(null)
+  const [viewing, setViewing] = useState<Task | null>(null)
 
   const nameOf = (id: string | null) => {
     if (!id) return 'Unassigned'
@@ -133,7 +135,11 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
                   const mine = t.assignee_id === user?.id
                   return (
                     <TableRow key={t.id}>
-                      <TableCell className="font-medium">{t.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <button className="text-left hover:underline" onClick={() => setViewing(t)}>
+                          {t.title}
+                        </button>
+                      </TableCell>
                       <TableCell>{nameOf(t.assignee_id)}</TableCell>
                       <TableCell><TaskStatusBadge status={t.status} /></TableCell>
                       <TableCell><PriorityBadge priority={t.priority} /></TableCell>
@@ -169,6 +175,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
         <TaskDialog projectId={projectId} task={editing} tasks={data?.tasks ?? []} deps={data?.deps ?? []} onClose={() => setEditing(undefined)} />
       )}
       <QuickUpdateDialog task={updating} onClose={() => setUpdating(null)} />
+      <TaskDetailDialog task={viewing} canManage={canManage} onClose={() => setViewing(null)} />
     </div>
   )
 }

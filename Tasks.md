@@ -124,13 +124,13 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 ## Phase 10: Optional improvements (after the MVP works)
 
 - [ ] Email invite for people who have not registered yet (Supabase Edge Function).
-- [ ] Notifications for new task assignments and approaching deadlines.
-- [ ] Task comments and file attachments (Supabase Storage).
-- [ ] Kanban board view.
+- [x] Notifications for new task assignments, comments, leave and attendance decisions (in-app bell). Approaching-deadline reminders are NOT done: they need a scheduled job.
+- [x] Task comments done; file attachments (Supabase Storage) NOT done yet.
+- [x] Kanban board view.
 - [x] Leave/absence requests (done early, see Additional requests).
-- [ ] Audit log of changes.
-- [ ] Keep-alive ping or upgrade plan so the free Supabase project is not paused from inactivity.
-- [ ] Periodic database backup/export routine.
+- [x] Audit log of changes.
+- [x] Keep-alive ping or upgrade plan so the free Supabase project is not paused from inactivity.
+- [x] Periodic database backup/export routine.
 
 ---
 
@@ -153,3 +153,4 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 - [x] Taller, easier-to-click tabs with no stray scrollbar.
 - [x] PM can remove a member from a project; their tasks in that project become unassigned (`011_member_removal.sql`). The last PM cannot be removed.
 - [x] PM can delete a project from a Danger zone, after typing the project name to confirm (GitHub style).
+- [x] Task detail dialog with comments; Board tab (Kanban) with drag and drop; PM-only Activity tab (audit log) (`012_comments_notifications_audit.sql`).
