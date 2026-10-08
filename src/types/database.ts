@@ -125,6 +125,10 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      add_project_member: {
+        Args: { p_project_id: string; p_email: string; p_role_id: string }
+        Returns: ProjectMember
+      }
       clock_in: { Args: { p_project_id: string }; Returns: Attendance }
       clock_out: { Args: { p_project_id: string }; Returns: Attendance }
     }

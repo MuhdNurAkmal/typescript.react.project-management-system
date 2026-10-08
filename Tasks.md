@@ -67,12 +67,12 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 ## Phase 3: Projects and members
 
-- [ ] **[CLAUDE]** Projects list page showing only projects the user belongs to, with status badges and role badges.
-- [ ] **[CLAUDE]** "Create Project" form (name, description, type, sponsor, start/end date, budget) with validation.
-- [ ] **[CLAUDE]** Project detail page with tabs: Overview, Members, Tasks, Gantt, Attendance.
-- [ ] **[CLAUDE]** Members tab: list members with roles. PM can add a member by email (the user must already be registered), change roles, and deactivate members. Non-PMs see a read-only list.
-- [ ] **[CLAUDE]** Create a `usePermissions(projectId)` hook returning the current user's project role and booleans such as `canManageProject`. Use it to hide UI the user can't use. The database remains the real enforcement.
-- [ ] **[CLAUDE]** PM can edit project details and change status.
+- [x] **[CLAUDE]** Projects list page showing only projects the user belongs to, with status badges and role badges.
+- [x] **[CLAUDE]** "Create Project" form (name, description, type, sponsor, start/end date, budget) with validation.
+- [x] **[CLAUDE]** Project detail page with tabs: Overview, Members, Tasks, Gantt, Attendance.
+- [x] **[CLAUDE]** Members tab: list members with roles. PM can add a member by email (the user must already be registered), change roles, and deactivate members. Non-PMs see a read-only list.
+- [x] **[CLAUDE]** Create a `usePermissions(projectId)` hook returning the current user's project role and booleans such as `canManageProject`. Use it to hide UI the user can't use. The database remains the real enforcement.
+- [x] **[CLAUDE]** PM can edit project details and change status.
 
 ## Phase 4: Tasks (job scope)
 

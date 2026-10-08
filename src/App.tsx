@@ -7,6 +7,8 @@ import { Toaster } from '@/components/ui/sonner'
 import ComingSoon from '@/pages/ComingSoon'
 import ForgotPassword from '@/pages/ForgotPassword'
 import Login from '@/pages/Login'
+import ProjectDetail from '@/pages/ProjectDetail'
+import Projects from '@/pages/Projects'
 import Profile from '@/pages/Profile'
 import Register from '@/pages/Register'
 import ResetPassword from '@/pages/ResetPassword'
@@ -28,7 +30,8 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route index element={<ComingSoon title="Dashboard" />} />
-                <Route path="projects" element={<ComingSoon title="Projects" />} />
+                <Route path="projects" element={<Projects />} />
+                <Route path="projects/:projectId" element={<ProjectDetail />} />
                 <Route path="my-tasks" element={<ComingSoon title="My Tasks" />} />
                 <Route path="attendance" element={<ComingSoon title="Attendance" />} />
                 <Route path="profile" element={<Profile />} />
