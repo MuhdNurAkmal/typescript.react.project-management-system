@@ -51,3 +51,9 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 
 ## Functions
 - [ ] `anon` role cannot execute `clock_in`, `clock_out`, `is_project_member`, `is_project_pm`.
+
+## Roles
+- [ ] Any signed-in user can read `roles`; anon cannot.
+- [ ] A PM can create a custom role (`is_system` and `is_pm` false); a user who is not a PM anywhere cannot.
+- [ ] Nobody can create a role with `is_pm = true` or edit/delete system roles.
+- [ ] Only the creator can edit/delete their custom role; deleting a role still assigned to a member fails (restrict).

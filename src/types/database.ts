@@ -3,7 +3,6 @@
 
 export type ProjectType = 'grant' | 'industrial'
 export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed'
-export type MemberRole = 'pm' | 'developer' | 'intern' | 'tester' | 'designer' | 'viewer'
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high'
 export type AttendanceStatus = 'pending' | 'approved' | 'rejected'
@@ -30,11 +29,21 @@ export interface Project {
   created_at: string
 }
 
+export interface Role {
+  id: string
+  name: string
+  description: string | null
+  is_pm: boolean
+  is_system: boolean
+  created_by: string | null
+  created_at: string
+}
+
 export interface ProjectMember {
   id: string
   project_id: string
   user_id: string
-  role: MemberRole
+  role_id: string
   is_active: boolean
   joined_at: string
 }
@@ -93,10 +102,11 @@ export interface Database {
         Project,
         Pick<Project, 'name' | 'type'> & Partial<Omit<Project, 'name' | 'type'>>
       >
+      roles: Table<Role, Pick<Role, 'name'> & Partial<Omit<Role, 'name'>>>
       project_members: Table<
         ProjectMember,
-        Pick<ProjectMember, 'project_id' | 'user_id'> &
-          Partial<Omit<ProjectMember, 'project_id' | 'user_id'>>
+        Pick<ProjectMember, 'project_id' | 'user_id' | 'role_id'> &
+          Partial<Omit<ProjectMember, 'project_id' | 'user_id' | 'role_id'>>
       >
       tasks: Table<
         Task,

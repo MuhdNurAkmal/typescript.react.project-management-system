@@ -53,7 +53,7 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
   - `attendance`: users can insert and update (clock out) only their own rows within projects they belong to; members can select their own rows; PMs can select all rows in their projects and update `status`.
   - `milestones`: members select; PMs write.
 - [x] **[CLAUDE]** `004_functions.sql`: RPC functions `clock_in(project_id)` and `clock_out(project_id)` that use server time (`now()`) and enforce the single-open-session rule.
-- [ ] **[HUMAN]** Run the migration files in order in the Supabase SQL Editor and confirm there are no errors.
+- [x] **[HUMAN]** Run the migration files in order in the Supabase SQL Editor and confirm there are no errors.
 - [x] **[CLAUDE]** Generate TypeScript types from the schema (`supabase gen types typescript`, or hand-write `src/types/database.ts` if the CLI is not set up).
 - [x] **[CLAUDE]** Write `supabase/tests/rls_checklist.md` listing manual RLS test cases (e.g. a developer in project A cannot read project B; an intern cannot edit tasks they don't own; a user cannot clock in for someone else).
 
