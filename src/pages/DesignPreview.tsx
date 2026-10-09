@@ -80,17 +80,19 @@ const navItems = [
   { label: 'Attendance', icon: CalendarClock },
 ]
 
+/** Circular floating clock button: fixed bottom-right, 80px (well above the 44px tap minimum). */
 function ClockButton() {
   const [on, setOn] = useState(false)
   return (
     <button
       type="button"
       onClick={() => setOn((v) => !v)}
-      className={`flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base font-medium shadow-lift transition-colors sm:w-auto sm:min-w-56 sm:px-8 ${
-        on ? 'bg-danger text-white hover:bg-danger/90' : 'bg-primary text-primary-foreground hover:bg-primary/90'
+      aria-label={on ? 'Clock out' : 'Clock in'}
+      className={`fixed right-4 bottom-4 z-50 flex size-20 flex-col items-center justify-center gap-0.5 rounded-full text-xs font-medium text-white shadow-lift transition-transform hover:scale-105 active:scale-95 sm:right-8 sm:bottom-8 ${
+        on ? 'bg-danger hover:bg-danger/90' : 'bg-primary hover:bg-primary/90'
       }`}
     >
-      {on ? <LogOut className="size-5" /> : <LogIn className="size-5" />}
+      {on ? <LogOut className="size-6" /> : <LogIn className="size-6" />}
       {on ? 'Clock out' : 'Clock in'}
     </button>
   )
@@ -99,6 +101,7 @@ function ClockButton() {
 export default function DesignPreview() {
   return (
     <div className="ds min-h-screen">
+      <ClockButton />
       <div className="mx-auto max-w-5xl space-y-12 px-4 py-10 sm:px-6">
         <header>
           <Badge tone="primary">Proposal</Badge>
@@ -172,10 +175,9 @@ export default function DesignPreview() {
             <Button variant="destructive">Delete</Button>
             <Button disabled>Disabled</Button>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Clock in / clock out (large tap target, 56px tall, full width on phones)</p>
-            <ClockButton />
-          </div>
+          <p className="text-sm text-muted-foreground">
+            The clock button floats at the bottom-right of every page (try it now): indigo "Clock in", red "Clock out".
+          </p>
         </Section>
 
         <Section title="Inputs">
@@ -341,7 +343,6 @@ export default function DesignPreview() {
                 <div className="flex-1 space-y-3 p-4 sm:p-6">
                   <h3 className="text-xl">Projects</h3>
                   <p className="text-sm text-muted-foreground">Page content goes here with 24px padding and 24px gaps.</p>
-                  <ClockButton />
                 </div>
               </div>
             </div>
