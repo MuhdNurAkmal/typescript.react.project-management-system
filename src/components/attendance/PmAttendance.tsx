@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import { AttendanceReportDownload } from '@/components/attendance/AttendanceReportDownload'
 import { AttendanceStatusBadge } from '@/components/attendance/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
@@ -42,6 +43,7 @@ export function PmAttendance() {
 
   return (
     <div className="space-y-4">
+      <AttendanceReportDownload />
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-2">
           <Label htmlFor="a-person">Person</Label>
