@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/useAuth'
+import { errorMessage } from '@/lib/errors'
 
 export default function Login() {
   const { signIn } = useAuth()
@@ -23,7 +24,7 @@ export default function Login() {
       await signIn(email.trim(), password)
       navigate(from, { replace: true })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Sign in failed')
+      toast.error(errorMessage(err, 'Sign in failed'))
     } finally {
       setBusy(false)
     }

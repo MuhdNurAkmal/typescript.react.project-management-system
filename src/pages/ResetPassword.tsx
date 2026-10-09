@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/useAuth'
+import { errorMessage } from '@/lib/errors'
 
 // Reached from the email link; Supabase signs the user in with a recovery session.
 export default function ResetPassword() {
@@ -22,7 +23,7 @@ export default function ResetPassword() {
       toast.success('Password updated')
       navigate('/', { replace: true })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not update password')
+      toast.error(errorMessage(err, 'Could not update password'))
     } finally {
       setBusy(false)
     }

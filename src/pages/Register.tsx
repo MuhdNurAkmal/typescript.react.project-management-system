@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/useAuth'
+import { errorMessage } from '@/lib/errors'
 
 export default function Register() {
   const { signUp } = useAuth()
@@ -31,7 +32,7 @@ export default function Register() {
       )
       navigate('/login', { replace: true })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Registration failed')
+      toast.error(errorMessage(err, 'Registration failed'))
     } finally {
       setBusy(false)
     }

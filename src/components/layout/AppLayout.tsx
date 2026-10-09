@@ -26,6 +26,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useOrg } from "@/hooks/useOrg";
 import { cn } from "@/lib/utils";
+import { errorMessage } from "@/lib/errors";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -51,7 +52,7 @@ export default function AppLayout() {
       await signOut();
       navigate("/login", { replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Sign out failed");
+      toast.error(errorMessage(err, "Sign out failed"));
     }
   }
 

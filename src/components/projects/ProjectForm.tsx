@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { validateProjectForm, type ProjectFormValues } from '@/lib/projectValidation'
+import { errorMessage } from '@/lib/errors'
 
 export const selectClass =
   'h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30'
@@ -31,7 +32,7 @@ export function ProjectForm({
     try {
       await onSubmit(v)
     } catch (e2) {
-      toast.error(e2 instanceof Error ? e2.message : 'Something went wrong')
+      toast.error(errorMessage(e2, 'Something went wrong'))
     } finally {
       setBusy(false)
     }
