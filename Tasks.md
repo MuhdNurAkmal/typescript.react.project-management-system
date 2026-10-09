@@ -169,3 +169,4 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] **[CLAUDE]** Attendance, leave, team views, reports, dashboard and floating clock work per company.
 - [x] **[CLAUDE]** Update README, RLS checklist, tests.
 - [x] A new user is not forced to create a company: they land on a neutral welcome screen (ask an admin to add your email, or create your own). Only Dashboard, Company and Profile are available until they join one.
+- [x] Fix: creating a project failed because the built-in `pm` role was missing from the roles table. `014_restore_system_roles.sql` restores the roles and makes the trigger recreate `pm` if it is ever missing.

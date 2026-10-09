@@ -56,6 +56,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `011_member_removal.sql` | Removing a member unassigns their tasks; the last PM cannot be removed |
 | `012_comments_notifications_audit.sql` | Task comments, in-app notifications, per-project activity log |
 | `013_organizations.sql` | Companies: projects, attendance and leave belong to a company. **Wipes projects, attendance and leave data** |
+| `014_restore_system_roles.sql` | Restores the built-in project roles if missing and hardens project creation |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
