@@ -168,7 +168,7 @@ export function UsersPanel() {
         open={mode === 'delete'}
         onOpenChange={(o) => !o && close()}
         title="Delete this user?"
-        description="Their account is removed for good and their tasks become unassigned. This fails if they created projects or companies that still exist; reassign those first."
+        description="Their account is removed for good and their tasks become unassigned. Projects and companies they created are kept and handed to you; a company they solely own gets a new owner from its members."
         expected={target?.email ?? ''}
         confirmLabel="Delete user"
         pending={remove.isPending}

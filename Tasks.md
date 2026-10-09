@@ -184,3 +184,5 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] Superadmin group 4, `018_superadmin_manage.sql`: the superadmin sees every company in the company picker ("Superadmin access", owner-level, no clocking) and can open any project with PM powers (edit tasks, add/remove members and PMs, delete the project, correct attendance, approve/reject leave). Those actions are logged in the audit log. Deleted projects are kept for 30 days (members, tasks, dependencies, milestones, comments) and restored from Admin > Deleted projects.
 - [ ] [HUMAN] Run `018_superadmin_manage.sql` (after 017).
 - [ ] Superadmin, later: system settings (roles, leave types, announcement banner); restore deleted companies/users (only projects are restorable now).
+- [x] Fix: superadmin could not delete a user who had created projects (foreign key error). `019_delete_user_reassign.sql` hands what they created to the superadmin and promotes a new owner where they were the only one.
+- [ ] [HUMAN] Run `019_delete_user_reassign.sql`.

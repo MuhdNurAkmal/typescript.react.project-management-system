@@ -61,6 +61,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `016_clock_per_company.sql` | Clock in to several companies at once (one open session per company) |
 | `017_superadmin.sql` | One superadmin: read access everywhere, user/company management, suspension, audit log. Afterwards run `update public.profiles set is_superadmin = true where email = 'YOUR-LOGIN-EMAIL';` |
 | `018_superadmin_manage.sql` | Superadmin acts as PM/company admin anywhere; deleted projects kept 30 days and restorable |
+| `019_delete_user_reassign.sql` | Deleting a user keeps their projects and companies (reassigned to the superadmin) |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
