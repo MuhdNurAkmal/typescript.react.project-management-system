@@ -4,6 +4,8 @@ import type { Organization, OrgRole } from '@/types/database'
 export interface OrgEntry {
   org: Organization
   role: OrgRole
+  /** False when the superadmin is looking at a company they do not belong to. */
+  member: boolean
 }
 
 export interface OrgContextValue {

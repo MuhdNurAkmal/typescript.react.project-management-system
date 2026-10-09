@@ -16,11 +16,12 @@ export function useRoles() {
 
 /** Projects the current user actively belongs to, with their role in each. */
 export function useMyProjects() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { current } = useOrg()
+  const isSuper = Boolean(profile?.is_superadmin)
   const orgId = current?.org.id
   return useQuery({
-    queryKey: ['projects', user?.id, orgId],
+    queryKey: ['projects', user?.id, orgId, isSuper],
     enabled: !!user && !!orgId,
     queryFn: async () => {
       const { data: memberships, error } = await supabase
@@ -29,10 +30,12 @@ export function useMyProjects() {
         .eq('user_id', user!.id)
         .eq('is_active', true)
       if (error) throw error
-      if (memberships.length === 0) return []
+      if (memberships.length === 0 && !isSuper) return []
 
       const [{ data: projects, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
-        supabase.from('projects').select('*').eq('organization_id', orgId!).in('id', memberships.map((m) => m.project_id)),
+        isSuper
+          ? supabase.from('projects').select('*').eq('organization_id', orgId!)
+          : supabase.from('projects').select('*').eq('organization_id', orgId!).in('id', memberships.map((m) => m.project_id)),
         supabase.from('roles').select('*'),
       ])
       if (pErr) throw pErr

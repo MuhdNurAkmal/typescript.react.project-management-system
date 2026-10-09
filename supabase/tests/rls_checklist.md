@@ -115,3 +115,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] In a suspended company nobody can create projects, tasks or leave requests, or clock in; members can still clock out.
 - [ ] Transferring ownership makes the chosen member the owner and demotes the previous owners to admin.
 - [ ] Each superadmin action (including member changes made from the Companies tab) appears in the audit log.
+
+## Superadmin management (018)
+- [ ] The superadmin can edit tasks, add/remove members and change the PM of a project they are not in; a normal user still cannot.
+- [ ] The superadmin can correct a clock-out and decide leave in any company; both show in the audit log.
+- [ ] Deleting a project (as PM or superadmin) creates a row in Deleted projects; Restore brings back members, tasks, dependencies, milestones and comments with the same ids.
+- [ ] A deleted project older than 30 days disappears from the list.
+- [ ] The superadmin cannot clock in to a company they do not belong to.

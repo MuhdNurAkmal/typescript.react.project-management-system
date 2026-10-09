@@ -43,7 +43,7 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{current.org.name}</span>
-          <span className="block text-xs text-sidebar-foreground/60 capitalize">{current.role}</span>
+          <span className="block text-xs text-sidebar-foreground/60 capitalize">{current.member ? current.role : "Superadmin"}</span>
         </span>
         <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/50" />
       </DialogTrigger>
@@ -53,7 +53,7 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
           <DialogDescription>Projects, attendance and leave shown in the app belong to the company you pick.</DialogDescription>
         </DialogHeader>
         <ul className="max-h-80 space-y-2 overflow-y-auto">
-          {orgs.map(({ org, role }) => {
+          {orgs.map(({ org, role, member }) => {
             const selected = org.id === current.org.id
             const clockedIn = sessions?.some((s) => s.organization_id === org.id)
             return (
@@ -72,6 +72,7 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
                       <Pill tone={roleTone[role]} className="capitalize">
                         {role}
                       </Pill>
+                      {!member && <Pill tone="violet">Superadmin access</Pill>}
                       {clockedIn && <Pill tone="green">Clocked in</Pill>}
                     </span>
                   </span>

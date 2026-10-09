@@ -18,7 +18,8 @@ function readStored(userId: string | undefined): number | null {
 
 /** Loads the user's companies and remembers which one is selected. */
 export function OrgProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const isSuper = Boolean(profile?.is_superadmin)
   const qc = useQueryClient()
   const [picked, setPicked] = useState<number | null>(() => readStored(user?.id))
   const [pickedFor, setPickedFor] = useState(user?.id)
@@ -30,17 +31,22 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   }
 
   const query = useQuery({
-    queryKey: ['orgs', user?.id],
+    queryKey: ['orgs', user?.id, isSuper],
     enabled: !!user,
     queryFn: async (): Promise<OrgEntry[]> => {
       const { data: memberships, error } = await supabase.from('organization_members').select('*').eq('user_id', user!.id)
       if (error) throw error
-      if (memberships.length === 0) return []
-      const { data: orgs, error: oErr } = await supabase.from('organizations').select('*').in('id', memberships.map((m) => m.organization_id))
+      const roleOf = new Map(memberships.map((m) => [m.organization_id, m.org_role]))
+      // the superadmin sees every company; the ones they do not belong to open with owner-level access
+      let q = supabase.from('organizations').select('*')
+      if (!isSuper) {
+        if (memberships.length === 0) return []
+        q = q.in('id', memberships.map((m) => m.organization_id))
+      }
+      const { data: orgs, error: oErr } = await q
       if (oErr) throw oErr
-      return memberships
-        .map((m) => ({ org: orgs.find((o) => o.id === m.organization_id)!, role: m.org_role }))
-        .filter((e) => e.org)
+      return orgs
+        .map((org) => ({ org, role: roleOf.get(org.id) ?? ('owner' as const), member: roleOf.has(org.id) }))
         .sort((a, b) => a.org.name.localeCompare(b.org.name))
     },
   })

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { AlertCircle, Plus } from 'lucide-react'
 import { Pill } from '@/components/Pill'
@@ -11,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useOrg } from '@/hooks/useOrg'
 import { supabase } from '@/lib/supabase'
 import type { AdminOrg, OrgRole } from '@/types/database'
 
@@ -18,6 +20,8 @@ type Mode = 'create' | 'members' | 'transfer' | 'suspend' | 'delete' | null
 
 export function CompaniesPanel() {
   const { data, isLoading, error } = useAdminOrgs()
+  const { setCurrentId } = useOrg()
+  const navigate = useNavigate()
   const [target, setTarget] = useState<AdminOrg | null>(null)
   const [mode, setMode] = useState<Mode>(null)
 
@@ -76,6 +80,16 @@ export function CompaniesPanel() {
                     <TableCell>{o.suspended_at ? <Pill tone="red">Suspended</Pill> : <Pill tone="green">Active</Pill>}</TableCell>
                     <TableCell className="pr-5">
                       <div className="flex flex-wrap justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setCurrentId(o.id)
+                            navigate('/projects')
+                          }}
+                        >
+                          Open
+                        </Button>
                         <Button size="sm" variant="ghost" onClick={() => open(o, 'members')}>
                           Members
                         </Button>

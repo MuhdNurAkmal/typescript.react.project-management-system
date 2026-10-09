@@ -8,7 +8,7 @@ import { permissionsFor } from '@/lib/permissions'
  * The database (RLS) remains the real enforcement.
  */
 export function usePermissions(projectId: number | undefined) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const query = useQuery({
     queryKey: ['membership', projectId, user?.id],
     enabled: !!projectId && !!user,
@@ -28,5 +28,7 @@ export function usePermissions(projectId: number | undefined) {
     },
   })
 
-  return { loading: query.isLoading, ...permissionsFor(query.data?.role ?? null) }
+  // the superadmin manages any project as if they were its PM
+  const role = query.data?.role ?? (profile?.is_superadmin ? { name: 'Superadmin', is_pm: true } : null)
+  return { loading: query.isLoading, ...permissionsFor(role) }
 }

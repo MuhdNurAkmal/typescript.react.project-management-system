@@ -38,7 +38,7 @@ export function useClock() {
     open,
     /** Open sessions in other companies. */
     others,
-    canClock: !!current,
+    canClock: !!current?.member,
     loading: isLoading,
     pending: mutation.isPending,
     toggle: () => mutation.mutate(open ? 'clock_out' : 'clock_in'),

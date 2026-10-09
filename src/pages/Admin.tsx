@@ -1,5 +1,6 @@
 import { AuditPanel } from '@/components/admin/AuditPanel'
 import { CompaniesPanel } from '@/components/admin/CompaniesPanel'
+import { DeletedPanel } from '@/components/admin/DeletedPanel'
 import { OverviewPanel } from '@/components/admin/OverviewPanel'
 import { UsersPanel } from '@/components/admin/UsersPanel'
 import { PageHeader } from '@/components/PageHeader'
@@ -14,6 +15,7 @@ export default function Admin() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="companies">Companies</TabsTrigger>
+          <TabsTrigger value="deleted">Deleted projects</TabsTrigger>
           <TabsTrigger value="audit">Audit log</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="pt-4">
@@ -24,6 +26,9 @@ export default function Admin() {
         </TabsContent>
         <TabsContent value="companies" className="pt-4">
           <CompaniesPanel />
+        </TabsContent>
+        <TabsContent value="deleted" className="pt-4">
+          <DeletedPanel />
         </TabsContent>
         <TabsContent value="audit" className="pt-4">
           <AuditPanel />

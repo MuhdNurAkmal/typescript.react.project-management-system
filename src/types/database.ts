@@ -201,6 +201,18 @@ export type AdminUser = {
   company_count: number
 }
 
+export type AdminDeletedProject = {
+  id: number
+  project_id: number
+  name: string
+  organization_id: number
+  organization_name: string | null
+  deleted_by_name: string | null
+  deleted_at: string
+  task_count: number
+  company_exists: boolean
+}
+
 export type AdminOrg = {
   id: number
   name: string
@@ -271,6 +283,8 @@ export type Database = {
       admin_create_org: { Args: { p_name: string; p_owner_email: string }; Returns: number }
       admin_transfer_ownership: { Args: { p_org_id: number; p_new_owner: string }; Returns: undefined }
       admin_set_org_suspended: { Args: { p_org_id: number; p_suspended: boolean; p_reason?: string }; Returns: undefined }
+      admin_list_deleted_projects: { Args: Record<string, never>; Returns: AdminDeletedProject[] }
+      admin_restore_project: { Args: { p_deleted_id: number }; Returns: number }
       admin_delete_org: { Args: { p_org_id: number }; Returns: undefined }
       search_org_users: {
         Args: { p_organization_id: number; p_query: string }
