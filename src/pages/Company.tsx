@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
+import { NoCompany } from '@/components/company/NoCompany'
 import { CreateCompanyForm } from '@/components/company/CreateCompanyForm'
 import { Pill, type Tone } from '@/components/Pill'
 import { selectClass } from '@/components/projects/ProjectForm'
@@ -51,7 +52,7 @@ export default function Company() {
 
   const refreshMembers = () => qc.invalidateQueries({ queryKey: ['org-members', orgId] })
 
-  if (!current) return null
+  if (!current) return <NoCompany />
 
   return (
     <div className="space-y-6">

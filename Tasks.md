@@ -168,3 +168,4 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] **[CLAUDE]** Projects are created inside the current company; project invites only offer company members.
 - [x] **[CLAUDE]** Attendance, leave, team views, reports, dashboard and floating clock work per company.
 - [x] **[CLAUDE]** Update README, RLS checklist, tests.
+- [x] A new user is not forced to create a company: they land on a neutral welcome screen (ask an admin to add your email, or create your own). Only Dashboard, Company and Profile are available until they join one.

@@ -40,18 +40,19 @@ export default function App() {
             </Route>
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute />}>
-              <Route element={<RequireOrg />}>
               <Route element={<AppLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="projects" element={<Projects />} />
-                <Route path="projects/:projectId" element={<ProjectDetail />} />
-                <Route path="my-tasks" element={<MyTasks />} />
-                <Route path="attendance" element={<Attendance />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="profile" element={<Profile />} />
+                {/* pages that need a company: a user without one sees the join-or-create screen */}
+                <Route element={<RequireOrg />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="projects" element={<Projects />} />
+                  <Route path="projects/:projectId" element={<ProjectDetail />} />
+                  <Route path="my-tasks" element={<MyTasks />} />
+                  <Route path="attendance" element={<Attendance />} />
+                  <Route path="reports" element={<Reports />} />
+                </Route>
                 <Route path="company" element={<Company />} />
+                <Route path="profile" element={<Profile />} />
                 <Route path="*" element={<NotFound />} />
-              </Route>
               </Route>
             </Route>
           </Routes>

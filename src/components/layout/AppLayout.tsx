@@ -37,6 +37,8 @@ const nav = [
   { to: "/profile", label: "Profile", icon: User },
 ];
 
+const noCompanyNav = new Set(["/", "/company", "/profile"]);
+
 export default function AppLayout() {
   const { user, profile, signOut } = useAuth();
   const { orgs, current, setCurrentId } = useOrg();
@@ -78,6 +80,7 @@ export default function AppLayout() {
             <X />
           </Button>
         </div>
+        {current && (
         <div className="mb-4">
           <label htmlFor="org-switch" className="mb-1 block px-1 text-xs font-medium text-muted-foreground">
             Company
@@ -98,8 +101,11 @@ export default function AppLayout() {
             ))}
           </select>
         </div>
+        )}
         <nav className="space-y-1">
-          {nav.map(({ to, label, icon: Icon, end }) => (
+          {nav
+            .filter(({ to }) => current || noCompanyNav.has(to))
+            .map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}

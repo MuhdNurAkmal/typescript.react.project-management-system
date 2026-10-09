@@ -1,19 +1,12 @@
 import { Outlet } from 'react-router-dom'
-import { AuthCard } from '@/components/AuthCard'
-import { CreateCompanyForm } from '@/components/company/CreateCompanyForm'
+import { NoCompany } from '@/components/company/NoCompany'
 import { useOrg } from '@/hooks/useOrg'
 
-/** Everything in the app lives inside a company, so a user with none is asked to create one first. */
+/** Pages that need a company show a friendly "join or create one" screen instead when the user has none. */
 export function RequireOrg() {
   const { orgs, loading } = useOrg()
 
-  if (loading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Loading…</div>
-  if (orgs.length === 0) {
-    return (
-      <AuthCard title="Create your company" description="Projects, attendance and leave all live inside a company. If someone invited you to theirs, ask them to add your email, then refresh this page.">
-        <CreateCompanyForm />
-      </AuthCard>
-    )
-  }
+  if (loading) return <p className="text-muted-foreground">Loading…</p>
+  if (orgs.length === 0) return <NoCompany />
   return <Outlet />
 }
