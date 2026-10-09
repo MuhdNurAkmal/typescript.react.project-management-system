@@ -9,10 +9,10 @@ import {
   LayoutDashboard,
   ListChecks,
   Menu,
-  User,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CompanySwitcher } from "@/components/layout/CompanySwitcher";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Avatar } from "@/components/Avatar";
 import { FloatingClock } from "@/components/attendance/FloatingClock";
@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrg } from "@/hooks/useOrg";
-import { useOpenSessions } from "@/hooks/useAttendance";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "@/lib/errors";
 
@@ -36,15 +35,13 @@ const nav = [
   { to: "/attendance", label: "Attendance", icon: CalendarClock },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/company", label: "Company", icon: Building2 },
-  { to: "/profile", label: "Profile", icon: User },
 ];
 
-const noCompanyNav = new Set(["/", "/company", "/profile"]);
+const noCompanyNav = new Set(["/", "/company"]);
 
 export default function AppLayout() {
   const { user, profile, signOut } = useAuth();
-  const { orgs, current, setCurrentId } = useOrg();
-  const { data: sessions } = useOpenSessions();
+  const { current } = useOrg();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const name = profile?.full_name || user?.email || "Account";
@@ -62,7 +59,7 @@ export default function AppLayout() {
     <div className="min-h-screen md:grid md:grid-cols-[14rem_1fr]">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-56 border-r bg-sidebar p-4 transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-56 flex-col border-r bg-sidebar p-4 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -83,30 +80,7 @@ export default function AppLayout() {
             <X />
           </Button>
         </div>
-        {current && (
-        <div className="mb-4">
-          <label htmlFor="org-switch" className="mb-1 block px-1 text-xs font-medium text-muted-foreground">
-            Company
-          </label>
-          <select
-            id="org-switch"
-            className="h-9 w-full rounded-lg border border-input bg-card px-2 text-sm"
-            value={current?.org.id ?? ""}
-            onChange={(e) => {
-              setCurrentId(Number(e.target.value));
-              navigate("/");
-            }}
-          >
-            {orgs.map(({ org }) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
-                {sessions?.some((s) => s.organization_id === org.id) ? " (clocked in)" : ""}
-              </option>
-            ))}
-          </select>
-        </div>
-        )}
-        <nav className="space-y-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto">
           {nav
             .filter(({ to }) => current || noCompanyNav.has(to))
             .map(({ to, label, icon: Icon, end }) => (
@@ -127,6 +101,9 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <div className="pt-4">
+          <CompanySwitcher onPicked={() => setOpen(false)} />
+        </div>
       </aside>
       {open && (
         <div

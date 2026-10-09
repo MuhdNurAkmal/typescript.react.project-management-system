@@ -173,3 +173,4 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] Fix: editing a project's dates, budget or details failed (`malformed array literal`) because of a bug in the activity-log trigger. Fixed in `012` and by `015_fix_audit_projects.sql`.
 - [x] Clock in/out is per company: a person can be clocked in to several companies at the same time (one open session per company). `016_clock_per_company.sql`; the company switcher marks companies where you are clocked in. This replaces the earlier "one company at a time" decision.
 - [x] Project Tasks tab: search and filters sit on one row on large screens.
+- [x] Sidebar: Profile link removed (it stays in the user menu at the top right); the company selector moved to the bottom of the sidebar as a button that opens a "Choose a company" popup (shows role and whether you are clocked in); picking one loads that company.
