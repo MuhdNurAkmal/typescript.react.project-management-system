@@ -8,6 +8,7 @@ import { ProtectedRoute, PublicOnlyRoute } from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/sonner'
 import { OrgProvider } from '@/components/OrgProvider'
 import { RequireOrg } from '@/components/RequireOrg'
+import DesignPreview from '@/pages/DesignPreview'
 import Company from '@/pages/Company'
 import Dashboard from '@/pages/Dashboard'
 import ForgotPassword from '@/pages/ForgotPassword'
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/design-preview" element={<DesignPreview />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 {/* pages that need a company: a user without one sees the join-or-create screen */}

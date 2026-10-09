@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/instrument-sans";
 @import "@fontsource/instrument-serif";
+@import "./styles/design-system.css";
 
 @custom-variant dark (&:is(.dark *));
 
