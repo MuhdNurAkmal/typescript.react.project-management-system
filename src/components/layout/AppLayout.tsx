@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   BarChart3,
+  Building2,
   CalendarClock,
   Layers,
   FolderKanban,
@@ -23,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrg } from "@/hooks/useOrg";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -31,11 +33,13 @@ const nav = [
   { to: "/my-tasks", label: "My Tasks", icon: ListChecks },
   { to: "/attendance", label: "Attendance", icon: CalendarClock },
   { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/company", label: "Company", icon: Building2 },
   { to: "/profile", label: "Profile", icon: User },
 ];
 
 export default function AppLayout() {
   const { user, profile, signOut } = useAuth();
+  const { orgs, current, setCurrentId } = useOrg();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const name = profile?.full_name || user?.email || "Account";
@@ -73,6 +77,26 @@ export default function AppLayout() {
           >
             <X />
           </Button>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="org-switch" className="mb-1 block px-1 text-xs font-medium text-muted-foreground">
+            Company
+          </label>
+          <select
+            id="org-switch"
+            className="h-9 w-full rounded-lg border border-input bg-card px-2 text-sm"
+            value={current?.org.id ?? ""}
+            onChange={(e) => {
+              setCurrentId(Number(e.target.value));
+              navigate("/");
+            }}
+          >
+            {orgs.map(({ org }) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
         </div>
         <nav className="space-y-1">
           {nav.map(({ to, label, icon: Icon, end }) => (

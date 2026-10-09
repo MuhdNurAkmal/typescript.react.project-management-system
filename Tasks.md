@@ -161,10 +161,10 @@ Create SQL files in `supabase/migrations/`. The user can run them via the Supaba
 
 Decision: attendance and leave belong to a **company**, not to a project. Company -> many projects -> many project members. Decisions taken: company admins (owner/admin) approve attendance and leave; a person can be clocked in to only one company at a time; existing test data is wiped by the migration.
 
-- [ ] **[CLAUDE]** `013_organizations.sql`: `organizations`, `organization_members` (owner/admin/member), `projects.organization_id`, `attendance.organization_id`, `leave_requests.organization_id`; new RLS helpers (`is_org_member`, `is_org_admin`); project members must belong to the company; org-level user search and add-member RPCs; clock_in takes the company; leave/attendance approved by company admins. Wipes existing project/attendance/leave data.
+- [x] **[CLAUDE]** `013_organizations.sql`: `organizations`, `organization_members` (owner/admin/member), `projects.organization_id`, `attendance.organization_id`, `leave_requests.organization_id`; new RLS helpers (`is_org_member`, `is_org_admin`); project members must belong to the company; org-level user search and add-member RPCs; clock_in takes the company; leave/attendance approved by company admins. Wipes existing project/attendance/leave data.
 - [ ] **[HUMAN]** Run `013_organizations.sql` in the Supabase SQL Editor.
-- [ ] **[CLAUDE]** Company context (current company, switcher, create-company onboarding when you have none).
-- [ ] **[CLAUDE]** Company page: members (add by name/email search, change role, remove), rename, delete company (type name to confirm).
-- [ ] **[CLAUDE]** Projects are created inside the current company; project invites only offer company members.
-- [ ] **[CLAUDE]** Attendance, leave, team views, reports, dashboard and floating clock work per company.
-- [ ] **[CLAUDE]** Update README, RLS checklist, tests.
+- [x] **[CLAUDE]** Company context (current company, switcher, create-company onboarding when you have none).
+- [x] **[CLAUDE]** Company page: members (add by name/email search, change role, remove), rename, delete company (type name to confirm).
+- [x] **[CLAUDE]** Projects are created inside the current company; project invites only offer company members.
+- [x] **[CLAUDE]** Attendance, leave, team views, reports, dashboard and floating clock work per company.
+- [x] **[CLAUDE]** Update README, RLS checklist, tests.

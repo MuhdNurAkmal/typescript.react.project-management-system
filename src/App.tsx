@@ -6,6 +6,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import AppLayout from '@/components/layout/AppLayout'
 import { ProtectedRoute, PublicOnlyRoute } from '@/components/ProtectedRoute'
 import { Toaster } from '@/components/ui/sonner'
+import { OrgProvider } from '@/components/OrgProvider'
+import { RequireOrg } from '@/components/RequireOrg'
+import Company from '@/pages/Company'
 import Dashboard from '@/pages/Dashboard'
 import ForgotPassword from '@/pages/ForgotPassword'
 import Attendance from '@/pages/Attendance'
@@ -26,6 +29,7 @@ export default function App() {
     <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <OrgProvider>
         <ConfirmProvider>
         <BrowserRouter>
           <Routes>
@@ -36,6 +40,7 @@ export default function App() {
             </Route>
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute />}>
+              <Route element={<RequireOrg />}>
               <Route element={<AppLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="projects" element={<Projects />} />
@@ -44,12 +49,15 @@ export default function App() {
                 <Route path="attendance" element={<Attendance />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="company" element={<Company />} />
                 <Route path="*" element={<NotFound />} />
+              </Route>
               </Route>
             </Route>
           </Routes>
         </BrowserRouter>
         </ConfirmProvider>
+        </OrgProvider>
       </AuthProvider>
       <Toaster richColors />
     </QueryClientProvider>

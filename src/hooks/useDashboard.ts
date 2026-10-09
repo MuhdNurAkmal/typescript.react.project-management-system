@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { useOrg } from '@/hooks/useOrg'
 
 /**
  * For projects the user manages: every task (for progress/overdue counts), the members,
@@ -29,14 +30,18 @@ export function useManagedOverview(projectIds: number[]) {
 
 /** Attendance rows and profiles for a month (RLS: your own plus people you manage). */
 export function useMonthAttendance(monthStart: Date, monthEnd: Date) {
+  const { current } = useOrg()
+  const orgId = current?.org.id
   const from = monthStart.toISOString()
   const to = monthEnd.toISOString()
   return useQuery({
-    queryKey: ['attendance', 'month', from],
+    queryKey: ['attendance', 'month', from, orgId],
+    enabled: !!orgId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendance')
         .select('*')
+        .eq('organization_id', orgId!)
         .gte('clock_in', from)
         .lt('clock_in', to)
         .order('clock_in')

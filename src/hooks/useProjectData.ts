@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useOrg } from '@/hooks/useOrg'
 
 export function useRoles() {
   return useQuery({
@@ -16,9 +17,11 @@ export function useRoles() {
 /** Projects the current user actively belongs to, with their role in each. */
 export function useMyProjects() {
   const { user } = useAuth()
+  const { current } = useOrg()
+  const orgId = current?.org.id
   return useQuery({
-    queryKey: ['projects', user?.id],
-    enabled: !!user,
+    queryKey: ['projects', user?.id, orgId],
+    enabled: !!user && !!orgId,
     queryFn: async () => {
       const { data: memberships, error } = await supabase
         .from('project_members')
@@ -29,7 +32,7 @@ export function useMyProjects() {
       if (memberships.length === 0) return []
 
       const [{ data: projects, error: pErr }, { data: roles, error: rErr }] = await Promise.all([
-        supabase.from('projects').select('*').in('id', memberships.map((m) => m.project_id)),
+        supabase.from('projects').select('*').eq('organization_id', orgId!).in('id', memberships.map((m) => m.project_id)),
         supabase.from('roles').select('*'),
       ])
       if (pErr) throw pErr

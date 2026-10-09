@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useMyAttendance } from '@/hooks/useAttendance'
 import { useClock } from '@/hooks/useClock'
+import { useOrg } from '@/hooks/useOrg'
 import { useLeaveTypes, useMyLeave } from '@/hooks/useLeave'
 import {
   durationMinutes,
@@ -21,7 +22,8 @@ import { todayString } from '@/lib/taskValidation'
 
 /** Clock in/out card plus personal history. Attendance is general: it is not tied to a project. */
 export function MyAttendance() {
-  const { open, pending, toggle } = useClock()
+  const { open, openOrgName, openElsewhere, pending, toggle } = useClock()
+  const { current } = useOrg()
   const { data: rows, isLoading, error } = useMyAttendance()
   const { data: leave } = useMyLeave()
   const { data: types } = useLeaveTypes()
@@ -49,7 +51,7 @@ export function MyAttendance() {
             <strong>
               {formatDate(open.clock_in)} {formatTime(open.clock_in)}
             </strong>
-            . You probably forgot to clock out. Ask your manager to correct the end time, or clock out now.
+            . You probably forgot to clock out. Ask a company admin to correct the end time, or clock out now.
           </div>
         </div>
       )}
@@ -74,10 +76,13 @@ export function MyAttendance() {
           {open ? (
             <>
               <div className="font-mono text-4xl tabular-nums">{formatElapsed(now.getTime() - new Date(open.clock_in).getTime())}</div>
-              <p className="text-sm text-muted-foreground">Clocked in at {formatTime(open.clock_in)}</p>
+              <p className="text-sm text-muted-foreground">
+                Clocked in at {formatTime(open.clock_in)} in {openOrgName}
+              </p>
+              {openElsewhere && <p className="text-sm text-amber-600">This session belongs to another company. Clock out here before clocking in to {current?.org.name}.</p>}
             </>
           ) : (
-            <p className="text-muted-foreground">You are not clocked in.</p>
+            <p className="text-muted-foreground">You are not clocked in. Clocking in will record time for {current?.org.name}.</p>
           )}
           <Button size="lg" className="h-14 min-w-48 text-lg" variant={open ? 'destructive' : 'default'} disabled={pending || blocked} onClick={toggle}>
             {pending ? 'Please wait…' : open ? 'Clock out' : 'Clock in'}

@@ -1,18 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { useOrg } from '@/hooks/useOrg'
 
-/** The current user's attendance rows, newest first. */
+/** The current user's attendance rows in the current company, newest first. */
 export function useMyAttendance() {
   const { user } = useAuth()
+  const { current } = useOrg()
+  const orgId = current?.org.id
   return useQuery({
-    queryKey: ['attendance', 'mine', user?.id],
-    enabled: !!user,
+    queryKey: ['attendance', 'mine', user?.id, orgId],
+    enabled: !!user && !!orgId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendance')
         .select('*')
         .eq('user_id', user!.id)
+        .eq('organization_id', orgId!)
         .order('clock_in', { ascending: false })
         .limit(200)
       if (error) throw error
@@ -21,7 +25,7 @@ export function useMyAttendance() {
   })
 }
 
-/** The current user's single open session, if any. */
+/** The current user's single open session (in any company), if any. */
 export function useOpenSession() {
   const { user } = useAuth()
   return useQuery({
@@ -35,17 +39,20 @@ export function useOpenSession() {
   })
 }
 
-/** Attendance of the people the current user manages (RLS limits rows; own rows excluded). */
+/** Attendance of the other people in the current company (company admins only; RLS limits the rows). */
 export function useTeamAttendance(enabled: boolean) {
   const { user } = useAuth()
+  const { current } = useOrg()
+  const orgId = current?.org.id
   return useQuery({
-    queryKey: ['attendance', 'team', user?.id],
-    enabled: enabled && !!user,
+    queryKey: ['attendance', 'team', user?.id, orgId],
+    enabled: enabled && !!user && !!orgId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('attendance')
         .select('*')
         .neq('user_id', user!.id)
+        .eq('organization_id', orgId!)
         .order('clock_in', { ascending: false })
         .limit(1000)
       if (error) throw error

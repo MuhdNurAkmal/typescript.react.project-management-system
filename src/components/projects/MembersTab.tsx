@@ -108,9 +108,14 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
           <CardContent>
             <form onSubmit={onAdd} className="flex flex-wrap items-end gap-3">
               <div className="min-w-56 flex-1 space-y-2">
-                <Label htmlFor="m-search">Find a registered user</Label>
+                <Label htmlFor="m-search">Find a company member</Label>
                 <UserSearch
-                  projectId={projectId}
+                  scope={`project-${projectId}`}
+                  fetcher={async (term) => {
+                    const { data, error } = await supabase.rpc('search_users', { p_project_id: projectId, p_query: term })
+                    if (error) throw error
+                    return data
+                  }}
                   value={query}
                   onChange={(v) => {
                     setQuery(v)

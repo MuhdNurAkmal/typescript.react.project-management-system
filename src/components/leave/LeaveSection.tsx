@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useOrg } from '@/hooks/useOrg'
 import { useLeaveTypes, useMyLeave } from '@/hooks/useLeave'
 import { leaveDays, overlapsExisting, validateLeaveDates } from '@/lib/leaveUtils'
 import { supabase } from '@/lib/supabase'
@@ -17,6 +18,7 @@ import { todayString } from '@/lib/taskValidation'
 /** Declare MC / annual leave / other absence in advance, and see your own requests. */
 export function LeaveSection() {
   const qc = useQueryClient()
+  const { current } = useOrg()
   const confirm = useConfirm()
   const { data: types } = useLeaveTypes()
   const { data: mine, isLoading, error } = useMyLeave()
@@ -35,7 +37,7 @@ export function LeaveSection() {
       if (overlapsExisting(mine ?? [], start, end)) throw new Error('You already have a leave request covering some of these dates')
       const { error } = await supabase
         .from('leave_requests')
-        .insert({ leave_type_id: selectedType!, start_date: start, end_date: end, reason: reason.trim() || null })
+        .insert({ organization_id: current!.org.id, leave_type_id: selectedType!, start_date: start, end_date: end, reason: reason.trim() || null })
       if (error) throw error
     },
     onSuccess: async () => {
@@ -68,7 +70,7 @@ export function LeaveSection() {
         <CardHeader>
           <CardTitle>Declare leave or absence</CardTitle>
           <CardDescription>
-            Annual leave, medical leave (MC) and other absences. Once a manager approves it, you will not be able to clock in on
+            Annual leave, medical leave (MC) and other absences. Once a company admin approves it, you will not be able to clock in on
             those days.
           </CardDescription>
         </CardHeader>

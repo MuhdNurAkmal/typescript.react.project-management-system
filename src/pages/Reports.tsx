@@ -84,7 +84,7 @@ function AttendanceReport() {
           <Download /> Detailed CSV
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground">Managers see everyone on their projects; other members see only themselves. Rejected records are excluded.</p>
+      <p className="text-sm text-muted-foreground">Company owners and admins see everyone in the company; other members see only themselves. Rejected records are excluded.</p>
 
       {isLoading && <p className="text-muted-foreground">Loading…</p>}
       {error && <p className="text-destructive">{error.message}</p>}

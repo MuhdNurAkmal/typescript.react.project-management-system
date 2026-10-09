@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { Avatar } from '@/components/Avatar'
 import { Input } from '@/components/ui/input'
 import { useDebounced } from '@/hooks/useDebounced'
-import { supabase } from '@/lib/supabase'
 
 export interface UserSuggestion {
   id: string
@@ -12,7 +11,10 @@ export interface UserSuggestion {
 }
 
 interface Props {
-  projectId: number
+  /** Identifies what is being searched (used as the cache key), e.g. `project-3` or `org-1`. */
+  scope: string
+  /** Runs the search for the typed text. */
+  fetcher: (term: string) => Promise<UserSuggestion[]>
   /** The text in the box; the parent keeps it so typed emails still work without picking a suggestion. */
   value: string
   onChange: (value: string) => void
@@ -20,21 +22,17 @@ interface Props {
 }
 
 /** Text box that suggests registered users (by name or email) as you type. */
-export function UserSearch({ projectId, value, onChange, onPick }: Props) {
+export function UserSearch({ scope, fetcher, value, onChange, onPick }: Props) {
   const listId = useId()
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
   const term = useDebounced(value.trim(), 250)
 
   const { data, isFetching } = useQuery({
-    queryKey: ['user-search', projectId, term],
+    queryKey: ['user-search', scope, term],
     enabled: term.length >= 2,
     staleTime: 30_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('search_users', { p_project_id: projectId, p_query: term })
-      if (error) throw error
-      return data as UserSuggestion[]
-    },
+    queryFn: () => fetcher(term),
   })
 
   const suggestions = term.length >= 2 ? (data ?? []) : []

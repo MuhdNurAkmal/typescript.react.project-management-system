@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth'
 import { useMyAttendance, useOpenSession } from '@/hooks/useAttendance'
 import { useManagedOverview } from '@/hooks/useDashboard'
+import { useOrg } from '@/hooks/useOrg'
 import { useMyProjects } from '@/hooks/useProjectData'
 import { useMyTasks } from '@/hooks/useTasks'
 import { formatDuration, formatTime, minutesToday } from '@/lib/attendanceUtils'
@@ -37,6 +38,7 @@ export default function Dashboard() {
 
 function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType<typeof useMyProjects>['data']>; today: string }) {
   const { data, isLoading, error } = useManagedOverview(projects.map((p) => p.project.id))
+  const { isAdmin } = useOrg()
   const nameOf = (id: string) => {
     const p = data?.profiles.find((x) => x.id === id)
     return p?.full_name || p?.email || 'Unknown'
@@ -76,10 +78,12 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
                     </div>
                   </div>
                   <StatusBar counts={summarizeTasks(tasks, today).byStatus} />
-                  <div>
-                    <span className="text-muted-foreground">Clocked in now: </span>
-                    {clockedIn.length === 0 ? 'nobody' : clockedIn.map((o) => nameOf(o.user_id)).join(', ')}
-                  </div>
+                  {isAdmin && (
+                    <div>
+                      <span className="text-muted-foreground">Clocked in now: </span>
+                      {clockedIn.length === 0 ? 'nobody' : clockedIn.map((o) => nameOf(o.user_id)).join(', ')}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </Link>

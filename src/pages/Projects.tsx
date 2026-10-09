@@ -8,6 +8,7 @@ import { RoleBadge, StatusBadge } from '@/components/projects/badges'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { useOrg } from '@/hooks/useOrg'
 import { useMyProjects } from '@/hooks/useProjectData'
 import { useAuth } from '@/hooks/useAuth'
 import { emptyProjectForm, formToPayload, type ProjectFormValues } from '@/lib/projectValidation'
@@ -15,13 +16,14 @@ import { supabase } from '@/lib/supabase'
 
 export default function Projects() {
   const { user } = useAuth()
+  const { current } = useOrg()
   const { data, isLoading, error } = useMyProjects()
   const qc = useQueryClient()
   const [open, setOpen] = useState(false)
 
   const create = useMutation({
     mutationFn: async (v: ProjectFormValues) => {
-      const { error } = await supabase.from('projects').insert({ ...formToPayload(v), created_by: user!.id })
+      const { error } = await supabase.from('projects').insert({ ...formToPayload(v), created_by: user!.id, organization_id: current!.org.id })
       if (error) throw error
     },
     onSuccess: async () => {
@@ -34,7 +36,9 @@ export default function Projects() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Projects</h1>
+        <h1 className="text-2xl font-semibold">
+          Projects <span className="text-base font-normal text-muted-foreground">in {current?.org.name}</span>
+        </h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button />}>
             <Plus /> New project

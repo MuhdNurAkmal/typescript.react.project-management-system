@@ -17,6 +17,7 @@ export type Profile = {
 
 export type Project = {
   id: number
+  organization_id: number
   name: string
   description: string | null
   type: ProjectType
@@ -27,6 +28,23 @@ export type Project = {
   status: ProjectStatus
   created_by: string
   created_at: string
+}
+
+export type OrgRole = 'owner' | 'admin' | 'member'
+
+export type Organization = {
+  id: number
+  name: string
+  created_by: string
+  created_at: string
+}
+
+export type OrganizationMember = {
+  id: number
+  organization_id: number
+  user_id: string
+  org_role: OrgRole
+  joined_at: string
 }
 
 export type Role = {
@@ -71,6 +89,7 @@ export type TaskDependency = {
 
 export type Attendance = {
   id: number
+  organization_id: number
   user_id: string
   clock_in: string
   clock_out: string | null
@@ -121,6 +140,7 @@ export type LeaveType = {
 
 export type LeaveRequest = {
   id: number
+  organization_id: number
   user_id: string
   leave_type_id: number
   start_date: string
@@ -152,9 +172,14 @@ export type Database = {
   public: {
     Tables: {
       profiles: Table<Profile, Pick<Profile, 'id'> & Partial<Profile>>
+      organizations: Table<Organization, Pick<Organization, 'name'> & Partial<Omit<Organization, 'name'>>>
+      organization_members: Table<
+        OrganizationMember,
+        Pick<OrganizationMember, 'organization_id' | 'user_id'> & Partial<OrganizationMember>
+      >
       projects: Table<
         Project,
-        Pick<Project, 'name' | 'type'> & Partial<Omit<Project, 'name' | 'type'>>
+        Pick<Project, 'name' | 'type' | 'organization_id'> & Partial<Omit<Project, 'name' | 'type' | 'organization_id'>>
       >
       roles: Table<Role, Pick<Role, 'name'> & Partial<Omit<Role, 'name'>>>
       project_members: Table<
@@ -167,15 +192,15 @@ export type Database = {
         Pick<Task, 'project_id' | 'title'> & Partial<Omit<Task, 'project_id' | 'title'>>
       >
       task_dependencies: Table<TaskDependency, TaskDependency>
-      attendance: Table<Attendance, Partial<Attendance>>
+      attendance: Table<Attendance, Pick<Attendance, 'organization_id'> & Partial<Attendance>>
       task_comments: Table<TaskComment, Pick<TaskComment, 'task_id' | 'body'> & Partial<TaskComment>>
       notifications: Table<Notification, Pick<Notification, 'user_id' | 'type' | 'title'> & Partial<Notification>>
       audit_log: Table<AuditLog, Pick<AuditLog, 'project_id' | 'action' | 'entity' | 'summary'> & Partial<AuditLog>>
       leave_types: Table<LeaveType, Pick<LeaveType, 'name'> & Partial<Omit<LeaveType, 'name'>>>
       leave_requests: Table<
         LeaveRequest,
-        Pick<LeaveRequest, 'leave_type_id' | 'start_date' | 'end_date'> &
-          Partial<Omit<LeaveRequest, 'leave_type_id' | 'start_date' | 'end_date'>>
+        Pick<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'> &
+          Partial<Omit<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'>>
       >
       milestones: Table<
         Milestone,
@@ -185,6 +210,14 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      search_org_users: {
+        Args: { p_organization_id: number; p_query: string }
+        Returns: { id: string; full_name: string | null; email: string | null }[]
+      }
+      add_org_member: {
+        Args: { p_organization_id: number; p_email: string; p_org_role?: string }
+        Returns: OrganizationMember
+      }
       search_users: {
         Args: { p_project_id: number; p_query: string }
         Returns: { id: string; full_name: string | null; email: string | null }[]
@@ -194,7 +227,7 @@ export type Database = {
         Returns: ProjectMember
       }
       pm_set_clock_out: { Args: { p_attendance_id: number; p_clock_out: string }; Returns: Attendance }
-      clock_in: { Args: never; Returns: Attendance }
+      clock_in: { Args: { p_organization_id: number }; Returns: Attendance }
       clock_out: { Args: never; Returns: Attendance }
     }
     Enums: Record<string, never>

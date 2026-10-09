@@ -90,3 +90,17 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A new leave request notifies the managers; approving or rejecting it notifies the requester.
 - [ ] Only PMs of a project can read its `audit_log`; no one can insert, update or delete audit rows directly.
 - [ ] Deleting a project still works (audit triggers do not block the cascade).
+
+## Companies
+- [ ] A user can create a company and becomes its owner; they cannot read other companies they are not in.
+- [ ] A company admin can add a registered user to the company (search and add); a plain member cannot.
+- [ ] Only an owner can promote someone to owner, demote or remove an owner; the last owner cannot be removed or demoted.
+- [ ] Only an owner can delete the company; deleting it removes its projects, attendance and leave.
+- [ ] Removing someone from a company removes them from that company's projects and their tasks there become unassigned (a last PM blocks it with a clear error).
+- [ ] A project member cannot be added unless they belong to the project's company ("must be a member of the company first").
+- [ ] A user cannot create a project in a company they are not a member of.
+- [ ] `search_org_users` works for company admins only; `search_users` only returns members of the project's company.
+- [ ] Attendance: a member can read only their own rows; an admin of the same company can read and review them; an admin of another company cannot.
+- [ ] `clock_in(company)` fails for a company the user is not in, and when already clocked in anywhere.
+- [ ] Leave approved in company A does not block clocking in to company B.
+- [ ] Only a company admin can approve or reject leave or correct a clock-out; nobody can do it for themselves.

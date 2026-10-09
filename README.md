@@ -7,12 +7,13 @@ A project management system for lecturers running grant or industrial projects. 
 ## Features
 
 - Email/password sign up, sign in, password reset
-- Projects with members and custom roles (roles are rows in a `roles` table)
+- Companies (groups): a person belongs to one or more companies; each company has owners, admins and members
+- Projects inside a company, with project members picked from the company and custom project roles (rows in a `roles` table)
 - Tasks with assignees, priorities, parent tasks and dependencies (cycles are rejected)
 - Gantt chart (Day / Week / Month) with drag-to-reschedule for PMs and project milestones
-- General attendance: floating Clock in / Clock out button on every page, server-side timestamps
+- Attendance per company: floating Clock in / Clock out button on every page, server-side timestamps
 - Leave and absence requests (annual leave, MC, emergency, unpaid, other); approved leave blocks clock in
-- Manager views: team attendance, leave approval, clock-out correction
+- Company admin views: team attendance, leave approval, clock-out correction
 - Kanban board, task comments, in-app notifications and a PM-only activity log
 - Dashboard, attendance report per month, task report, CSV export
 
@@ -54,6 +55,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `010_search_users.sql` | User search (by name or email) for the invite suggestions |
 | `011_member_removal.sql` | Removing a member unassigns their tasks; the last PM cannot be removed |
 | `012_comments_notifications_audit.sql` | Task comments, in-app notifications, per-project activity log |
+| `013_organizations.sql` | Companies: projects, attendance and leave belong to a company. **Wipes projects, attendance and leave data** |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
@@ -87,10 +89,12 @@ supabase/
 
 The database is the real enforcement. Row Level Security policies decide who can read and write each table; the UI only hides controls (`usePermissions`) for convenience.
 
-- A **PM** is anyone whose role in a project has `is_pm = true`. The project creator is made a PM automatically.
-- Members can read their projects; only PMs can change projects, members, tasks and milestones.
+- Everything lives inside a **company**. The person who creates a company is its **owner**; owners and admins add people, review attendance and leave, and correct clock-out times. Members take part in projects and clock in.
+- A project belongs to one company, and only company members can be added to its projects.
+- A **PM** is anyone whose role in a project has `is_pm = true`. The project creator is made a PM automatically. PMs manage projects, members and tasks, but do not review attendance (company admins do).
+- Members can read their projects; only PMs can change projects, project members, tasks and milestones.
 - Assignees can change only the status and progress of their own tasks (enforced by a trigger).
-- Attendance is per person. A PM can see and review the attendance and leave of everyone who shares a project with them, but never their own.
+- Attendance and leave belong to a company. A person can be clocked in to only one company at a time. Nobody can approve their own attendance or leave.
 - Clock in/out use database functions with server time (`now()`), not the browser clock. Timestamps are stored in UTC (`timestamptz`) and shown in the user's local time. The leave check for "today" uses Malaysia time (`Asia/Kuala_Lumpur`); change it in `clock_in()` if you deploy elsewhere.
 
 Work through `supabase/tests/rls_checklist.md` with three accounts (PM, developer, intern) after any change to policies.
