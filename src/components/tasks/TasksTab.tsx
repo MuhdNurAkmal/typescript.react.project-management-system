@@ -71,9 +71,9 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap">
-        <Input className="w-full sm:w-56 xl:min-w-40 xl:flex-1 xl:max-w-xs" placeholder="Search tasks…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select className={`${selectClass} w-40 xl:shrink-0`} value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label="Filter by assignee">
+      <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+        <Input className="w-full sm:w-56 lg:w-auto lg:min-w-0 lg:flex-[2_1_10rem]" placeholder="Search tasks…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <select className={`${selectClass} w-40 lg:w-auto lg:min-w-0 lg:max-w-48 lg:flex-[1_1_8rem]`} value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label="Filter by assignee">
           <option value="">All assignees</option>
           <option value="none">Unassigned</option>
           {members?.map(({ member, profile }) => (
@@ -82,7 +82,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
             </option>
           ))}
         </select>
-        <select className={`${selectClass} w-36 xl:shrink-0`} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter by status">
+        <select className={`${selectClass} w-36 lg:w-auto lg:min-w-0 lg:max-w-44 lg:flex-[1_1_7rem]`} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter by status">
           <option value="">All statuses</option>
           {Object.entries(statusLabels).map(([v, l]) => (
             <option key={v} value={v}>
@@ -90,14 +90,14 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
             </option>
           ))}
         </select>
-        <select className={`${selectClass} w-36 xl:shrink-0`} value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Filter by priority">
+        <select className={`${selectClass} w-36 lg:w-auto lg:min-w-0 lg:max-w-44 lg:flex-[1_1_7rem]`} value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Filter by priority">
           <option value="">All priorities</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
         {canManage && (
-          <Button className="ml-auto xl:shrink-0" onClick={() => setEditing(null)}>
+          <Button className="ml-auto shrink-0" onClick={() => setEditing(null)}>
             <Plus /> New task
           </Button>
         )}
