@@ -228,7 +228,7 @@ export type Database = {
       }
       pm_set_clock_out: { Args: { p_attendance_id: number; p_clock_out: string }; Returns: Attendance }
       clock_in: { Args: { p_organization_id: number }; Returns: Attendance }
-      clock_out: { Args: never; Returns: Attendance }
+      clock_out: { Args: { p_organization_id: number }; Returns: Attendance }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>

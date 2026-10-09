@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrg } from "@/hooks/useOrg";
+import { useOpenSessions } from "@/hooks/useAttendance";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "@/lib/errors";
 
@@ -43,6 +44,7 @@ const noCompanyNav = new Set(["/", "/company", "/profile"]);
 export default function AppLayout() {
   const { user, profile, signOut } = useAuth();
   const { orgs, current, setCurrentId } = useOrg();
+  const { data: sessions } = useOpenSessions();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const name = profile?.full_name || user?.email || "Account";
@@ -98,6 +100,7 @@ export default function AppLayout() {
             {orgs.map(({ org }) => (
               <option key={org.id} value={org.id}>
                 {org.name}
+                {sessions?.some((s) => s.organization_id === org.id) ? " (clocked in)" : ""}
               </option>
             ))}
           </select>

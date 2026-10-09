@@ -58,6 +58,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `013_organizations.sql` | Companies: projects, attendance and leave belong to a company. **Wipes projects, attendance and leave data** |
 | `014_restore_system_roles.sql` | Restores the built-in project roles if missing and hardens project creation |
 | `015_fix_audit_projects.sql` | Fixes the project activity log failing when dates, budget or details are edited |
+| `016_clock_per_company.sql` | Clock in to several companies at once (one open session per company) |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
@@ -96,7 +97,7 @@ The database is the real enforcement. Row Level Security policies decide who can
 - A **PM** is anyone whose role in a project has `is_pm = true`. The project creator is made a PM automatically. PMs manage projects, members and tasks, but do not review attendance (company admins do).
 - Members can read their projects; only PMs can change projects, project members, tasks and milestones.
 - Assignees can change only the status and progress of their own tasks (enforced by a trigger).
-- Attendance and leave belong to a company. A person can be clocked in to only one company at a time. Nobody can approve their own attendance or leave.
+- Attendance and leave belong to a company. A person can be clocked in to several companies at once, with one open session per company. Nobody can approve their own attendance or leave.
 - Clock in/out use database functions with server time (`now()`), not the browser clock. Timestamps are stored in UTC (`timestamptz`) and shown in the user's local time. The leave check for "today" uses Malaysia time (`Asia/Kuala_Lumpur`); change it in `clock_in()` if you deploy elsewhere.
 
 Work through `supabase/tests/rls_checklist.md` with three accounts (PM, developer, intern) after any change to policies.

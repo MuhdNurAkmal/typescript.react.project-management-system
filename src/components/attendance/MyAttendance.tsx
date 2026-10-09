@@ -22,7 +22,7 @@ import { todayString } from '@/lib/taskValidation'
 
 /** Clock in/out card plus personal history. Attendance is general: it is not tied to a project. */
 export function MyAttendance() {
-  const { open, openOrgName, openElsewhere, pending, toggle } = useClock()
+  const { open, others, pending, toggle } = useClock()
   const { current } = useOrg()
   const { data: rows, isLoading, error } = useMyAttendance()
   const { data: leave } = useMyLeave()
@@ -77,9 +77,9 @@ export function MyAttendance() {
             <>
               <div className="font-mono text-4xl tabular-nums">{formatElapsed(now.getTime() - new Date(open.clock_in).getTime())}</div>
               <p className="text-sm text-muted-foreground">
-                Clocked in at {formatTime(open.clock_in)} in {openOrgName}
+                Clocked in at {formatTime(open.clock_in)} in {current?.org.name}
               </p>
-              {openElsewhere && <p className="text-sm text-amber-600">This session belongs to another company. Clock out here before clocking in to {current?.org.name}.</p>}
+              {others.length > 0 && <p className="text-sm text-muted-foreground">Also clocked in at {others.map((o) => o.orgName).join(', ')}. Switch company to clock out there.</p>}
             </>
           ) : (
             <p className="text-muted-foreground">You are not clocked in. Clocking in will record time for {current?.org.name}.</p>

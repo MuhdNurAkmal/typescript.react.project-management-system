@@ -101,6 +101,7 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A user cannot create a project in a company they are not a member of.
 - [ ] `search_org_users` works for company admins only; `search_users` only returns members of the project's company.
 - [ ] Attendance: a member can read only their own rows; an admin of the same company can read and review them; an admin of another company cannot.
-- [ ] `clock_in(company)` fails for a company the user is not in, and when already clocked in anywhere.
+- [ ] `clock_in(company)` fails for a company the user is not in, and when already clocked in to that same company.
+- [ ] A user can be clocked in to company A and company B at the same time; `clock_out(A)` closes only A's session.
 - [ ] Leave approved in company A does not block clocking in to company B.
 - [ ] Only a company admin can approve or reject leave or correct a clock-out; nobody can do it for themselves.

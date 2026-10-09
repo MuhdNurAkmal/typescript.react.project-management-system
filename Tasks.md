@@ -171,3 +171,5 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] A new user is not forced to create a company: they land on a neutral welcome screen (ask an admin to add your email, or create your own). Only Dashboard, Company and Profile are available until they join one.
 - [x] Fix: creating a project failed because the built-in `pm` role was missing from the roles table. `014_restore_system_roles.sql` restores the roles and makes the trigger recreate `pm` if it is ever missing.
 - [x] Fix: editing a project's dates, budget or details failed (`malformed array literal`) because of a bug in the activity-log trigger. Fixed in `012` and by `015_fix_audit_projects.sql`.
+- [x] Clock in/out is per company: a person can be clocked in to several companies at the same time (one open session per company). `016_clock_per_company.sql`; the company switcher marks companies where you are clocked in. This replaces the earlier "one company at a time" decision.
+- [x] Project Tasks tab: search and filters sit on one row on large screens.

@@ -25,18 +25,25 @@ export function useMyAttendance() {
   })
 }
 
-/** The current user's single open session (in any company), if any. */
-export function useOpenSession() {
+/** Every open session of the current user: at most one per company, so there can be several. */
+export function useOpenSessions() {
   const { user } = useAuth()
   return useQuery({
     queryKey: ['attendance', 'open', user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from('attendance').select('*').eq('user_id', user!.id).is('clock_out', null).maybeSingle()
+      const { data, error } = await supabase.from('attendance').select('*').eq('user_id', user!.id).is('clock_out', null)
       if (error) throw error
       return data
     },
   })
+}
+
+/** The open session in the current company, if any. */
+export function useOpenSession() {
+  const { current } = useOrg()
+  const query = useOpenSessions()
+  return { ...query, data: query.data?.find((s) => s.organization_id === current?.org.id) ?? null }
 }
 
 /** Attendance of the other people in the current company (company admins only; RLS limits the rows). */

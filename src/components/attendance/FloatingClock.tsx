@@ -7,7 +7,7 @@ import { formatElapsed } from '@/lib/attendanceUtils'
 
 /** Fixed bottom-right button: shows Clock out while clocked in, otherwise Clock in (for the current company). */
 export function FloatingClock() {
-  const { open, openOrgName, loading, pending, canClock, toggle } = useClock()
+  const { open, others, loading, pending, canClock, toggle } = useClock()
   const { current } = useOrg()
   const [now, setNow] = useState(() => Date.now())
 
@@ -26,12 +26,17 @@ export function FloatingClock() {
           <span className="flex items-center gap-1">
             <Clock className="size-3 shrink-0" />
             <span className="font-mono tabular-nums">{formatElapsed(now - new Date(open.clock_in).getTime())}</span>
-            <span className="truncate text-muted-foreground">at {openOrgName}</span>
+            <span className="truncate text-muted-foreground">at {current?.org.name}</span>
           </span>
         ) : (
           <span className="text-muted-foreground">{current?.org.name}</span>
         )}
       </span>
+      {others.length > 0 && (
+        <span className="max-w-60 truncate rounded-full bg-background px-3 py-1 text-xs text-muted-foreground shadow ring-1 ring-border">
+          Also clocked in at {others.map((o) => o.orgName).join(', ')}
+        </span>
+      )}
       <Button size="lg" className="h-12 rounded-full px-6 shadow-lg" variant={open ? 'destructive' : 'default'} disabled={pending} onClick={toggle}>
         {open ? <LogOut /> : <LogIn />}
         {pending ? 'Please wait…' : open ? 'Clock out' : 'Clock in'}
