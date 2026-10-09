@@ -33,19 +33,19 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
         render={
           <button
             type="button"
-            className="flex w-full items-center gap-2.5 rounded-xl border bg-card p-2.5 text-left shadow-xs transition-colors hover:bg-sidebar-accent"
+            className="flex w-full items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/50 p-2.5 text-left transition-colors hover:bg-sidebar-accent"
             aria-label={`Current company: ${current.org.name}. Change company`}
           />
         }
       >
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+        <span className="grid size-9 shrink-0 place-items-center rounded-md bg-sidebar-primary/15 text-sidebar-primary">
           <Building2 className="size-4" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{current.org.name}</span>
-          <span className="block text-xs text-muted-foreground capitalize">{current.role}</span>
+          <span className="block text-xs text-sidebar-foreground/60 capitalize">{current.role}</span>
         </span>
-        <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+        <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/50" />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -61,9 +61,9 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
                 <button
                   type="button"
                   onClick={() => pick(org.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors hover:bg-accent ${selected ? 'border-primary bg-primary/5' : ''}`}
+                  className={`flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors hover:bg-accent ${selected ? 'border-primary bg-primary/5' : ''}`}
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
                     <Building2 className="size-5" />
                   </span>
                   <span className="min-w-0 flex-1">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { addDays, format } from 'date-fns'
+import { PageHeader } from '@/components/PageHeader'
 import { PriorityBadge, TaskStatusBadge } from '@/components/tasks/badges'
 import { QuickUpdateDialog } from '@/components/tasks/QuickUpdateDialog'
 import { Button } from '@/components/ui/button'
@@ -35,7 +36,7 @@ export default function MyTasks() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">My Tasks</h1>
+      <PageHeader eyebrow="Across all your projects" title="My tasks" description="Open work assigned to you, soonest first." />
       {isLoading && <p className="text-muted-foreground">Loading tasks…</p>}
       {error && <p className="text-destructive">{error.message}</p>}
       {data && open.length === 0 && <p className="text-muted-foreground">Nothing assigned to you right now.</p>}

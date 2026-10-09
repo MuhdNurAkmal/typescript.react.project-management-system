@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
 import { NoCompany } from '@/components/company/NoCompany'
+import { PageHeader } from '@/components/PageHeader'
 import { CreateCompanyForm } from '@/components/company/CreateCompanyForm'
 import { Pill, type Tone } from '@/components/Pill'
 import { selectClass } from '@/components/projects/ProjectForm'
@@ -56,13 +57,11 @@ export default function Company() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{current.org.name}</h1>
-          <Pill tone={roleTone[current.role]} className="capitalize">
-            {current.role}
-          </Pill>
-        </div>
+      <PageHeader
+        eyebrow={`Company · ${current.role}`}
+        title={current.org.name}
+        description="People, roles and settings for this company."
+        actions={
         <Dialog open={newOpen} onOpenChange={setNewOpen}>
           <DialogTrigger render={<Button variant="outline" />}>
             <Plus /> New company
@@ -75,7 +74,8 @@ export default function Company() {
             <CreateCompanyForm onDone={() => setNewOpen(false)} />
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
       {isAdmin && <RenameCard orgId={orgId} name={current.org.name} />}
       {isAdmin && <AddMemberCard orgId={orgId} onAdded={refreshMembers} />}

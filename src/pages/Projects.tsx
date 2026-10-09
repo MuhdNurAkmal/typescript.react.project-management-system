@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/PageHeader'
 import { ProjectForm } from '@/components/projects/ProjectForm'
 import { RoleBadge, StatusBadge } from '@/components/projects/badges'
 import { Button } from '@/components/ui/button'
@@ -35,10 +36,11 @@ export default function Projects() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">
-          Projects <span className="text-base font-normal text-muted-foreground">in {current?.org.name}</span>
-        </h1>
+      <PageHeader
+        eyebrow={current?.org.name}
+        title="Projects"
+        description="Everything you are part of in this company."
+        actions={
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button />}>
             <Plus /> New project
@@ -51,7 +53,8 @@ export default function Projects() {
             <ProjectForm initial={emptyProjectForm} submitLabel="Create project" onSubmit={(v) => create.mutateAsync(v)} />
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
       {isLoading && <p className="text-muted-foreground">Loading projects…</p>}
       {error && <p className="text-destructive">Could not load projects: {error.message}</p>}
@@ -61,7 +64,7 @@ export default function Projects() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data?.map(({ project, role }) => (
           <Link key={project.id} to={`/projects/${project.id}`}>
-            <Card className="h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
+            <Card className="h-full transition-colors hover:border-primary/40">
               <CardHeader>
                 <CardTitle>{project.name}</CardTitle>
                 <CardDescription className="line-clamp-2">{project.description || 'No description'}</CardDescription>

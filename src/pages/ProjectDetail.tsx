@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { PageHeader } from '@/components/PageHeader'
 import { ActivityTab } from '@/components/projects/ActivityTab'
 import { KanbanBoard } from '@/components/tasks/KanbanBoard'
 import { GanttChart } from '@/components/gantt/GanttChart'
@@ -36,15 +37,20 @@ export default function ProjectDetail() {
       <Link to="/projects" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:underline">
         <ArrowLeft className="size-4" /> Projects
       </Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{project.name}</h1>
-        <StatusBadge status={project.status} />
-        <RoleBadge name={perms.roleName} />
-      </div>
+      <PageHeader
+        eyebrow={
+          <span className="flex items-center gap-3">
+            Project
+            <StatusBadge status={project.status} />
+            <RoleBadge name={perms.roleName} />
+          </span>
+        }
+        title={project.name}
+      />
 
       <Tabs defaultValue="overview">
         <div className="overflow-x-auto overflow-y-hidden pb-1">
-        <TabsList>
+        <TabsList variant="line">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="board">Board</TabsTrigger>

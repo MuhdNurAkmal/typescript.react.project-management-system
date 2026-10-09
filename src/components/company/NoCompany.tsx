@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Building2, Mail } from 'lucide-react'
+import { PageHeader } from '@/components/PageHeader'
 import { CreateCompanyForm } from '@/components/company/CreateCompanyForm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,14 +22,11 @@ export function NoCompany() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Welcome</h1>
-        <p className="text-muted-foreground">You are not part of a company yet. Projects, attendance and leave all live inside a company.</p>
-      </div>
+      <PageHeader eyebrow="Getting started" title="Welcome" description="You are not part of a company yet. Projects, attendance and leave all live inside a company." />
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <span className="mb-1 grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700">
+            <span className="mb-1 grid size-10 place-items-center rounded-md bg-muted text-foreground">
               <Mail className="size-5" />
             </span>
             <CardTitle>Join an existing company</CardTitle>
@@ -45,7 +43,7 @@ export function NoCompany() {
         </Card>
         <Card>
           <CardHeader>
-            <span className="mb-1 grid size-10 place-items-center rounded-lg bg-indigo-100 text-indigo-700">
+            <span className="mb-1 grid size-10 place-items-center rounded-md bg-muted text-foreground">
               <Building2 className="size-5" />
             </span>
             <CardTitle>Start your own company</CardTitle>

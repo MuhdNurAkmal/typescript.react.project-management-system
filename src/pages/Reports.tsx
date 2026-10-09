@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { Download } from 'lucide-react'
+import { PageHeader } from '@/components/PageHeader'
 import { statusLabels } from '@/components/tasks/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
@@ -20,9 +21,9 @@ import type { TaskStatus } from '@/types/database'
 export default function Reports() {
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Reports</h1>
+      <PageHeader eyebrow="Export and review" title="Reports" description="Hours worked and task progress, ready to download." />
       <Tabs defaultValue="attendance">
-        <TabsList>
+        <TabsList variant="line">
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
         </TabsList>

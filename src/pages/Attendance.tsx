@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/PageHeader'
+import { useOrg } from '@/hooks/useOrg'
 import { MyAttendance } from '@/components/attendance/MyAttendance'
 import { PmAttendance } from '@/components/attendance/PmAttendance'
 import { LeaveReview } from '@/components/leave/LeaveReview'
@@ -7,13 +9,14 @@ import { useIsManager } from '@/hooks/useManager'
 
 export default function Attendance() {
   const isManager = useIsManager()
+  const { current } = useOrg()
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Attendance</h1>
+      <PageHeader eyebrow={current?.org.name} title="Attendance" description="Clock in, request leave and, for admins, review your team." />
       <Tabs defaultValue="mine">
         <div className="overflow-x-auto overflow-y-hidden pb-1">
-          <TabsList>
+          <TabsList variant="line">
           <TabsTrigger value="mine">My attendance</TabsTrigger>
           <TabsTrigger value="leave">Leave &amp; absence</TabsTrigger>
           {isManager && <TabsTrigger value="team">Team attendance</TabsTrigger>}

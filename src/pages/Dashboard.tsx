@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { StatusBadge } from '@/components/projects/badges'
 import { PriorityBadge, TaskStatusBadge } from '@/components/tasks/badges'
 import { AlertTriangle, CalendarCheck, Clock, ListTodo } from 'lucide-react'
+import { PageHeader } from '@/components/PageHeader'
 import { KpiTile } from '@/components/KpiTile'
 import { Pill } from '@/components/Pill'
 import { StatusBar } from '@/components/tasks/StatusBar'
@@ -19,13 +20,14 @@ import { isOverdue, todayString } from '@/lib/taskValidation'
 
 export default function Dashboard() {
   const { profile, user } = useAuth()
+  const { current } = useOrg()
   const { data: projects } = useMyProjects()
   const managed = (projects ?? []).filter((p) => p.role?.is_pm)
   const today = todayString()
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Hello, {profile?.full_name || user?.email}</h1>
+    <div className="space-y-8">
+      <PageHeader eyebrow={current?.org.name} title={`Hello, ${(profile?.full_name || user?.email || '').split(' ')[0]}`} description="Where your work and hours stand today." />
       <Kpis today={today} />
       {managed.length > 0 && <ManagedProjects projects={managed} today={today} />}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -57,7 +59,7 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
           const clockedIn = data?.open.filter((o) => memberIds.has(o.user_id)) ?? []
           return (
             <Link key={project.id} to={`/projects/${project.id}`}>
-              <Card className="h-full transition-all hover:-translate-y-0.5 hover:shadow-md">
+              <Card className="h-full transition-colors hover:border-primary/40">
                 <CardHeader>
                   <CardTitle>{project.name}</CardTitle>
                   <div className="flex gap-2 pt-1">
