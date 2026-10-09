@@ -57,6 +57,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `012_comments_notifications_audit.sql` | Task comments, in-app notifications, per-project activity log |
 | `013_organizations.sql` | Companies: projects, attendance and leave belong to a company. **Wipes projects, attendance and leave data** |
 | `014_restore_system_roles.sql` | Restores the built-in project roles if missing and hardens project creation |
+| `015_fix_audit_projects.sql` | Fixes the project activity log failing when dates, budget or details are edited |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 

@@ -303,9 +303,9 @@ declare
 begin
   if new.name is distinct from old.name then changes := changes || ('name "' || old.name || '" to "' || new.name || '"'); end if;
   if new.status is distinct from old.status then changes := changes || ('status ' || old.status || ' to ' || new.status); end if;
-  if new.start_date is distinct from old.start_date or new.end_date is distinct from old.end_date then changes := changes || 'dates'; end if;
-  if new.budget is distinct from old.budget then changes := changes || 'budget'; end if;
-  if new.sponsor is distinct from old.sponsor or new.description is distinct from old.description or new.type is distinct from old.type then changes := changes || 'details'; end if;
+  if new.start_date is distinct from old.start_date or new.end_date is distinct from old.end_date then changes := changes || array['dates']; end if;
+  if new.budget is distinct from old.budget then changes := changes || array['budget']; end if;
+  if new.sponsor is distinct from old.sponsor or new.description is distinct from old.description or new.type is distinct from old.type then changes := changes || array['details']; end if;
   if array_length(changes, 1) is not null then
     perform public.log_audit(new.id, 'update', 'project', new.id, 'Updated project: ' || array_to_string(changes, ', '));
   end if;

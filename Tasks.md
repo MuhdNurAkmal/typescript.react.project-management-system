@@ -170,3 +170,4 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] **[CLAUDE]** Update README, RLS checklist, tests.
 - [x] A new user is not forced to create a company: they land on a neutral welcome screen (ask an admin to add your email, or create your own). Only Dashboard, Company and Profile are available until they join one.
 - [x] Fix: creating a project failed because the built-in `pm` role was missing from the roles table. `014_restore_system_roles.sql` restores the roles and makes the trigger recreate `pm` if it is ever missing.
+- [x] Fix: editing a project's dates, budget or details failed (`malformed array literal`) because of a bug in the activity-log trigger. Fixed in `012` and by `015_fix_audit_projects.sql`.
