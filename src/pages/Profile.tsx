@@ -24,7 +24,7 @@ export default function Profile() {
 function Section({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
   return (
     <section className="max-w-md">
-      <h2 className="font-display text-2xl">{title}</h2>
+      <h2 className="text-xl font-semibold">{title}</h2>
       <p className="mt-1 mb-5 text-sm text-muted-foreground">{description}</p>
       {children}
     </section>

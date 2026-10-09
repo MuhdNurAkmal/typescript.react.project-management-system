@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { AlertCircle, Inbox, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/PageHeader'
 import { ProjectForm } from '@/components/projects/ProjectForm'
 import { RoleBadge, StatusBadge } from '@/components/projects/badges'
 import { Button } from '@/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useOrg } from '@/hooks/useOrg'
 import { useMyProjects } from '@/hooks/useProjectData'
@@ -18,7 +18,7 @@ import { supabase } from '@/lib/supabase'
 export default function Projects() {
   const { user } = useAuth()
   const { current } = useOrg()
-  const { data, isLoading, error } = useMyProjects()
+  const { data, isLoading, error, refetch } = useMyProjects()
   const qc = useQueryClient()
   const [open, setOpen] = useState(false)
 
@@ -35,7 +35,7 @@ export default function Projects() {
   })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader
         eyebrow={current?.org.name}
         title="Projects"
@@ -56,15 +56,51 @@ export default function Projects() {
         }
       />
 
-      {isLoading && <p className="text-muted-foreground">Loading projects…</p>}
-      {error && <p className="text-destructive">Could not load projects: {error.message}</p>}
+      {isLoading && (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true" aria-label="Loading projects">
+          {[0, 1, 2].map((i) => (
+            <Card key={i}>
+              <CardHeader className="space-y-2">
+                <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                <div className="h-5 w-1/3 animate-pulse rounded-full bg-muted" />
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      )}
+      {error && (
+        <Card role="alert">
+          <CardContent className="flex flex-col items-center gap-2 py-6 text-center">
+            <span className="grid size-11 place-items-center rounded-full bg-danger-soft text-danger">
+              <AlertCircle className="size-5" />
+            </span>
+            <p className="font-medium">Could not load projects</p>
+            <p className="text-sm text-muted-foreground">{error.message}</p>
+            <Button size="sm" variant="outline" onClick={() => refetch()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       {data && data.length === 0 && (
-        <p className="text-muted-foreground">You are not part of any project yet. Create one to get started.</p>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
+            <span className="grid size-11 place-items-center rounded-full bg-primary-soft text-primary">
+              <Inbox className="size-5" />
+            </span>
+            <p className="font-medium">No projects yet</p>
+            <p className="text-sm text-muted-foreground">Create your first project to start planning.</p>
+            <Button size="sm" className="mt-1" onClick={() => setOpen(true)}>
+              <Plus /> New project
+            </Button>
+          </CardContent>
+        </Card>
       )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {data?.map(({ project, role }) => (
           <Link key={project.id} to={`/projects/${project.id}`}>
-            <Card className="h-full transition-colors hover:border-primary/40">
+            <Card className="h-full transition-shadow hover:shadow-lift">
               <CardHeader>
                 <CardTitle>{project.name}</CardTitle>
                 <CardDescription className="line-clamp-2">{project.description || 'No description'}</CardDescription>

@@ -15,7 +15,7 @@ export function KpiTile({ icon: Icon, label, value, tone = 'blue' }: { icon: Luc
         {label}
         <Icon className="size-3.5" aria-hidden />
       </div>
-      <div className="font-display mt-2 text-5xl leading-none tabular-nums">{value}</div>
+      <div className="mt-2 text-3xl font-semibold leading-none tabular-nums">{value}</div>
     </div>
   )
 }
