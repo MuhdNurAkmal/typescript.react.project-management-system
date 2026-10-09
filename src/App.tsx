@@ -9,6 +9,8 @@ import { Toaster } from '@/components/ui/sonner'
 import { OrgProvider } from '@/components/OrgProvider'
 import { RequireOrg } from '@/components/RequireOrg'
 import DesignPreview from '@/pages/DesignPreview'
+import Admin from '@/pages/Admin'
+import { RequireSuperadmin } from '@/components/RequireSuperadmin'
 import Company from '@/pages/Company'
 import Dashboard from '@/pages/Dashboard'
 import ForgotPassword from '@/pages/ForgotPassword'
@@ -51,6 +53,9 @@ export default function App() {
                   <Route path="my-tasks" element={<MyTasks />} />
                   <Route path="attendance" element={<Attendance />} />
                   <Route path="reports" element={<Reports />} />
+                </Route>
+                <Route element={<RequireSuperadmin />}>
+                  <Route path="admin" element={<Admin />} />
                 </Route>
                 <Route path="company" element={<Company />} />
                 <Route path="profile" element={<Profile />} />

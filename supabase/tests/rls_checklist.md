@@ -105,3 +105,13 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A user can be clocked in to company A and company B at the same time; `clock_out(A)` closes only A's session.
 - [ ] Leave approved in company A does not block clocking in to company B.
 - [ ] Only a company admin can approve or reject leave or correct a clock-out; nobody can do it for themselves.
+
+## Superadmin (017)
+- [ ] A normal user cannot set `is_superadmin` or `suspended_at` on their own profile (the update is rejected).
+- [ ] A second superadmin cannot be created (unique index).
+- [ ] Every `admin_*` function fails with "Superadmin only" for a normal user, and `admin_audit_log` is unreadable for them.
+- [ ] The superadmin can read companies, projects, tasks, attendance and leave they are not a member of.
+- [ ] A suspended user sees the suspended screen and every read/write on app tables fails; reactivating restores access.
+- [ ] In a suspended company nobody can create projects, tasks or leave requests, or clock in; members can still clock out.
+- [ ] Transferring ownership makes the chosen member the owner and demotes the previous owners to admin.
+- [ ] Each superadmin action (including member changes made from the Companies tab) appears in the audit log.

@@ -7,6 +7,7 @@ import {
   FolderKanban,
   LayoutDashboard,
   ListChecks,
+  ShieldCheck,
   Menu,
   X,
 } from "lucide-react";
@@ -34,12 +35,14 @@ const nav = [
   { to: "/attendance", label: "Attendance", icon: CalendarClock },
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/company", label: "Company", icon: Building2 },
+  { to: "/admin", label: "Admin", icon: ShieldCheck, superOnly: true },
 ];
 
-const noCompanyNav = new Set(["/", "/company"]);
+const noCompanyNav = new Set(["/", "/company", "/admin"]);
 
 export default function AppLayout() {
   const { user, profile, signOut } = useAuth();
+  const suspendedUntilFixed = Boolean(profile?.suspended_at);
   const { current } = useOrg();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -52,6 +55,22 @@ export default function AppLayout() {
     } catch (err) {
       toast.error(errorMessage(err, "Sign out failed"));
     }
+  }
+
+  if (suspendedUntilFixed) {
+    return (
+      <div className="grid min-h-screen place-items-center px-4">
+        <div className="max-w-md space-y-3 text-center" role="alert">
+          <h1 className="text-2xl font-semibold">Account suspended</h1>
+          <p className="text-muted-foreground">
+            Your account has been suspended{profile?.suspended_reason ? `: ${profile.suspended_reason}` : "."} Contact the system administrator if you think this is a mistake.
+          </p>
+          <Button variant="outline" onClick={onSignOut}>
+            Sign out
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -80,6 +99,7 @@ export default function AppLayout() {
         <nav className="flex-1 space-y-0.5 overflow-y-auto">
           {nav
             .filter(({ to }) => current || noCompanyNav.has(to))
+            .filter(({ superOnly }) => !superOnly || profile?.is_superadmin)
             .map(({ to, label, icon: Icon, end }) => (
               <NavLink
                 key={to}
@@ -139,6 +159,11 @@ export default function AppLayout() {
             </DropdownMenu>
           </div>
         </header>
+        {current?.org.suspended_at && (
+          <div role="status" className="border-b bg-warning-soft px-4 py-2 text-sm text-warning-foreground md:px-8">
+            {current.org.name} is suspended and read-only{current.org.suspended_reason ? `: ${current.org.suspended_reason}` : "."}
+          </div>
+        )}
         <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-24">
           <Outlet />
         </main>

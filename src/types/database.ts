@@ -13,6 +13,9 @@ export type Profile = {
   email: string | null
   avatar_url: string | null
   created_at: string
+  is_superadmin: boolean
+  suspended_at: string | null
+  suspended_reason: string | null
 }
 
 export type Project = {
@@ -37,6 +40,8 @@ export type Organization = {
   name: string
   created_by: string
   created_at: string
+  suspended_at: string | null
+  suspended_reason: string | null
 }
 
 export type OrganizationMember = {
@@ -161,6 +166,52 @@ export type Milestone = {
   completed: boolean
 }
 
+export type AdminAuditEntry = {
+  id: number
+  actor_id: string | null
+  action: string
+  target_type: string
+  target_id: string | null
+  summary: string
+  created_at: string
+}
+
+export type AdminOverview = {
+  users: number
+  suspended_users: number
+  new_users_7d: number
+  companies: number
+  suspended_companies: number
+  projects: number
+  tasks: number
+  open_tasks: number
+  clocked_in_now: number
+  pending_leave: number
+}
+
+export type AdminUser = {
+  id: string
+  email: string | null
+  full_name: string | null
+  created_at: string
+  last_sign_in_at: string | null
+  suspended_at: string | null
+  suspended_reason: string | null
+  is_superadmin: boolean
+  company_count: number
+}
+
+export type AdminOrg = {
+  id: number
+  name: string
+  created_at: string
+  suspended_at: string | null
+  suspended_reason: string | null
+  owners: string
+  member_count: number
+  project_count: number
+}
+
 type Table<Row, Insert> = {
   Row: Row
   Insert: Insert
@@ -202,6 +253,7 @@ export type Database = {
         Pick<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'> &
           Partial<Omit<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'>>
       >
+      admin_audit_log: Table<AdminAuditEntry, Pick<AdminAuditEntry, 'action' | 'target_type' | 'summary'>>
       milestones: Table<
         Milestone,
         Pick<Milestone, 'project_id' | 'title' | 'due_date'> &
@@ -210,6 +262,16 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      admin_overview: { Args: Record<string, never>; Returns: AdminOverview }
+      admin_list_users: { Args: { p_query?: string }; Returns: AdminUser[] }
+      admin_list_orgs: { Args: Record<string, never>; Returns: AdminOrg[] }
+      admin_set_user_suspended: { Args: { p_user_id: string; p_suspended: boolean; p_reason?: string }; Returns: undefined }
+      admin_update_user_name: { Args: { p_user_id: string; p_full_name: string }; Returns: undefined }
+      admin_delete_user: { Args: { p_user_id: string }; Returns: undefined }
+      admin_create_org: { Args: { p_name: string; p_owner_email: string }; Returns: number }
+      admin_transfer_ownership: { Args: { p_org_id: number; p_new_owner: string }; Returns: undefined }
+      admin_set_org_suspended: { Args: { p_org_id: number; p_suspended: boolean; p_reason?: string }; Returns: undefined }
+      admin_delete_org: { Args: { p_org_id: number }; Returns: undefined }
       search_org_users: {
         Args: { p_organization_id: number; p_query: string }
         Returns: { id: string; full_name: string | null; email: string | null }[]
