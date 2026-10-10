@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
 import { NoCompany } from '@/components/company/NoCompany'
 import { PageHeader } from '@/components/PageHeader'
+import { InviteLinkCard } from '@/components/company/InviteLinkCard'
 import { CreateCompanyForm } from '@/components/company/CreateCompanyForm'
 import { Pill, type Tone } from '@/components/Pill'
 import { selectClass } from '@/components/projects/ProjectForm'
@@ -78,6 +79,7 @@ export default function Company() {
       />
 
       {isAdmin && <RenameCard orgId={orgId} name={current.org.name} />}
+      {isAdmin && <InviteLinkCard orgId={orgId} orgName={current.org.name} />}
       {isAdmin && <AddMemberCard orgId={orgId} onAdded={refreshMembers} />}
 
       <Card>

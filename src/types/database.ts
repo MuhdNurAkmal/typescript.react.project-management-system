@@ -166,6 +166,13 @@ export type Milestone = {
   completed: boolean
 }
 
+export type OrganizationInvite = {
+  organization_id: number
+  code: string
+  enabled: boolean
+  created_at: string
+}
+
 export type AdminAuditEntry = {
   id: number
   actor_id: string | null
@@ -265,6 +272,7 @@ export type Database = {
         Pick<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'> &
           Partial<Omit<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'>>
       >
+      organization_invites: Table<OrganizationInvite, Pick<OrganizationInvite, 'organization_id'> & Partial<OrganizationInvite>>
       admin_audit_log: Table<AdminAuditEntry, Pick<AdminAuditEntry, 'action' | 'target_type' | 'summary'>>
       milestones: Table<
         Milestone,
@@ -274,6 +282,9 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      get_invite_info: { Args: { p_code: string }; Returns: { organization_name: string }[] }
+      join_company: { Args: { p_code: string }; Returns: number }
+      reset_invite_code: { Args: { p_org_id: number }; Returns: undefined }
       admin_overview: { Args: Record<string, never>; Returns: AdminOverview }
       admin_list_users: { Args: { p_query?: string }; Returns: AdminUser[] }
       admin_list_orgs: { Args: Record<string, never>; Returns: AdminOrg[] }

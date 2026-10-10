@@ -16,7 +16,10 @@ export function ProtectedRoute() {
 
 export function PublicOnlyRoute() {
   const { user, loading } = useAuth()
+  const location = useLocation()
   if (loading) return <FullPageLoading />
-  if (user) return <Navigate to="/" replace />
+  // someone sent here from a page that needs a login (for example an invitation link) goes back to it
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname
+  if (user) return <Navigate to={from ?? '/'} replace />
   return <Outlet />
 }

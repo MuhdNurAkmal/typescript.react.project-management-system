@@ -122,3 +122,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Deleting a project (as PM or superadmin) creates a row in Deleted projects; Restore brings back members, tasks, dependencies, milestones and comments with the same ids.
 - [ ] A deleted project older than 30 days disappears from the list.
 - [ ] The superadmin cannot clock in to a company they do not belong to.
+
+## Invitation links (020)
+- [ ] A company admin can read their company's invite code; a plain member and an outsider cannot.
+- [ ] An admin can switch the link on/off but cannot set the code to a value of their choosing.
+- [ ] Opening /join/<code> while signed out shows the company name and a register form; after registering the new user is a member of that company only, with role member.
+- [ ] A wrong, switched-off or replaced code, or one of a suspended company, shows "Link not valid" and adds nobody.
+- [ ] Joining twice does not create a second membership or change an existing role.

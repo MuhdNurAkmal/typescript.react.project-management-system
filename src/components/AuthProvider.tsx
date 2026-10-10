@@ -50,8 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           options: { data: { full_name: fullName } },
         })
         if (error) throw error
-        // With email confirmation off, signUp returns a session. End it so the user must sign in.
-        if (data.session) await supabase.auth.signOut()
+        // With email confirmation off, signUp returns a session and the user is signed in straight away.
         return { needsConfirmation: !data.session }
       },
       signOut: async () => {

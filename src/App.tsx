@@ -11,6 +11,7 @@ import { RequireOrg } from '@/components/RequireOrg'
 import DesignPreview from '@/pages/DesignPreview'
 import Admin from '@/pages/Admin'
 import { RequireSuperadmin } from '@/components/RequireSuperadmin'
+import Join from '@/pages/Join'
 import Company from '@/pages/Company'
 import Dashboard from '@/pages/Dashboard'
 import ForgotPassword from '@/pages/ForgotPassword'
@@ -42,6 +43,7 @@ export default function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
             </Route>
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/join/:code" element={<Join />} />
             <Route path="/design-preview" element={<DesignPreview />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>

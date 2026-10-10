@@ -186,3 +186,6 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [ ] Superadmin, later: system settings (roles, leave types, announcement banner); restore deleted companies/users (only projects are restorable now).
 - [x] Fix: superadmin could not delete a user who had created projects (foreign key error). `019_delete_user_reassign.sql` hands what they created to the superadmin and promotes a new owner where they were the only one.
 - [ ] [HUMAN] Run `019_delete_user_reassign.sql`.
+- [x] Company invitation links, `020_company_invite_links.sql`: every company has its own link (`/join/<code>`), shown to admins on the Company page with Copy, Turn off/on and Create a new link (the old one stops working). Someone who opens it registers (name, email, password) and lands inside that company as a member; an existing user can sign in or join with the account they are already using. Links of suspended companies do not work.
+- [x] Registration signs the user in straight away (no second sign-in) when email confirmation is off.
+- [ ] [HUMAN] Run `020_company_invite_links.sql`.
