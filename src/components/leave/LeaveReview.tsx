@@ -12,6 +12,7 @@ import { useLeaveTypes, useTeamLeave } from '@/hooks/useLeave'
 import { leaveDays } from '@/lib/leaveUtils'
 import { supabase } from '@/lib/supabase'
 import type { LeaveRequest, LeaveStatus } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 /** Manager view: approve or reject leave of the people on projects you manage. */
 export function LeaveReview() {
@@ -124,7 +125,7 @@ function Form({ request, name, onDone, onCancel }: { request: LeaveRequest; name
         </div>
         <div className="space-y-2">
           <Label htmlFor="lr-note">Note</Label>
-          <textarea id="lr-note" rows={3} className={`${selectClass} h-auto py-2`} value={note} onChange={(e) => setNote(e.target.value)} />
+          <textarea id="lr-note" rows={3} className={cn(selectClass, 'h-auto py-2')} value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
       </div>
       <DialogFooter>

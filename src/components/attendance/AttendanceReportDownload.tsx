@@ -13,6 +13,7 @@ import { errorMessage } from '@/lib/errors'
 import { downloadCsv } from '@/lib/reportUtils'
 import { supabase } from '@/lib/supabase'
 import type { Attendance } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 const PAGE = 1000
 
@@ -84,7 +85,7 @@ export function AttendanceReportDownload() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-2">
             <Label htmlFor="rp-period">Report</Label>
-            <select id="rp-period" className={`${selectClass} w-32`} value={period} onChange={(e) => setPeriod(e.target.value as 'monthly' | 'yearly')}>
+            <select id="rp-period" className={cn(selectClass, 'w-32')} value={period} onChange={(e) => setPeriod(e.target.value as 'monthly' | 'yearly')}>
               <option value="monthly">Monthly</option>
               <option value="yearly">Yearly</option>
             </select>
@@ -94,7 +95,7 @@ export function AttendanceReportDownload() {
             {period === 'monthly' ? (
               <Input id="rp-value" type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
             ) : (
-              <select id="rp-value" className={`${selectClass} w-28`} value={year} onChange={(e) => setYear(Number(e.target.value))}>
+              <select id="rp-value" className={cn(selectClass, 'w-28')} value={year} onChange={(e) => setYear(Number(e.target.value))}>
                 {years.map((y) => (
                   <option key={y} value={y}>
                     {y}
@@ -105,7 +106,7 @@ export function AttendanceReportDownload() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="rp-content">Contents</Label>
-            <select id="rp-content" className={`${selectClass} w-48`} value={content} onChange={(e) => setContent(e.target.value as 'summary' | 'detailed')}>
+            <select id="rp-content" className={cn(selectClass, 'w-48')} value={content} onChange={(e) => setContent(e.target.value as 'summary' | 'detailed')}>
               <option value="summary">{period === 'monthly' ? 'Summary (hours per person)' : 'Summary (hours per month)'}</option>
               <option value="detailed">Detailed (every session)</option>
             </select>

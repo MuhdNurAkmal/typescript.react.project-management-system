@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { validateProjectForm, type ProjectFormValues } from '@/lib/projectValidation'
 import { errorMessage } from '@/lib/errors'
+import { cn } from '@/lib/utils'
 
 export const selectClass =
   'h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30'
@@ -49,7 +50,7 @@ export function ProjectForm({
         <textarea
           id="p-desc"
           rows={3}
-          className={`${selectClass} h-auto py-2`}
+          className={cn(selectClass, 'h-auto py-2')}
           value={v.description}
           onChange={(e) => set('description', e.target.value)}
         />

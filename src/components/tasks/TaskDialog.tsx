@@ -11,6 +11,7 @@ import { useProjectMembers } from '@/hooks/useProjectData'
 import { createsDependencyCycle, createsParentCycle, validateTaskDates } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskDependency, TaskPriority, TaskStatus } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 interface Props {
   projectId: number
@@ -127,7 +128,7 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
         </div>
         <div className="space-y-2">
           <Label htmlFor="t-desc">Description</Label>
-          <textarea id="t-desc" rows={3} className={`${selectClass} h-auto py-2`} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea id="t-desc" rows={3} className={cn(selectClass, 'h-auto py-2')} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">

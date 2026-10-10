@@ -14,6 +14,7 @@ import { useLeaveTypes, useMyLeave } from '@/hooks/useLeave'
 import { leaveDays, overlapsExisting, validateLeaveDates } from '@/lib/leaveUtils'
 import { supabase } from '@/lib/supabase'
 import { todayString } from '@/lib/taskValidation'
+import { cn } from '@/lib/utils'
 
 /** Declare MC / annual leave / other absence in advance, and see your own requests. */
 export function LeaveSection() {
@@ -97,7 +98,7 @@ export function LeaveSection() {
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="l-reason">Reason (optional)</Label>
-              <textarea id="l-reason" rows={2} className={`${selectClass} h-auto py-2`} value={reason} onChange={(e) => setReason(e.target.value)} />
+              <textarea id="l-reason" rows={2} className={cn(selectClass, 'h-auto py-2')} value={reason} onChange={(e) => setReason(e.target.value)} />
             </div>
             <div className="sm:col-span-2">
               <Button type="submit" disabled={submit.isPending || selectedType === null}>

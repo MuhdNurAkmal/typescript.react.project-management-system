@@ -11,6 +11,7 @@ import { useProjectTasks } from '@/hooks/useTasks'
 import { isOverdue } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskStatus } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 const columns: TaskStatus[] = ['todo', 'in_progress', 'review', 'done']
 const accent: Record<TaskStatus, string> = {
@@ -115,7 +116,7 @@ export function KanbanBoard({ projectId, canManage }: { projectId: number; canMa
                         // touch screens cannot drag, so offer a plain select as well
                         <select
                           aria-label={`Move ${t.title}`}
-                          className={`${selectClass} h-7 text-xs`}
+                          className={cn(selectClass, 'h-7 text-xs')}
                           value={t.status}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => move.mutate({ id: t.id, status: e.target.value as TaskStatus })}

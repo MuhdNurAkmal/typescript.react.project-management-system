@@ -16,6 +16,7 @@ import { useOrg } from '@/hooks/useOrg'
 import { supabase } from '@/lib/supabase'
 import { useOrgRoles } from '@/hooks/useOrgRoles'
 import type { AdminOrg } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 type Mode = 'create' | 'members' | 'transfer' | 'suspend' | 'delete' | null
 
@@ -248,7 +249,7 @@ function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; o
                 <p className="truncate text-xs text-muted-foreground">{m.email}</p>
               </div>
               <select
-                className={`${selectClass} w-28`}
+                className={cn(selectClass, 'w-28')}
                 value={m.org_role_id}
                 aria-label={`Role of ${m.name}`}
                 onChange={(e) => setRole.mutate({ id: m.id, role: Number(e.target.value) })}

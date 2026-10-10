@@ -15,6 +15,7 @@ import { useTeamAttendance } from '@/hooks/useAttendance'
 import { durationMinutes, formatDate, formatDuration, formatTime, isStaleSession, toLocalInput } from '@/lib/attendanceUtils'
 import { supabase } from '@/lib/supabase'
 import type { Attendance, AttendanceStatus } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 /** Manager view: attendance of everyone on the projects you manage. */
 export function PmAttendance() {
@@ -47,7 +48,7 @@ export function PmAttendance() {
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-2">
           <Label htmlFor="a-person">Person</Label>
-          <select id="a-person" className={`${selectClass} w-48`} value={person} onChange={(e) => setPerson(e.target.value)}>
+          <select id="a-person" className={cn(selectClass, 'w-48')} value={person} onChange={(e) => setPerson(e.target.value)}>
             <option value="">Everyone</option>
             {data?.profiles.map((p) => (
               <option key={p.id} value={p.id}>
@@ -187,7 +188,7 @@ function ReviewForm({ row, name, onDone, onCancel }: { row: Attendance; name: st
         </div>
         <div className="space-y-2">
           <Label htmlFor="r-note">Note</Label>
-          <textarea id="r-note" rows={3} className={`${selectClass} h-auto py-2`} value={note} onChange={(e) => setNote(e.target.value)} />
+          <textarea id="r-note" rows={3} className={cn(selectClass, 'h-auto py-2')} value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
       </div>
       <DialogFooter>

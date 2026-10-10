@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { formToPayload, type ProjectFormValues } from '@/lib/projectValidation'
 import { supabase } from '@/lib/supabase'
 import type { Project, ProjectStatus } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 const statuses: ProjectStatus[] = ['planning', 'active', 'on_hold', 'completed']
 
@@ -105,7 +106,7 @@ export function OverviewTab({ project, canManage }: { project: Project; canManag
           <div className="flex flex-wrap items-end gap-4 border-t pt-4">
             <div className="space-y-2">
               <Label htmlFor="status">Change status</Label>
-              <select id="status" className={`${selectClass} w-44`} value={status} onChange={(e) => setStatus(e.target.value as ProjectStatus)}>
+              <select id="status" className={cn(selectClass, 'w-44')} value={status} onChange={(e) => setStatus(e.target.value as ProjectStatus)}>
                 {statuses.map((s) => (
                   <option key={s} value={s}>
                     {s.replace('_', ' ')}

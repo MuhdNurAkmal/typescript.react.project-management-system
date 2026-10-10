@@ -20,6 +20,7 @@ import { summarizeTasks } from '@/lib/reportUtils'
 import { isOverdue, todayString } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 export function TasksTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
   const { user } = useAuth()
@@ -73,7 +74,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
         <Input className="w-full sm:w-56 lg:w-auto lg:min-w-0 lg:flex-[2_1_10rem]" placeholder="Search tasks…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select className={`${selectClass} w-40 lg:w-auto lg:min-w-0 lg:max-w-48 lg:flex-[1_1_8rem]`} value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label="Filter by assignee">
+        <select className={cn(selectClass, 'w-40 lg:w-auto lg:min-w-0 lg:max-w-48 lg:flex-[1_1_8rem]')} value={assignee} onChange={(e) => setAssignee(e.target.value)} aria-label="Filter by assignee">
           <option value="">All assignees</option>
           <option value="none">Unassigned</option>
           {members?.map(({ member, profile }) => (
@@ -82,7 +83,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
             </option>
           ))}
         </select>
-        <select className={`${selectClass} w-36 lg:w-auto lg:min-w-0 lg:max-w-44 lg:flex-[1_1_7rem]`} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter by status">
+        <select className={cn(selectClass, 'w-36 lg:w-auto lg:min-w-0 lg:max-w-44 lg:flex-[1_1_7rem]')} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter by status">
           <option value="">All statuses</option>
           {Object.entries(statusLabels).map(([v, l]) => (
             <option key={v} value={v}>
@@ -90,7 +91,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
             </option>
           ))}
         </select>
-        <select className={`${selectClass} w-36 lg:w-auto lg:min-w-0 lg:max-w-44 lg:flex-[1_1_7rem]`} value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Filter by priority">
+        <select className={cn(selectClass, 'w-36 lg:w-auto lg:min-w-0 lg:max-w-44 lg:flex-[1_1_7rem]')} value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Filter by priority">
           <option value="">All priorities</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>

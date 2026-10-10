@@ -24,6 +24,7 @@ import { supabase } from '@/lib/supabase'
 import { orgRoleTone } from '@/lib/orgRoles'
 import { useOrgRoles } from '@/hooks/useOrgRoles'
 import type { OrganizationRole } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 export default function Company() {
   const { current, isAdmin, isOwner } = useOrg()
@@ -199,7 +200,7 @@ function RoleSelect({
   })
   return (
     <select
-      className={`${selectClass} w-36`}
+      className={cn(selectClass, 'w-36')}
       value={value}
       title={options.find((r) => r.id === value)?.description ?? undefined}
       onChange={(e) => change.mutate(Number(e.target.value))}
@@ -309,7 +310,7 @@ function AddMemberCard({ orgId, onAdded }: { orgId: number; onAdded: () => void 
           </div>
           <div className="space-y-2">
             <Label htmlFor="org-role">Role</Label>
-            <select id="org-role" className={`${selectClass} w-36`} value={chosenRole ?? ''} onChange={(e) => setRoleId(Number(e.target.value))}>
+            <select id="org-role" className={cn(selectClass, 'w-36')} value={chosenRole ?? ''} onChange={(e) => setRoleId(Number(e.target.value))}>
               {roles.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name}

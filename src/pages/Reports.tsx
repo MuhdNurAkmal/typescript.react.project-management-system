@@ -17,6 +17,7 @@ import { durationMinutes, formatDuration, formatTime } from '@/lib/attendanceUti
 import { downloadCsv, summarizeAttendance, summarizeTasks, toCsv } from '@/lib/reportUtils'
 import { todayString } from '@/lib/taskValidation'
 import type { TaskStatus } from '@/types/database'
+import { cn } from '@/lib/utils'
 
 export default function Reports() {
   return (
@@ -160,7 +161,7 @@ function TaskReport() {
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-2">
           <Label htmlFor="rep-project">Project</Label>
-          <select id="rep-project" className={`${selectClass} w-64`} value={projectId ?? ''} onChange={(e) => setPicked(Number(e.target.value))}>
+          <select id="rep-project" className={cn(selectClass, 'w-64')} value={projectId ?? ''} onChange={(e) => setPicked(Number(e.target.value))}>
             {projects?.map(({ project }) => (
               <option key={project.id} value={project.id}>
                 {project.name}

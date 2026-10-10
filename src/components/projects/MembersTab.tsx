@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useProjectMembers, useRoles } from '@/hooks/useProjectData'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 export function MembersTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
   const { user } = useAuth()
@@ -129,7 +130,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
               </div>
               <div className="space-y-2">
                 <Label htmlFor="m-role">Role</Label>
-                <select id="m-role" className={`${selectClass} w-40 capitalize`} value={defaultRoleId ?? ''} onChange={(e) => setRoleId(Number(e.target.value))}>
+                <select id="m-role" className={cn(selectClass, 'w-44')} value={defaultRoleId ?? ''} onChange={(e) => setRoleId(Number(e.target.value))}>
                   {roles?.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.name}
@@ -179,7 +180,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                       <TableCell>
                         {canManage && member.is_active ? (
                           <select
-                            className={`${selectClass} w-32 capitalize`}
+                            className={cn(selectClass, 'w-44')}
                             value={member.role_id}
                             disabled={lastPm}
                             onChange={(e) => update.mutate({ id: member.id, patch: { role_id: Number(e.target.value) } })}
