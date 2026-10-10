@@ -191,3 +191,5 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [ ] [HUMAN] Run `020_company_invite_links.sql`.
 - [x] Fix: duplicate roles (the original roles were renamed in the Supabase table editor, so 014 added a second lowercase set). `021_merge_duplicate_roles.sql` merges them onto the renamed ones; the PM role is now found by its is_pm flag, never by name.
 - [ ] [HUMAN] Run `021_merge_duplicate_roles.sql`.
+- [x] Company roles are now a table too (`organization_roles`: Owner, Admin, Member), like project roles. `022_organization_roles_table.sql` moves every member to `org_role_id` (foreign key) and drops the old text column. Powers come from two flags (`is_owner`, `is_admin`), never from the name, so roles can be renamed. The superadmin edits both company and project roles in Admin > Roles.
+- [ ] [HUMAN] Run `022_organization_roles_table.sql` (after 021).

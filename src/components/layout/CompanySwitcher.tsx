@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Building2, Check, ChevronsUpDown } from 'lucide-react'
-import { Pill, type Tone } from '@/components/Pill'
+import { Pill } from '@/components/Pill'
+import { orgRoleTone } from '@/lib/orgRoles'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useOpenSessions } from '@/hooks/useAttendance'
 import { useOrg } from '@/hooks/useOrg'
-import type { OrgRole } from '@/types/database'
-
-const roleTone: Record<OrgRole, Tone> = { owner: 'violet', admin: 'blue', member: 'slate' }
 
 /** Sidebar button showing the current company; clicking it opens a popup to pick another one. */
 export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
@@ -43,7 +41,7 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">{current.org.name}</span>
-          <span className="block text-xs text-sidebar-foreground/60 capitalize">{current.member ? current.role : "Superadmin"}</span>
+          <span className="block text-xs text-sidebar-foreground/60">{current.member ? current.role.name : "Superadmin"}</span>
         </span>
         <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/50" />
       </DialogTrigger>
@@ -69,8 +67,8 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{org.name}</span>
                     <span className="mt-1 flex flex-wrap gap-1.5">
-                      <Pill tone={roleTone[role]} className="capitalize">
-                        {role}
+                      <Pill tone={orgRoleTone(role)}>
+                        {role.name}
                       </Pill>
                       {!member && <Pill tone="violet">Superadmin access</Pill>}
                       {clockedIn && <Pill tone="green">Clocked in</Pill>}

@@ -2,6 +2,7 @@ import { AuditPanel } from '@/components/admin/AuditPanel'
 import { CompaniesPanel } from '@/components/admin/CompaniesPanel'
 import { DeletedPanel } from '@/components/admin/DeletedPanel'
 import { OverviewPanel } from '@/components/admin/OverviewPanel'
+import { RolesPanel } from '@/components/admin/RolesPanel'
 import { UsersPanel } from '@/components/admin/UsersPanel'
 import { PageHeader } from '@/components/PageHeader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -15,6 +16,7 @@ export default function Admin() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="companies">Companies</TabsTrigger>
+          <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="deleted">Deleted projects</TabsTrigger>
           <TabsTrigger value="audit">Audit log</TabsTrigger>
         </TabsList>
@@ -26,6 +28,9 @@ export default function Admin() {
         </TabsContent>
         <TabsContent value="companies" className="pt-4">
           <CompaniesPanel />
+        </TabsContent>
+        <TabsContent value="roles" className="pt-4">
+          <RolesPanel />
         </TabsContent>
         <TabsContent value="deleted" className="pt-4">
           <DeletedPanel />

@@ -14,7 +14,8 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useOrg } from '@/hooks/useOrg'
 import { supabase } from '@/lib/supabase'
-import type { AdminOrg, OrgRole } from '@/types/database'
+import { useOrgRoles } from '@/hooks/useOrgRoles'
+import type { AdminOrg } from '@/types/database'
 
 type Mode = 'create' | 'members' | 'transfer' | 'suspend' | 'delete' | null
 
@@ -194,7 +195,7 @@ function CreateDialog({ open, onClose }: { open: boolean; onClose: () => void })
   )
 }
 
-type MemberRow = { id: number; user_id: string; org_role: OrgRole; name: string; email: string | null }
+type MemberRow = { id: number; user_id: string; org_role_id: number; name: string; email: string | null }
 
 function useOrgMembers(orgId: number) {
   return useQuery({
@@ -208,17 +209,18 @@ function useOrgMembers(orgId: number) {
       const byId = new Map(profiles.map((p) => [p.id, p]))
       return members.map((m) => {
         const p = byId.get(m.user_id)
-        return { id: m.id, user_id: m.user_id, org_role: m.org_role, name: p?.full_name || p?.email || 'Unknown', email: p?.email ?? null }
+        return { id: m.id, user_id: m.user_id, org_role_id: m.org_role_id, name: p?.full_name || p?.email || 'Unknown', email: p?.email ?? null }
       })
     },
   })
 }
 
 function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; onClose: () => void }) {
+  const roles = useOrgRoles().data ?? []
   const { data, isLoading, error } = useOrgMembers(org.id)
   const [email, setEmail] = useState('')
   const setRole = useAdminAction(
-    (v: { id: number; role: OrgRole }) => supabase.from('organization_members').update({ org_role: v.role }).eq('id', v.id),
+    (v: { id: number; role: number }) => supabase.from('organization_members').update({ org_role_id: v.role }).eq('id', v.id),
     'Role updated',
   )
   const removeMember = useAdminAction((id: number) => supabase.from('organization_members').delete().eq('id', id), 'Member removed')
@@ -226,7 +228,7 @@ function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; o
     const { data: p, error } = await supabase.from('profiles').select('id').ilike('email', e.trim()).maybeSingle()
     if (error) return { error }
     if (!p) return { error: new Error('No registered user with that email') }
-    return supabase.from('organization_members').insert({ organization_id: org.id, user_id: p.id, org_role: 'member' })
+    return supabase.from('organization_members').insert({ organization_id: org.id, user_id: p.id })
   }, 'Member added')
 
   return (
@@ -247,13 +249,15 @@ function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; o
               </div>
               <select
                 className={`${selectClass} w-28`}
-                value={m.org_role}
+                value={m.org_role_id}
                 aria-label={`Role of ${m.name}`}
-                onChange={(e) => setRole.mutate({ id: m.id, role: e.target.value as OrgRole })}
+                onChange={(e) => setRole.mutate({ id: m.id, role: Number(e.target.value) })}
               >
-                <option value="owner">Owner</option>
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
               </select>
               <Button size="sm" variant="ghost" onClick={() => removeMember.mutate(m.id)}>
                 Remove
@@ -278,6 +282,7 @@ function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; o
 }
 
 function TransferDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; onClose: () => void }) {
+  const roles = useOrgRoles().data ?? []
   const { data } = useOrgMembers(org.id)
   const [pick, setPick] = useState('')
   const transfer = useAdminAction(
@@ -297,7 +302,7 @@ function TransferDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; 
             <option value="">Choose a member…</option>
             {data?.map((m) => (
               <option key={m.user_id} value={m.user_id}>
-                {m.name} ({m.org_role})
+                {m.name} ({roles.find((r) => r.id === m.org_role_id)?.name})
               </option>
             ))}
           </select>

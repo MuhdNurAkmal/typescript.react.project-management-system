@@ -36,7 +36,11 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     queryFn: async (): Promise<OrgEntry[]> => {
       const { data: memberships, error } = await supabase.from('organization_members').select('*').eq('user_id', user!.id)
       if (error) throw error
-      const roleOf = new Map(memberships.map((m) => [m.organization_id, m.org_role]))
+      const { data: roles, error: rErr } = await supabase.from('organization_roles').select('*')
+      if (rErr) throw rErr
+      const roleById = new Map(roles.map((r) => [r.id, r]))
+      const ownerRole = roles.find((r) => r.is_owner) ?? roles[0]
+      const roleOf = new Map(memberships.map((m) => [m.organization_id, roleById.get(m.org_role_id)]))
       // the superadmin sees every company; the ones they do not belong to open with owner-level access
       let q = supabase.from('organizations').select('*')
       if (!isSuper) {
@@ -46,7 +50,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       const { data: orgs, error: oErr } = await q
       if (oErr) throw oErr
       return orgs
-        .map((org) => ({ org, role: roleOf.get(org.id) ?? ('owner' as const), member: roleOf.has(org.id) }))
+        .map((org) => ({ org, role: roleOf.get(org.id) ?? ownerRole, member: roleOf.has(org.id) }))
+        .filter((e) => e.role)
         .sort((a, b) => a.org.name.localeCompare(b.org.name))
     },
   })
@@ -73,8 +78,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       orgs,
       current,
       setCurrentId,
-      isAdmin: current?.role === 'owner' || current?.role === 'admin',
-      isOwner: current?.role === 'owner',
+      isAdmin: current?.role.is_admin ?? false,
+      isOwner: current?.role.is_owner ?? false,
       loading: !!user && query.isLoading,
       refresh,
     }

@@ -129,3 +129,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Opening /join/<code> while signed out shows the company name and a register form; after registering the new user is a member of that company only, with role member.
 - [ ] A wrong, switched-off or replaced code, or one of a suspended company, shows "Link not valid" and adds nobody.
 - [ ] Joining twice does not create a second membership or change an existing role.
+
+## Company roles table (022)
+- [ ] Existing owners/admins/members keep their access after the migration (same role names, now through `org_role_id`).
+- [ ] Renaming "Admin" to something else keeps its admin powers; a custom role with is_admin can review attendance and leave.
+- [ ] A normal user cannot insert, update or delete rows in `organization_roles` or `roles` they did not create; the superadmin can.
+- [ ] The powers (flags) of built-in roles cannot be changed and built-in roles cannot be deleted; a role still in use cannot be deleted.
+- [ ] A company admin cannot give anyone an owner role through add person or the role select; only an owner (or the superadmin) can.

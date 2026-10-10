@@ -60,6 +60,7 @@ export function useAdminAction<V>(run: (v: V) => PromiseLike<{ error: unknown }>
       toast.success(success)
       await qc.invalidateQueries({ queryKey: ['admin'] })
       await qc.invalidateQueries({ queryKey: ['orgs'] })
+      await qc.invalidateQueries({ queryKey: ['org-roles'] })
     },
     onError: (e) => toast.error(errorMessage(e, 'Action failed')),
   })

@@ -33,7 +33,15 @@ export type Project = {
   created_at: string
 }
 
-export type OrgRole = 'owner' | 'admin' | 'member'
+export type OrganizationRole = {
+  id: number
+  name: string
+  description: string | null
+  is_owner: boolean
+  is_admin: boolean
+  is_system: boolean
+  created_at: string
+}
 
 export type Organization = {
   id: number
@@ -48,7 +56,7 @@ export type OrganizationMember = {
   id: number
   organization_id: number
   user_id: string
-  org_role: OrgRole
+  org_role_id: number
   joined_at: string
 }
 
@@ -272,6 +280,7 @@ export type Database = {
         Pick<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'> &
           Partial<Omit<LeaveRequest, 'organization_id' | 'leave_type_id' | 'start_date' | 'end_date'>>
       >
+      organization_roles: Table<OrganizationRole, Pick<OrganizationRole, 'name'> & Partial<Omit<OrganizationRole, 'name'>>>
       organization_invites: Table<OrganizationInvite, Pick<OrganizationInvite, 'organization_id'> & Partial<OrganizationInvite>>
       admin_audit_log: Table<AdminAuditEntry, Pick<AdminAuditEntry, 'action' | 'target_type' | 'summary'>>
       milestones: Table<
@@ -302,7 +311,7 @@ export type Database = {
         Returns: { id: string; full_name: string | null; email: string | null }[]
       }
       add_org_member: {
-        Args: { p_organization_id: number; p_email: string; p_org_role?: string }
+        Args: { p_organization_id: number; p_email: string; p_org_role_id?: number }
         Returns: OrganizationMember
       }
       search_users: {

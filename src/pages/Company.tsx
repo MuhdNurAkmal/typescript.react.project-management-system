@@ -7,7 +7,7 @@ import { NoCompany } from '@/components/company/NoCompany'
 import { PageHeader } from '@/components/PageHeader'
 import { InviteLinkCard } from '@/components/company/InviteLinkCard'
 import { CreateCompanyForm } from '@/components/company/CreateCompanyForm'
-import { Pill, type Tone } from '@/components/Pill'
+import { Pill } from '@/components/Pill'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { UserSearch } from '@/components/projects/UserSearch'
 import { TypeToConfirmDialog } from '@/components/TypeToConfirmDialog'
@@ -21,14 +21,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useOrg } from '@/hooks/useOrg'
 import { supabase } from '@/lib/supabase'
-import type { OrgRole } from '@/types/database'
-
-const roleTone: Record<OrgRole, Tone> = { owner: 'violet', admin: 'blue', member: 'slate' }
-const roleHelp: Record<OrgRole, string> = {
-  owner: 'Full control, including deleting the company',
-  admin: 'Manages members, reviews attendance and leave',
-  member: 'Takes part in projects and clocks in',
-}
+import { orgRoleTone } from '@/lib/orgRoles'
+import { useOrgRoles } from '@/hooks/useOrgRoles'
+import type { OrganizationRole } from '@/types/database'
 
 export default function Company() {
   const { current, isAdmin, isOwner } = useOrg()
@@ -39,6 +34,7 @@ export default function Company() {
   const [deleting, setDeleting] = useState(false)
 
   const orgId = current?.org.id ?? 0
+  const roles = useOrgRoles().data ?? []
 
   const members = useQuery({
     queryKey: ['org-members', orgId],
@@ -59,7 +55,7 @@ export default function Company() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={`Company · ${current.role}`}
+        eyebrow={`Company · ${current.role.name}`}
         title={current.org.name}
         description="People, roles and settings for this company."
         actions={
@@ -105,7 +101,8 @@ export default function Company() {
                   const name = profile?.full_name || profile?.email || 'Unknown'
                   const self = member.user_id === user?.id
                   // admins cannot touch owners; only owners can
-                  const editable = isAdmin && !self && (member.org_role !== 'owner' || isOwner)
+                  const role = roles.find((r) => r.id === member.org_role_id)
+                  const editable = isAdmin && !self && (!role?.is_owner || isOwner)
                   return (
                     <TableRow key={member.id}>
                       <TableCell>
@@ -118,10 +115,10 @@ export default function Company() {
                       <TableCell>{profile?.email}</TableCell>
                       <TableCell>
                         {editable ? (
-                          <RoleSelect orgId={orgId} memberId={member.id} value={member.org_role} isOwner={isOwner} onChanged={refreshMembers} />
+                          <RoleSelect orgId={orgId} memberId={member.id} value={member.org_role_id} roles={roles} isOwner={isOwner} onChanged={refreshMembers} />
                         ) : (
-                          <Pill tone={roleTone[member.org_role]} className="capitalize">
-                            {member.org_role}
+                          <Pill tone={role ? orgRoleTone(role) : 'slate'}>
+                            {role?.name ?? 'Unknown'}
                           </Pill>
                         )}
                       </TableCell>
@@ -176,21 +173,40 @@ export default function Company() {
   )
 }
 
-function RoleSelect({ orgId, memberId, value, isOwner, onChanged }: { orgId: number; memberId: number; value: OrgRole; isOwner: boolean; onChanged: () => void }) {
-  const roles: OrgRole[] = isOwner ? ['owner', 'admin', 'member'] : ['admin', 'member']
+function RoleSelect({
+  orgId,
+  memberId,
+  value,
+  roles,
+  isOwner,
+  onChanged,
+}: {
+  orgId: number
+  memberId: number
+  value: number
+  roles: OrganizationRole[]
+  isOwner: boolean
+  onChanged: () => void
+}) {
+  const options = isOwner ? roles : roles.filter((r) => !r.is_owner)
   const change = useMutation({
-    mutationFn: async (org_role: OrgRole) => {
-      const { error } = await supabase.from('organization_members').update({ org_role }).eq('id', memberId).eq('organization_id', orgId)
+    mutationFn: async (org_role_id: number) => {
+      const { error } = await supabase.from('organization_members').update({ org_role_id }).eq('id', memberId).eq('organization_id', orgId)
       if (error) throw error
     },
     onSuccess: onChanged,
     onError: (e: Error) => toast.error(e.message),
   })
   return (
-    <select className={`${selectClass} w-32 capitalize`} value={value} title={roleHelp[value]} onChange={(e) => change.mutate(e.target.value as OrgRole)}>
-      {roles.map((r) => (
-        <option key={r} value={r}>
-          {r}
+    <select
+      className={`${selectClass} w-36`}
+      value={value}
+      title={options.find((r) => r.id === value)?.description ?? undefined}
+      onChange={(e) => change.mutate(Number(e.target.value))}
+    >
+      {options.map((r) => (
+        <option key={r.id} value={r.id}>
+          {r.name}
         </option>
       ))}
     </select>
@@ -237,13 +253,15 @@ function RenameCard({ orgId, name }: { orgId: number; name: string }) {
 function AddMemberCard({ orgId, onAdded }: { orgId: number; onAdded: () => void }) {
   const [query, setQuery] = useState('')
   const [pickedEmail, setPickedEmail] = useState<string | null>(null)
-  const [role, setRole] = useState<'member' | 'admin'>('member')
+  const roles = (useOrgRoles().data ?? []).filter((r) => !r.is_owner)
+  const [roleId, setRoleId] = useState<number | null>(null)
+  const chosenRole = roleId ?? roles.find((r) => !r.is_admin)?.id ?? roles[0]?.id
 
   const add = useMutation({
     mutationFn: async () => {
       const email = pickedEmail ?? query.trim()
       if (!email.includes('@')) throw new Error('Pick someone from the suggestions, or type their full email')
-      const { error } = await supabase.rpc('add_org_member', { p_organization_id: orgId, p_email: email, p_org_role: role })
+      const { error } = await supabase.rpc('add_org_member', { p_organization_id: orgId, p_email: email, p_org_role_id: chosenRole })
       if (error) throw error
     },
     onSuccess: () => {
@@ -291,9 +309,12 @@ function AddMemberCard({ orgId, onAdded }: { orgId: number; onAdded: () => void 
           </div>
           <div className="space-y-2">
             <Label htmlFor="org-role">Role</Label>
-            <select id="org-role" className={`${selectClass} w-32`} value={role} onChange={(e) => setRole(e.target.value as 'member' | 'admin')}>
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
+            <select id="org-role" className={`${selectClass} w-36`} value={chosenRole ?? ''} onChange={(e) => setRoleId(Number(e.target.value))}>
+              {roles.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
             </select>
           </div>
           <Button type="submit" disabled={add.isPending}>
