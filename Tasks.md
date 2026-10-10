@@ -189,3 +189,5 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [x] Company invitation links, `020_company_invite_links.sql`: every company has its own link (`/join/<code>`), shown to admins on the Company page with Copy, Turn off/on and Create a new link (the old one stops working). Someone who opens it registers (name, email, password) and lands inside that company as a member; an existing user can sign in or join with the account they are already using. Links of suspended companies do not work.
 - [x] Registration signs the user in straight away (no second sign-in) when email confirmation is off.
 - [ ] [HUMAN] Run `020_company_invite_links.sql`.
+- [x] Fix: duplicate roles (the original roles were renamed in the Supabase table editor, so 014 added a second lowercase set). `021_merge_duplicate_roles.sql` merges them onto the renamed ones; the PM role is now found by its is_pm flag, never by name.
+- [ ] [HUMAN] Run `021_merge_duplicate_roles.sql`.

@@ -25,7 +25,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
   const [pickedEmail, setPickedEmail] = useState<string | null>(null)
   const [roleId, setRoleId] = useState<number | null>(null)
 
-  const defaultRoleId = roleId ?? roles?.find((r) => r.name === 'developer')?.id ?? null
+  const defaultRoleId = roleId ?? roles?.find((r) => /^(developer|programmer)$/i.test(r.name))?.id ?? roles?.find((r) => !r.is_pm)?.id ?? null
   const refresh = () => qc.invalidateQueries({ queryKey: ['members', projectId] })
   const pmCount = members?.filter((m) => m.member.is_active && roles?.find((r) => r.id === m.member.role_id)?.is_pm).length ?? 0
 
