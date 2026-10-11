@@ -1,17 +1,38 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Gantt, { type GanttTask } from 'frappe-gantt'
-import { format } from 'date-fns'
+import { addSeconds, format } from 'date-fns'
 import { toast } from 'sonner'
 import '@/styles/frappe-gantt.css'
 import { Button } from '@/components/ui/button'
+import { Avatar } from '@/components/Avatar'
 import { Card, CardContent } from '@/components/ui/card'
+import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { supabase } from '@/lib/supabase'
 
 const VIEW_MODES = ['Day', 'Week', 'Month'] as const
 const statusClass = { todo: 'gantt-todo', in_progress: 'gantt-in-progress', review: 'gantt-review', done: 'gantt-done' }
 const dateOnly = (d: Date) => format(d, 'yyyy-MM-dd')
+
+// The task list on the left lines up with the chart on the right, row for row.
+// frappe-gantt draws a header of upper + lower header + 10px, then rows that are bar_height + padding tall.
+const BAR_HEIGHT = 30
+const ROW_PADDING = 18
+const ROW_HEIGHT = BAR_HEIGHT + ROW_PADDING
+const HEADER_HEIGHT = 45 + 30 + 10
+const GRID_BOTTOM = 8
+
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string)
+
+interface ListRow {
+  id: string
+  name: string
+  assignee: string | null
+  milestone: boolean
+  done: boolean
+}
 
 export function useMilestones(projectId: number) {
   return useQuery({
@@ -28,13 +49,16 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
   const qc = useQueryClient()
   const { data, isLoading, error } = useProjectTasks(projectId)
   const { data: milestones } = useMilestones(projectId)
+  const { data: members } = useProjectMembers(projectId)
   const containerRef = useRef<HTMLDivElement>(null)
   const ganttRef = useRef<Gantt | null>(null)
   const [viewMode, setViewMode] = useState<(typeof VIEW_MODES)[number]>('Week')
   const viewModeRef = useRef(viewMode)
 
-  const { ganttTasks, unscheduled } = useMemo(() => {
+  const { ganttTasks, unscheduled, listRows } = useMemo(() => {
     const scheduled: GanttTask[] = []
+    const list: ListRow[] = []
+    const nameOf = new Map((members ?? []).map((m) => [m.member.user_id, m.profile?.full_name || m.profile?.email || 'Unknown']))
     const skipped: string[] = []
     const ids = new Set<number>()
     for (const t of data?.tasks ?? []) {
@@ -45,6 +69,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         continue
       }
       ids.add(t.id)
+      list.push({ id: String(t.id), name: t.title, assignee: t.assignee_id ? (nameOf.get(t.assignee_id) ?? 'Unknown') : null, milestone: false, done: t.status === 'done' })
       scheduled.push({
         id: String(t.id),
         name: t.title,
@@ -62,6 +87,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       task.dependencies = [task.dependencies, String(d.depends_on_task_id)].filter(Boolean).join(',')
     }
     for (const m of milestones ?? []) {
+      list.push({ id: `m-${m.id}`, name: m.title, assignee: null, milestone: true, done: m.completed })
       scheduled.push({
         id: `m-${m.id}`,
         name: `◆ ${m.title}`,
@@ -71,8 +97,8 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         custom_class: 'gantt-milestone',
       })
     }
-    return { ganttTasks: scheduled, unscheduled: skipped }
-  }, [data, milestones])
+    return { ganttTasks: scheduled, unscheduled: skipped, listRows: list }
+  }, [data, milestones, members])
 
   const reschedule = useMutation({
     mutationFn: async (v: { id: number; patch: { start_date?: string; due_date?: string; progress?: number } }) => {
@@ -98,6 +124,21 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     if (ganttTasks.length === 0) return
     ganttRef.current = new Gantt(el, ganttTasks, {
       view_mode: viewModeRef.current,
+      bar_height: BAR_HEIGHT,
+      padding: ROW_PADDING,
+      // the default popup writes the task name into the page as HTML; escape it so a task title cannot inject markup
+      popup: (ctx: {
+        task: GanttTask & { _start: Date; _end: Date }
+        set_title: (v: string) => void
+        set_subtitle: (v: string) => void
+        set_details: (v: string) => void
+      }) => {
+        ctx.set_title(escapeHtml(ctx.task.name))
+        ctx.set_subtitle(escapeHtml(ctx.task.description ?? ''))
+        const from = format(ctx.task._start, 'MMM d')
+        const to = format(addSeconds(ctx.task._end, -1), 'MMM d')
+        ctx.set_details(`${from} - ${to}<br/>Progress: ${Math.floor(ctx.task.progress)}%`)
+      },
       readonly: !canManage,
       today_button: true,
       scroll_to: 'today',
@@ -131,11 +172,45 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       {data && ganttTasks.length === 0 && (
         <p className="text-muted-foreground">Nothing to chart yet. Give tasks a start or due date, or add a milestone.</p>
       )}
-      <Card>
-        <CardContent className="overflow-x-auto p-0">
-          <div ref={containerRef} className="gantt-wrapper" />
-        </CardContent>
-      </Card>
+      {ganttTasks.length > 0 && (
+        <Card>
+          <CardContent className="flex p-0">
+            <div className="w-56 shrink-0 border-r bg-card sm:w-72" aria-label="Task list">
+              <div className="flex items-end border-b px-3 pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase" style={{ height: HEADER_HEIGHT }}>
+                <span className="flex-1">Task</span>
+                <span className="w-24 shrink-0 sm:w-28">Assignee</span>
+              </div>
+              <ul>
+                {listRows.map((r) => (
+                  <li key={r.id} className="flex items-center gap-2 border-b px-3 text-sm" style={{ height: ROW_HEIGHT }}>
+                    <span className={`min-w-0 flex-1 truncate ${r.done ? 'text-muted-foreground line-through' : 'font-medium'}`} title={r.name}>
+                      {r.milestone ? '◆ ' : ''}
+                      {r.name}
+                    </span>
+                    <span className="flex w-24 shrink-0 items-center gap-1.5 sm:w-28">
+                      {r.assignee ? (
+                        <>
+                          <Avatar name={r.assignee} size="sm" />
+                          <span className="truncate text-xs text-muted-foreground" title={r.assignee}>
+                            {r.assignee}
+                          </span>
+                        </>
+                      ) : (
+                        !r.milestone && <span className="text-xs text-muted-foreground">Unassigned</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div style={{ height: GRID_BOTTOM }} />
+            </div>
+            <div className="min-w-0 flex-1 overflow-x-auto">
+              <div ref={containerRef} className="gantt-wrapper" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {ganttTasks.length === 0 && <div ref={containerRef} className="gantt-wrapper" />}
       {unscheduled.length > 0 && <p className="text-sm text-muted-foreground">Not shown (no dates): {unscheduled.join(', ')}</p>}
     </div>
   )
