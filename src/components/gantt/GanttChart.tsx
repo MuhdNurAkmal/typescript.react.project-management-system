@@ -5,7 +5,7 @@ import { addSeconds, format } from 'date-fns'
 import { toast } from 'sonner'
 import '@/styles/frappe-gantt.css'
 import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/Avatar'
+import { AssigneeStack } from '@/components/tasks/AssigneeStack'
 import { Card, CardContent } from '@/components/ui/card'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
@@ -29,7 +29,7 @@ const escapeHtml = (text: string) =>
 interface ListRow {
   id: string
   name: string
-  assignee: string | null
+  assignees: string[]
   milestone: boolean
   done: boolean
 }
@@ -69,7 +69,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         continue
       }
       ids.add(t.id)
-      list.push({ id: String(t.id), name: t.title, assignee: t.assignee_id ? (nameOf.get(t.assignee_id) ?? 'Unknown') : null, milestone: false, done: t.status === 'done' })
+      list.push({ id: String(t.id), name: t.title, assignees: t.assignee_ids.map((id) => nameOf.get(id) ?? 'Unknown'), milestone: false, done: t.status === 'done' })
       scheduled.push({
         id: String(t.id),
         name: t.title,
@@ -87,7 +87,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       task.dependencies = [task.dependencies, String(d.depends_on_task_id)].filter(Boolean).join(',')
     }
     for (const m of milestones ?? []) {
-      list.push({ id: `m-${m.id}`, name: m.title, assignee: null, milestone: true, done: m.completed })
+      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: m.completed })
       scheduled.push({
         id: `m-${m.id}`,
         name: `◆ ${m.title}`,
@@ -188,12 +188,14 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
                       {r.name}
                     </span>
                     <span className="flex w-24 shrink-0 items-center gap-1.5 sm:w-28">
-                      {r.assignee ? (
+                      {r.assignees.length > 0 ? (
                         <>
-                          <Avatar name={r.assignee} size="sm" />
-                          <span className="truncate text-xs text-muted-foreground" title={r.assignee}>
-                            {r.assignee}
-                          </span>
+                          <AssigneeStack names={r.assignees} max={2} />
+                          {r.assignees.length === 1 && (
+                            <span className="truncate text-xs text-muted-foreground" title={r.assignees[0]}>
+                              {r.assignees[0]}
+                            </span>
+                          )}
                         </>
                       ) : (
                         !r.milestone && <span className="text-xs text-muted-foreground">Unassigned</span>

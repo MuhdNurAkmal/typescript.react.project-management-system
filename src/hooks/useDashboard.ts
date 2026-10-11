@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useOrg } from '@/hooks/useOrg'
+import { withAssignees } from '@/hooks/useTasks'
 
 /**
  * For projects the user manages: every task (for progress/overdue counts), the members,
@@ -23,7 +24,7 @@ export function useManagedOverview(projectIds: number[]) {
       const userIds = [...new Set(open.data.map((o) => o.user_id))]
       const profiles = userIds.length ? await supabase.from('profiles').select('*').in('id', userIds) : { data: [], error: null }
       if (profiles.error) throw profiles.error
-      return { tasks: tasks.data, members: members.data, open: open.data, profiles: profiles.data }
+      return { tasks: await withAssignees(tasks.data), members: members.data, open: open.data, profiles: profiles.data }
     },
   })
 }

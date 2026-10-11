@@ -37,7 +37,7 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
   const { data: members } = useProjectMembers(projectId)
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
-  const [assignee, setAssignee] = useState(task?.assignee_id ?? '')
+  const [assignees, setAssignees] = useState<string[]>(task?.assignee_ids ?? [])
   const [start, setStart] = useState(task?.start_date ?? '')
   const [due, setDue] = useState(task?.due_date ?? '')
   const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? 'medium')
@@ -72,7 +72,6 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
         project_id: projectId,
         title: title.trim(),
         description: description.trim() || null,
-        assignee_id: assignee || null,
         start_date: start || null,
         due_date: due || null,
         priority,
@@ -90,6 +89,10 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
         if (error) throw error
         taskId = data.id
       }
+
+      // Replace the assignees in one step (the database checks they are active project members)
+      const { error: aErr } = await supabase.rpc('set_task_assignees', { p_task_id: taskId!, p_user_ids: assignees })
+      if (aErr) throw aErr
 
       // Replace dependencies (a new task cannot be in a cycle yet: nothing depends on it)
       const { error: delErr } = await supabase.from('task_dependencies').delete().eq('task_id', taskId!)
@@ -119,7 +122,7 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
     <>
       <DialogHeader>
         <DialogTitle>{task ? 'Edit task' : 'Create task'}</DialogTitle>
-        <DialogDescription>Assign work to a project member.</DialogDescription>
+        <DialogDescription>Assign work to one or more project members.</DialogDescription>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4">
         <div className="space-y-2">
@@ -130,18 +133,24 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
           <Label htmlFor="t-desc">Description</Label>
           <textarea id="t-desc" rows={3} className={cn(selectClass, 'h-auto py-2')} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="t-assignee">Assignee</Label>
-            <select id="t-assignee" className={selectClass} value={assignee} onChange={(e) => setAssignee(e.target.value)}>
-              <option value="">Unassigned</option>
-              {activeMembers.map(({ member, profile }) => (
-                <option key={member.id} value={member.user_id}>
-                  {profile?.full_name || profile?.email}
-                </option>
-              ))}
-            </select>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">Assignees</legend>
+          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-2">
+            {activeMembers.length === 0 && <p className="px-1 text-sm text-muted-foreground">No members yet.</p>}
+            {activeMembers.map(({ member, profile }) => (
+              <label key={member.id} className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-1 text-sm hover:bg-muted">
+                <input
+                  type="checkbox"
+                  checked={assignees.includes(member.user_id)}
+                  onChange={(e) => setAssignees((cur) => (e.target.checked ? [...cur, member.user_id] : cur.filter((id) => id !== member.user_id)))}
+                />
+                {profile?.full_name || profile?.email}
+              </label>
+            ))}
           </div>
+          <p className="text-xs text-muted-foreground">Everyone ticked can update this task's status and progress.</p>
+        </fieldset>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="t-priority">Priority</Label>
             <select id="t-priority" className={selectClass} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>

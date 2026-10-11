@@ -136,3 +136,11 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A normal user cannot insert, update or delete rows in `organization_roles` or `roles` they did not create; the superadmin can.
 - [ ] The powers (flags) of built-in roles cannot be changed and built-in roles cannot be deleted; a role still in use cannot be deleted.
 - [ ] A company admin cannot give anyone an owner role through add person or the role select; only an owner (or the superadmin) can.
+
+## Several assignees per task (023)
+- [ ] Existing single assignees are still assigned after the migration.
+- [ ] Only a project PM can add or remove assignees; an assignee or another member cannot (direct insert/delete on task_assignees and the set_task_assignees function both fail).
+- [ ] Someone who is not an active member of the project cannot be assigned.
+- [ ] Every assignee can change the task's status and progress, but not title, dates, priority or assignees; a member who is not assigned cannot change it.
+- [ ] Removing a member from the project removes them from that project's tasks only.
+- [ ] Each person assigned gets one notification; comments notify all assignees and the creator except the commenter.

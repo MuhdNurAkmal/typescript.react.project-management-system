@@ -79,12 +79,11 @@ export type ProjectMember = {
   joined_at: string
 }
 
-export type Task = {
+export type TaskRow = {
   id: number
   project_id: number
   title: string
   description: string | null
-  assignee_id: string | null
   start_date: string | null
   due_date: string | null
   status: TaskStatus
@@ -93,6 +92,15 @@ export type Task = {
   parent_task_id: number | null
   created_by: string
   created_at: string
+}
+
+/** A task as the app uses it: the row plus the ids of everyone assigned to it. */
+export type Task = TaskRow & { assignee_ids: string[] }
+
+export type TaskAssignee = {
+  task_id: number
+  user_id: string
+  assigned_at: string
 }
 
 export type TaskDependency = {
@@ -266,9 +274,10 @@ export type Database = {
           Partial<Omit<ProjectMember, 'project_id' | 'user_id' | 'role_id'>>
       >
       tasks: Table<
-        Task,
-        Pick<Task, 'project_id' | 'title'> & Partial<Omit<Task, 'project_id' | 'title'>>
+        TaskRow,
+        Pick<TaskRow, 'project_id' | 'title'> & Partial<Omit<TaskRow, 'project_id' | 'title'>>
       >
+      task_assignees: Table<TaskAssignee, Pick<TaskAssignee, 'task_id' | 'user_id'> & Partial<TaskAssignee>>
       task_dependencies: Table<TaskDependency, TaskDependency>
       attendance: Table<Attendance, Pick<Attendance, 'organization_id'> & Partial<Attendance>>
       task_comments: Table<TaskComment, Pick<TaskComment, 'task_id' | 'body'> & Partial<TaskComment>>
@@ -291,6 +300,7 @@ export type Database = {
     }
     Views: Record<string, never>
     Functions: {
+      set_task_assignees: { Args: { p_task_id: number; p_user_ids: string[] }; Returns: undefined }
       get_invite_info: { Args: { p_code: string }; Returns: { organization_name: string }[] }
       join_company: { Args: { p_code: string }; Returns: number }
       reset_invite_code: { Args: { p_org_id: number }; Returns: undefined }

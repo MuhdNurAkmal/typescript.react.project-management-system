@@ -146,7 +146,7 @@ function TaskReport() {
   function exportTasks() {
     const rows = (data?.tasks ?? []).map((t) => [
       t.title,
-      nameOf(t.assignee_id),
+      t.assignee_ids.length ? t.assignee_ids.map(nameOf).join(', ') : 'Unassigned',
       statusLabels[t.status],
       t.priority,
       t.start_date,

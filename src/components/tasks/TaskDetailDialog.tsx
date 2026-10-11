@@ -88,8 +88,8 @@ function Body({ task, canManage }: { task: Task; canManage: boolean }) {
       {task.description && <p className="text-sm whitespace-pre-wrap">{task.description}</p>}
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <dt className="text-muted-foreground">Assignee</dt>
-          <dd className="font-medium">{nameOf(task.assignee_id)}</dd>
+          <dt className="text-muted-foreground">{task.assignee_ids.length > 1 ? 'Assignees' : 'Assignee'}</dt>
+          <dd className="font-medium">{task.assignee_ids.length ? task.assignee_ids.map((id) => nameOf(id)).join(', ') : 'Unassigned'}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Dates</dt>

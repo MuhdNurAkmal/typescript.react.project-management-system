@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Avatar } from '@/components/Avatar'
+import { AssigneeStack } from '@/components/tasks/AssigneeStack'
 import { PriorityBadge, statusLabels } from '@/components/tasks/badges'
 import { TaskDetailDialog } from '@/components/tasks/TaskDetailDialog'
 import { selectClass } from '@/components/projects/ProjectForm'
@@ -36,7 +36,7 @@ export function KanbanBoard({ projectId, canManage }: { projectId: number; canMa
     const p = members?.find((m) => m.member.user_id === id)?.profile
     return p?.full_name || p?.email || 'Unknown'
   }
-  const canMove = (t: Task) => canManage || t.assignee_id === user?.id
+  const canMove = (t: Task) => canManage || t.assignee_ids.includes(user?.id ?? '')
 
   const move = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: TaskStatus }) => {
@@ -91,7 +91,7 @@ export function KanbanBoard({ projectId, canManage }: { projectId: number; canMa
               <div className="space-y-2">
                 {items.map((t) => {
                   const movable = canMove(t)
-                  const assignee = nameOf(t.assignee_id)
+                  const names = t.assignee_ids.map((id) => nameOf(id) ?? 'Unknown')
                   return (
                     <article
                       key={t.id}
@@ -109,7 +109,7 @@ export function KanbanBoard({ projectId, canManage }: { projectId: number; canMa
                         <PriorityBadge priority={t.priority} />
                         {t.due_date && <span className={`text-xs ${isOverdue(t) ? 'font-medium text-destructive' : 'text-muted-foreground'}`}>{t.due_date}</span>}
                         <span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-                          {assignee ? <Avatar name={assignee} size="sm" /> : 'Unassigned'}
+                          <AssigneeStack names={names} />
                         </span>
                       </div>
                       {movable && (

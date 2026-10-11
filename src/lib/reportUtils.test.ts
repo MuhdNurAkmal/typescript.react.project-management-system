@@ -39,9 +39,9 @@ describe('summarizeAttendance', () => {
 describe('task summaries', () => {
   const base = { project_id: 1, description: null, start_date: null, priority: 'medium', parent_task_id: null, created_by: 'x', created_at: '' } as const
   const tasks = [
-    { ...base, id: 1, title: 'a', assignee_id: 'u1', due_date: '2026-05-01', status: 'todo', progress: 0 },
-    { ...base, id: 2, title: 'b', assignee_id: 'u1', due_date: '2026-05-01', status: 'done', progress: 100 },
-    { ...base, id: 3, title: 'c', assignee_id: null, due_date: '2026-06-01', status: 'in_progress', progress: 50 },
+    { ...base, id: 1, title: 'a', assignee_ids: ['u1'], due_date: '2026-05-01', status: 'todo', progress: 0 },
+    { ...base, id: 2, title: 'b', assignee_ids: ['u1'], due_date: '2026-05-01', status: 'done', progress: 100 },
+    { ...base, id: 3, title: 'c', assignee_ids: [], due_date: '2026-06-01', status: 'in_progress', progress: 50 },
   ] as Task[]
 
   it('counts by status and assignee including overdue', () => {
@@ -50,6 +50,12 @@ describe('task summaries', () => {
     const u1 = s.byAssignee.find((a) => a.assignee_id === 'u1')!
     expect(u1).toMatchObject({ total: 2, overdue: 1 })
     expect(s.byAssignee.find((a) => a.assignee_id === null)!.total).toBe(1)
+  })
+  it('counts a task once for each of its assignees', () => {
+    const shared = [{ ...base, id: 4, title: 'd', assignee_ids: ['u1', 'u2'], due_date: '2026-06-01', status: 'todo', progress: 0 }] as Task[]
+    const s = summarizeTasks(shared, '2026-05-10')
+    expect(s.byStatus.todo).toBe(1)
+    expect(s.byAssignee.map((a) => a.assignee_id).sort()).toEqual(['u1', 'u2'])
   })
   it('computes project progress', () => {
     expect(projectProgress(tasks, '2026-05-10')).toEqual({ total: 3, done: 1, overdue: 1, avgProgress: 50 })

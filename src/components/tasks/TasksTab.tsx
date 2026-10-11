@@ -47,7 +47,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
     return (data?.tasks ?? []).filter(
       (t) =>
         (!q || t.title.toLowerCase().includes(q) || (t.description ?? '').toLowerCase().includes(q)) &&
-        (!assignee || (assignee === 'none' ? t.assignee_id === null : t.assignee_id === assignee)) &&
+        (!assignee || (assignee === 'none' ? t.assignee_ids.length === 0 : t.assignee_ids.includes(assignee))) &&
         (!status || t.status === status) &&
         (!priority || t.priority === priority),
     )
@@ -133,7 +133,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
               </TableHeader>
               <TableBody>
                 {filtered.map((t) => {
-                  const mine = t.assignee_id === user?.id
+                  const mine = t.assignee_ids.includes(user?.id ?? '')
                   return (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">
@@ -141,7 +141,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
                           {t.title}
                         </button>
                       </TableCell>
-                      <TableCell>{nameOf(t.assignee_id)}</TableCell>
+                      <TableCell>{t.assignee_ids.length ? t.assignee_ids.map(nameOf).join(', ') : 'Unassigned'}</TableCell>
                       <TableCell><TaskStatusBadge status={t.status} /></TableCell>
                       <TableCell><PriorityBadge priority={t.priority} /></TableCell>
                       <TableCell className={isOverdue(t) ? 'font-medium text-destructive' : ''}>{t.due_date ?? '—'}</TableCell>

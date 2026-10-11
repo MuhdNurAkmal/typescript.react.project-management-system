@@ -61,11 +61,15 @@ export function summarizeTasks(tasks: Task[], today: string) {
   const byAssignee = new Map<string | null, AssigneeSummary>()
   for (const t of tasks) {
     byStatus[t.status] += 1
-    const entry = byAssignee.get(t.assignee_id) ?? { assignee_id: t.assignee_id, counts: emptyCounts(), total: 0, overdue: 0 }
-    entry.counts[t.status] += 1
-    entry.total += 1
-    if (isOverdue(t, today)) entry.overdue += 1
-    byAssignee.set(t.assignee_id, entry)
+    // a task with several assignees counts once for each of them; no assignee is its own row
+    const people: (string | null)[] = t.assignee_ids.length ? t.assignee_ids : [null]
+    for (const person of people) {
+      const entry = byAssignee.get(person) ?? { assignee_id: person, counts: emptyCounts(), total: 0, overdue: 0 }
+      entry.counts[t.status] += 1
+      entry.total += 1
+      if (isOverdue(t, today)) entry.overdue += 1
+      byAssignee.set(person, entry)
+    }
   }
   return { byStatus, byAssignee: [...byAssignee.values()].sort((a, b) => b.total - a.total) }
 }
