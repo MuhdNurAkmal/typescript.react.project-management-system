@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { priorityLabels, statusLabels } from '@/components/tasks/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
+import { MultiCombobox } from '@/components/ui/multi-combobox'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -133,23 +134,18 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
           <Label htmlFor="t-desc">Description</Label>
           <textarea id="t-desc" rows={3} className={cn(selectClass, 'h-auto py-2')} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">Assignees</legend>
-          <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border p-2">
-            {activeMembers.length === 0 && <p className="px-1 text-sm text-muted-foreground">No members yet.</p>}
-            {activeMembers.map(({ member, profile }) => (
-              <label key={member.id} className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-1 text-sm hover:bg-muted">
-                <input
-                  type="checkbox"
-                  checked={assignees.includes(member.user_id)}
-                  onChange={(e) => setAssignees((cur) => (e.target.checked ? [...cur, member.user_id] : cur.filter((id) => id !== member.user_id)))}
-                />
-                {profile?.full_name || profile?.email}
-              </label>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">Everyone ticked can update this task's status and progress.</p>
-        </fieldset>
+        <div className="space-y-2">
+          <Label htmlFor="t-assignees">Assignees</Label>
+          <MultiCombobox
+            id="t-assignees"
+            items={activeMembers.map(({ member, profile }) => ({ value: member.user_id, label: profile?.full_name || profile?.email || 'Unknown' }))}
+            value={assignees}
+            onChange={setAssignees}
+            placeholder="Choose one or more people"
+            emptyText="No member matches."
+          />
+          <p className="text-xs text-muted-foreground">Everyone chosen can update this task's status and progress.</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="t-priority">Priority</Label>
