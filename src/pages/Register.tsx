@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { AuthCard } from '@/components/AuthCard'
+import { AuthCard, FormError } from '@/components/AuthCard'
+import { PasswordInput } from '@/components/PasswordInput'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/useAuth'
 import { errorMessage } from '@/lib/errors'
+import { MIN_PASSWORD_LENGTH } from '@/lib/password'
 
 export default function Register() {
   const { signUp } = useAuth()
@@ -14,12 +16,14 @@ export default function Register() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters')
+    setError(null)
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`)
       return
     }
     setBusy(true)
@@ -33,36 +37,32 @@ export default function Register() {
         navigate('/', { replace: true })
       }
     } catch (err) {
-      toast.error(errorMessage(err, 'Registration failed'))
+      setError(errorMessage(err, 'Registration failed'))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <AuthCard title="Create account" description="Register to join or manage projects.">
+    <AuthCard tab="register" title="Create your account" description="It takes a minute, and you are signed in straight away.">
       <form onSubmit={onSubmit} className="space-y-4">
+        <FormError message={error} />
         <div className="space-y-2">
           <Label htmlFor="name">Full name</Label>
-          <Input id="name" autoComplete="name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          <Input id="name" autoComplete="name" required className="h-11 px-3" value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input id="email" type="email" autoComplete="email" required className="h-11 px-3" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput id="password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={password} onChange={setPassword} />
+          <p className="text-xs text-muted-foreground">At least {MIN_PASSWORD_LENGTH} characters.</p>
         </div>
-        <Button type="submit" className="w-full" disabled={busy}>
+        <Button type="submit" className="h-11 w-full text-sm" disabled={busy}>
           {busy ? 'Creating…' : 'Create account'}
         </Button>
-        <p className="text-center text-sm">
-          Already registered?{' '}
-          <Link to="/login" className="underline">
-            Sign in
-          </Link>
-        </p>
       </form>
     </AuthCard>
   )

@@ -1,50 +1,81 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import { SignInBackdrop } from '@/components/SignInBackdrop'
 
-function Wordmark({ light = false }: { light?: boolean }) {
-  return (
-    <span className="flex items-center gap-2.5">
-      <span aria-hidden className={`grid size-9 place-items-center rounded-lg text-base font-semibold ${light ? 'bg-white text-primary' : 'bg-primary text-primary-foreground'}`}>U</span>
-      <span className="text-xl font-semibold tracking-tight">UrusProgres</span>
-    </span>
-  )
-}
-
-/** Sign-in style screens: an ink panel on the left (wide screens only) and the form on paper. */
+/**
+ * Shared shell for every signed-out screen: the faint timeline backdrop, the logo and one centred card.
+ * `tab` shows the Sign in / Create account switch on the pages where it makes sense.
+ */
 export function AuthCard({
   title,
   description,
+  eyebrow,
+  tab,
   children,
 }: {
   title: string
   description?: string
+  /** A small line above the title, for example the company an invitation is for. */
+  eyebrow?: ReactNode
+  tab?: 'signin' | 'register'
   children: ReactNode
 }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
-      <aside className="relative hidden flex-col justify-between bg-primary p-12 text-primary-foreground lg:flex">
-        <Wordmark light />
-        <div className="max-w-md">
-          <p className="text-4xl leading-tight font-semibold tracking-tight text-balance">Projects, people and hours, kept in one place.</p>
-          <ul className="mt-8 space-y-3 text-sm text-primary-foreground/80">
-            <li className="flex items-center gap-2 before:size-1.5 before:rounded-full before:bg-white/70">Plan tasks on a timeline and a board</li>
-            <li className="flex items-center gap-2 before:size-1.5 before:rounded-full before:bg-white/70">Clock in per company, with leave and approvals</li>
-            <li className="flex items-center gap-2 before:size-1.5 before:rounded-full before:bg-white/70">Monthly and yearly attendance reports</li>
-          </ul>
+    <div className="grid min-h-screen place-items-center px-4 py-10">
+      <SignInBackdrop />
+      <main className="w-full max-w-md motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
+        <div className="mb-6 flex items-center justify-center gap-2.5">
+          <span aria-hidden className="grid size-10 place-items-center rounded-xl bg-primary text-lg font-semibold text-primary-foreground shadow-soft">
+            U
+          </span>
+          <span className="text-xl font-semibold tracking-tight">UrusProgres</span>
         </div>
-        <p className="text-xs text-primary-foreground/70">For lecturers and teams running grant and industrial projects.</p>
-      </aside>
 
-      <main className="flex items-center justify-center px-5 py-10">
-        <div className="w-full max-w-sm">
-          <div className="mb-10 lg:hidden">
-            <Wordmark />
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-          {description && <p className="mt-2 mb-7 text-sm text-muted-foreground">{description}</p>}
-          {!description && <div className="mb-7" />}
+        <div className="rounded-2xl border bg-card p-6 shadow-lift sm:p-8">
+          {tab && (
+            <div role="tablist" aria-label="Sign in or create an account" className="mb-6 grid grid-cols-2 rounded-xl bg-muted p-1 text-sm font-medium">
+              <Tab active={tab === 'signin'} to="/login">
+                Sign in
+              </Tab>
+              <Tab active={tab === 'register'} to="/register">
+                Create account
+              </Tab>
+            </div>
+          )}
+
+          {eyebrow && <div className="mb-2 inline-flex rounded-full bg-primary-soft px-3 py-1 text-xs font-medium text-accent-foreground">{eyebrow}</div>}
+          <h1 className="text-2xl font-semibold tracking-tight text-balance">{title}</h1>
+          {description ? <p className="mt-1 mb-6 text-sm text-muted-foreground">{description}</p> : <div className="mb-6" />}
           {children}
         </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">Projects, people and hours, kept in one place.</p>
       </main>
+    </div>
+  )
+}
+
+function Tab({ active, to, children }: { active: boolean; to: string; children: ReactNode }) {
+  if (active)
+    return (
+      <span role="tab" aria-selected="true" className="rounded-lg bg-card py-2 text-center shadow-soft">
+        {children}
+      </span>
+    )
+  return (
+    <Link role="tab" aria-selected="false" to={to} className="rounded-lg py-2 text-center text-muted-foreground transition-colors hover:text-foreground">
+      {children}
+    </Link>
+  )
+}
+
+/** Inline error box used by the signed-out forms. */
+export function FormError({ message }: { message: string | null }) {
+  if (!message) return null
+  return (
+    <div role="alert" className="flex items-start gap-2 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger-foreground">
+      <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-danger" />
+      <span>{message}</span>
     </div>
   )
 }
