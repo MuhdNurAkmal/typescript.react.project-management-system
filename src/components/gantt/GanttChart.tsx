@@ -164,7 +164,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
             {m}
           </Button>
         ))}
-        {!canManage && <span className="text-sm text-muted-foreground">Read-only: only the project manager can reschedule.</span>}
+        {!canManage && <span className="text-sm text-muted-foreground">Read-only: your role cannot reschedule tasks.</span>}
       </div>
 
       {isLoading && <p className="text-muted-foreground">Loading chart…</p>}

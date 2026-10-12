@@ -21,6 +21,7 @@ interface Row {
   isSystem: boolean
   tags: string[]
   flagOn: boolean
+  flag2On?: boolean
 }
 
 interface Editing {
@@ -28,6 +29,7 @@ interface Editing {
   name: string
   description: string
   flag: boolean
+  flag2: boolean
 }
 
 /** Shared list + add/edit/delete for a roles table. The flag is the one power the table cares about (admin or project manager). */
@@ -35,6 +37,7 @@ function RolesCard({
   title,
   description,
   flagLabel,
+  flag2Label,
   rows,
   loading,
   error,
@@ -45,6 +48,8 @@ function RolesCard({
   title: string
   description: string
   flagLabel: string
+  /** An optional second switch, shown on create and edit. */
+  flag2Label?: string
   rows: Row[]
   loading: boolean
   error: Error | null
@@ -87,7 +92,7 @@ function RolesCard({
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="ghost" onClick={() => setEditing({ id: r.id, name: r.name, description: r.description ?? '', flag: r.flagOn })}>
+                    <Button size="sm" variant="ghost" onClick={() => setEditing({ id: r.id, name: r.name, description: r.description ?? '', flag: r.flagOn, flag2: r.flag2On ?? true })}>
                       Edit
                     </Button>
                     {!r.isSystem && (
@@ -101,7 +106,7 @@ function RolesCard({
             </TableBody>
           </Table>
         </div>
-        <Button variant="outline" onClick={() => setEditing({ id: null, name: '', description: '', flag: false })}>
+        <Button variant="outline" onClick={() => setEditing({ id: null, name: '', description: '', flag: false, flag2: true })}>
           <Plus /> New role
         </Button>
       </CardContent>
@@ -123,8 +128,19 @@ function RolesCard({
               </div>
               {editing.id === null && (
                 <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={editing.flag} onChange={(e) => setEditing({ ...editing, flag: e.target.checked })} />
+                  <input type="checkbox" checked={editing.flag} onChange={(e) => setEditing({ ...editing, flag: e.target.checked, flag2: e.target.checked ? true : editing.flag2 })} />
                   {flagLabel}
+                </label>
+              )}
+              {flag2Label && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={editing.flag2 || editing.flag}
+                    disabled={editing.flag || (editing.id !== null && rows.find((r) => r.id === editing.id)?.flagOn)}
+                    onChange={(e) => setEditing({ ...editing, flag2: e.target.checked })}
+                  />
+                  {flag2Label}
                 </label>
               )}
             </div>
@@ -207,8 +223,8 @@ function ProjectRoles() {
   const save = useAdminAction(
     async (v: Editing) =>
       v.id === null
-        ? supabase.from('roles').insert({ name: v.name.trim(), description: v.description.trim() || null, is_pm: v.flag })
-        : supabase.from('roles').update({ name: v.name.trim(), description: v.description.trim() || null }).eq('id', v.id),
+        ? supabase.from('roles').insert({ name: v.name.trim(), description: v.description.trim() || null, is_pm: v.flag, can_edit: v.flag || v.flag2 })
+        : supabase.from('roles').update({ name: v.name.trim(), description: v.description.trim() || null, can_edit: v.flag || v.flag2 }).eq('id', v.id),
     'Role saved',
   )
   const remove = useAdminAction((id: number) => supabase.from('roles').delete().eq('id', id), 'Role deleted')
@@ -217,13 +233,15 @@ function ProjectRoles() {
       title="Project roles"
       description="What people can be inside a project. Keep at least one role with project-manager powers."
       flagLabel="Can manage the project, its members and tasks (project manager powers)"
+      flag2Label="Can create, edit, move and assign cards (untick for a read-only role)"
       rows={(data ?? []).map((r) => ({
         id: r.id,
         name: r.name,
         description: r.description,
         isSystem: r.is_system,
-        tags: r.is_pm ? ['Project manager'] : [],
+        tags: r.is_pm ? ['Project manager'] : r.can_edit ? ['Edits cards'] : ['Read-only'],
         flagOn: r.is_pm,
+        flag2On: r.can_edit,
       }))}
       loading={isLoading}
       error={error}

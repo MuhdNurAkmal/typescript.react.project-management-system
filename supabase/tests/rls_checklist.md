@@ -144,3 +144,11 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Every assignee can change the task's status and progress, but not title, dates, priority or assignees; a member who is not assigned cannot change it.
 - [ ] Removing a member from the project removes them from that project's tasks only.
 - [ ] Each person assigned gets one notification; comments notify all assignees and the creator except the commenter.
+
+## Trello-style cards (024)
+- [ ] A Programmer/Intern/Tester/Designer member can create, edit, move and assign cards; a Viewer can read and comment but every write fails.
+- [ ] A non-member and a company admin who is not in the project cannot create or change cards.
+- [ ] A card cannot be moved to another project or have its creator changed.
+- [ ] Only a project manager or the card's creator can delete it.
+- [ ] Anyone who can edit can add and remove dependencies and assignees; assignees must be active project members.
+- [ ] Milestones can still only be changed by project managers.

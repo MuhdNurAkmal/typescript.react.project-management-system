@@ -65,6 +65,8 @@ export type Role = {
   name: string
   description: string | null
   is_pm: boolean
+  /** Can create, edit and move cards. False for read-only roles such as Viewer. */
+  can_edit: boolean
   is_system: boolean
   created_by: string | null
   created_at: string

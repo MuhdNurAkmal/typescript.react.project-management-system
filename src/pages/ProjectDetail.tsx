@@ -67,7 +67,7 @@ export default function ProjectDetail() {
             <div className="min-w-0 space-y-8">
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold">Timeline</h2>
-                <GanttChart projectId={project.id} canManage={perms.canManageTasks} />
+                <GanttChart projectId={project.id} canManage={perms.canEditTasks} />
               </section>
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold">Members</h2>
@@ -77,13 +77,13 @@ export default function ProjectDetail() {
           </div>
         </TabsContent>
         <TabsContent value="tasks" className="pt-4">
-          <TasksTab projectId={project.id} canManage={perms.canManageTasks} />
+          <TasksTab projectId={project.id} canEdit={perms.canEditTasks} canManage={perms.canManageTasks} />
         </TabsContent>
         <TabsContent value="board" className="pt-4">
-          <KanbanBoard projectId={project.id} canManage={perms.canManageTasks} />
+          <KanbanBoard projectId={project.id} canEdit={perms.canEditTasks} canManage={perms.canManageTasks} />
         </TabsContent>
         <TabsContent value="gantt" className="pt-4">
-          <GanttTab projectId={project.id} canManage={perms.canManageTasks} />
+          <GanttTab projectId={project.id} canEdit={perms.canEditTasks} canManage={perms.canManageTasks} />
         </TabsContent>
         {perms.isPm && (
           <TabsContent value="activity" className="pt-4">

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { useConfirm } from '@/hooks/useConfirm'
 import { supabase } from '@/lib/supabase'
 
-export function GanttTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
+export function GanttTab({ projectId, canEdit, canManage }: { projectId: number; canEdit: boolean; canManage: boolean }) {
   const qc = useQueryClient()
   const confirm = useConfirm()
   const { data: milestones } = useMilestones(projectId)
@@ -49,7 +49,7 @@ export function GanttTab({ projectId, canManage }: { projectId: number; canManag
 
   return (
     <div className="space-y-4">
-      <GanttChart projectId={projectId} canManage={canManage} />
+      <GanttChart projectId={projectId} canManage={canEdit} />
 
       <Card>
         <CardHeader>

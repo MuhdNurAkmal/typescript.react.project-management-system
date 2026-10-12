@@ -6,7 +6,6 @@ import { selectClass } from '@/components/projects/ProjectForm'
 import { PriorityBadge, TaskStatusBadge, statusLabels } from '@/components/tasks/badges'
 import { StatusBar } from '@/components/tasks/StatusBar'
 import { TaskDetailDialog } from '@/components/tasks/TaskDetailDialog'
-import { QuickUpdateDialog } from '@/components/tasks/QuickUpdateDialog'
 import { TaskDialog } from '@/components/tasks/TaskDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,7 +21,7 @@ import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
 import { cn } from '@/lib/utils'
 
-export function TasksTab({ projectId, canManage }: { projectId: number; canManage: boolean }) {
+export function TasksTab({ projectId, canEdit, canManage }: { projectId: number; canEdit: boolean; canManage: boolean }) {
   const { user } = useAuth()
   const qc = useQueryClient()
   const confirm = useConfirm()
@@ -33,14 +32,15 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
   const [editing, setEditing] = useState<Task | null | undefined>(undefined)
-  const [updating, setUpdating] = useState<Task | null>(null)
-  const [viewing, setViewing] = useState<Task | null>(null)
+  const [viewingId, setViewingId] = useState<number | null>(null)
 
   const nameOf = (id: string | null) => {
     if (!id) return 'Unassigned'
     const p = members?.find((m) => m.member.user_id === id)?.profile
     return p?.full_name || p?.email || 'Unknown'
   }
+
+  const viewing = data?.tasks.find((t) => t.id === viewingId) ?? null
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -97,7 +97,7 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-        {canManage && (
+        {canEdit && (
           <Button className="ml-auto shrink-0" onClick={() => setEditing(null)}>
             <Plus /> New task
           </Button>
@@ -133,11 +133,11 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
               </TableHeader>
               <TableBody>
                 {filtered.map((t) => {
-                  const mine = t.assignee_ids.includes(user?.id ?? '')
+                  const canDelete = canManage || t.created_by === user?.id
                   return (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">
-                        <button className="text-left hover:underline" onClick={() => setViewing(t)}>
+                        <button className="text-left hover:underline" onClick={() => setViewingId(t.id)}>
                           {t.title}
                         </button>
                       </TableCell>
@@ -147,20 +147,15 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
                       <TableCell className={isOverdue(t) ? 'font-medium text-destructive' : ''}>{t.due_date ?? '—'}</TableCell>
                       <TableCell>{t.progress}%</TableCell>
                       <TableCell className="space-x-2 text-right whitespace-nowrap">
-                        {mine && !canManage && (
-                          <Button size="sm" variant="outline" onClick={() => setUpdating(t)}>
-                            Update
+                        {canEdit && (
+                          <Button size="sm" variant="outline" onClick={() => setEditing(t)}>
+                            Edit
                           </Button>
                         )}
-                        {canManage && (
-                          <>
-                            <Button size="sm" variant="outline" onClick={() => setEditing(t)}>
-                              Edit
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => onDelete(t)}>
-                              Delete
-                            </Button>
-                          </>
+                        {canDelete && (
+                          <Button size="sm" variant="outline" onClick={() => onDelete(t)}>
+                            Delete
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -172,11 +167,10 @@ export function TasksTab({ projectId, canManage }: { projectId: number; canManag
         </Card>
       )}
 
-      {canManage && (
+      {canEdit && (
         <TaskDialog projectId={projectId} task={editing} tasks={data?.tasks ?? []} deps={data?.deps ?? []} onClose={() => setEditing(undefined)} />
       )}
-      <QuickUpdateDialog task={updating} onClose={() => setUpdating(null)} />
-      <TaskDetailDialog task={viewing} canManage={canManage} onClose={() => setViewing(null)} />
+      <TaskDetailDialog task={viewing} canEdit={canEdit} canManage={canManage} onClose={() => setViewingId(null)} />
     </div>
   )
 }

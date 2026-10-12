@@ -66,6 +66,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `021_merge_duplicate_roles.sql` | Merge duplicate project roles; PM role found by flag, not name |
 | `022_organization_roles_table.sql` | Company roles in their own table (Owner/Admin/Member), editable by the superadmin |
 | `023_task_assignees.sql` | Several assignees per task (link table); any assignee can update status and progress |
+| `024_trello_style_tasks.sql` | Trello-style cards: any editing member creates, edits, assigns and moves cards; `roles.can_edit` |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
