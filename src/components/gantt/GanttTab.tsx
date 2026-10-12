@@ -1,104 +1,177 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { GanttChart, useMilestones } from '@/components/gantt/GanttChart'
+import { GanttChart } from '@/components/gantt/GanttChart'
+import { MilestoneProgress, MilestoneStatePill } from '@/components/milestones/MilestoneStatus'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useMilestones } from '@/hooks/useMilestones'
+import { useProjectTasks } from '@/hooks/useTasks'
+import { milestoneProgress } from '@/lib/milestoneUtils'
 import { supabase } from '@/lib/supabase'
+import { todayString } from '@/lib/taskValidation'
+
+interface Draft {
+  id: number | null
+  title: string
+  start: string
+  end: string
+}
 
 export function GanttTab({ projectId, canEdit, canManage }: { projectId: number; canEdit: boolean; canManage: boolean }) {
   const qc = useQueryClient()
   const confirm = useConfirm()
   const { data: milestones } = useMilestones(projectId)
+  const { data: taskData } = useProjectTasks(projectId)
+  const [draft, setDraft] = useState<Draft | null>(null)
+  const today = todayString()
 
-  const refreshMilestones = () => qc.invalidateQueries({ queryKey: ['milestones', projectId] })
-  const addMilestone = useMutation({
-    mutationFn: async (v: { title: string; due_date: string }) => {
-      const { error } = await supabase.from('milestones').insert({ project_id: projectId, ...v })
+  const refresh = async () => {
+    await qc.invalidateQueries({ queryKey: ['milestones', projectId] })
+    await qc.invalidateQueries({ queryKey: ['tasks', projectId] })
+  }
+  const save = useMutation({
+    mutationFn: async (d: Draft) => {
+      const row = { title: d.title.trim(), start_date: d.start, end_date: d.end }
+      const { error } =
+        d.id === null
+          ? await supabase.from('milestones').insert({ project_id: projectId, ...row })
+          : await supabase.from('milestones').update(row).eq('id', d.id)
       if (error) throw error
     },
-    onSuccess: refreshMilestones,
+    onSuccess: async () => {
+      await refresh()
+      setDraft(null)
+    },
     onError: (e: Error) => toast.error(e.message),
   })
-  const updateMilestone = useMutation({
+  const tick = useMutation({
     mutationFn: async (v: { id: number; completed: boolean }) => {
       const { error } = await supabase.from('milestones').update({ completed: v.completed }).eq('id', v.id)
       if (error) throw error
     },
-    onSuccess: refreshMilestones,
+    onSuccess: refresh,
     onError: (e: Error) => toast.error(e.message),
   })
-  const removeMilestone = useMutation({
+  const remove = useMutation({
     mutationFn: async (id: number) => {
       const { error } = await supabase.from('milestones').delete().eq('id', id)
       if (error) throw error
     },
-    onSuccess: refreshMilestones,
+    onSuccess: refresh,
     onError: (e: Error) => toast.error(e.message),
   })
 
-  const [msTitle, setMsTitle] = useState('')
-  const [msDate, setMsDate] = useState('')
-  function onAddMilestone(e: FormEvent) {
+  function submit(e: FormEvent) {
     e.preventDefault()
-    addMilestone.mutate({ title: msTitle.trim(), due_date: msDate }, { onSuccess: () => { setMsTitle(''); setMsDate('') } })
+    if (!draft) return
+    if (draft.end < draft.start) return toast.error('The end date cannot be before the start date')
+    save.mutate(draft)
   }
 
+  const tasks = taskData?.tasks ?? []
   return (
     <div className="space-y-4">
       <GanttChart projectId={projectId} canManage={canEdit} />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Milestones</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardHeader className="flex-row items-start justify-between gap-3">
+          <div>
+            <CardTitle>Milestones</CardTitle>
+            <CardDescription>A milestone is a phase with a start and an end date. Put tasks under it; they should all be done by the end date.</CardDescription>
+          </div>
           {canManage && (
-            <form onSubmit={onAddMilestone} className="flex flex-wrap items-end gap-3">
-              <div className="min-w-48 flex-1 space-y-2">
-                <Label htmlFor="ms-title">Title</Label>
-                <Input id="ms-title" required value={msTitle} onChange={(e) => setMsTitle(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ms-date">Date</Label>
-                <Input id="ms-date" type="date" required value={msDate} onChange={(e) => setMsDate(e.target.value)} />
-              </div>
-              <Button type="submit" disabled={addMilestone.isPending}>
-                Add milestone
-              </Button>
-            </form>
+            <Button size="sm" onClick={() => setDraft({ id: null, title: '', start: today, end: today })}>
+              <Plus /> New milestone
+            </Button>
           )}
-          {milestones?.length === 0 && <p className="text-sm text-muted-foreground">No milestones yet.</p>}
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {milestones?.length === 0 && <p className="text-sm text-muted-foreground">No milestones yet.{canManage ? ' Add the first phase of the project.' : ''}</p>}
           <ul className="divide-y">
-            {milestones?.map((m) => (
-              <li key={m.id} className="flex flex-wrap items-center gap-3 py-2">
-                <label className="flex flex-1 items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={m.completed}
-                    disabled={!canManage}
-                    onChange={(e) => updateMilestone.mutate({ id: m.id, completed: e.target.checked })}
-                  />
-                  <span className={m.completed ? 'line-through' : ''}>{m.title}</span>
-                </label>
-                <span className="text-sm text-muted-foreground">{m.due_date}</span>
-                {canManage && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={async () => (await confirm({ title: `Delete milestone "${m.title}"?`, confirmLabel: 'Delete' })) && removeMilestone.mutate(m.id)}
-                  >
-                    Delete
-                  </Button>
-                )}
-              </li>
-            ))}
+            {milestones?.map((m) => {
+              const p = milestoneProgress(m, tasks, today)
+              return (
+                <li key={m.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
+                  <div className="min-w-48 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`font-medium ${p.state === 'done' ? 'text-muted-foreground line-through' : ''}`}>{m.title}</span>
+                      <MilestoneStatePill state={p.state} />
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {m.start_date} to {m.end_date}
+                      {p.state !== 'done' && p.daysLeft >= 0 && ` · ${p.daysLeft} day${p.daysLeft === 1 ? '' : 's'} left`}
+                      {p.state === 'overdue' && ` · ended ${-p.daysLeft} day${p.daysLeft === -1 ? '' : 's'} ago`}
+                    </div>
+                  </div>
+                  <MilestoneProgress done={p.done} total={p.total} percent={p.percent} state={p.state} />
+                  {canManage && (
+                    <div className="flex items-center gap-2">
+                      {p.total === 0 && (
+                        <label className="flex items-center gap-1.5 text-sm">
+                          <input type="checkbox" checked={m.completed} onChange={(e) => tick.mutate({ id: m.id, completed: e.target.checked })} />
+                          Done
+                        </label>
+                      )}
+                      <Button size="sm" variant="outline" onClick={() => setDraft({ id: m.id, title: m.title, start: m.start_date, end: m.end_date })}>
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => (await confirm({ title: `Delete milestone "${m.title}"?`, description: 'Its tasks are kept and move to Unplanned.', confirmLabel: 'Delete' })) && remove.mutate(m.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </CardContent>
       </Card>
+
+      <Dialog open={draft !== null} onOpenChange={(o) => !o && setDraft(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{draft?.id ? 'Edit milestone' : 'New milestone'}</DialogTitle>
+            <DialogDescription>Every task under it should be done by the end date.</DialogDescription>
+          </DialogHeader>
+          {draft && (
+            <form onSubmit={submit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="ms-title">Title</Label>
+                <Input id="ms-title" required maxLength={120} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="ms-start">Starts</Label>
+                  <Input id="ms-start" type="date" required value={draft.start} onChange={(e) => setDraft({ ...draft, start: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ms-end">Ends</Label>
+                  <Input id="ms-end" type="date" required value={draft.end} min={draft.start} onChange={(e) => setDraft({ ...draft, end: e.target.value })} />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setDraft(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={save.isPending || !draft.title.trim()}>
+                  Save
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+

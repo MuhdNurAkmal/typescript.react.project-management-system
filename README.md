@@ -69,6 +69,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `024_trello_style_tasks.sql` | Trello-style cards: any editing member creates, edits, assigns and moves cards; `roles.can_edit` |
 | `025_role_can_delete_tasks.sql` | Deleting cards is a role power (`roles.can_delete`) |
 | `026_everyone_edits_and_deletes.sql` | Every project member can add, edit and delete cards (role switches stay on by default) |
+| `027_milestone_phases.sql` | Milestones are phases (start and end date) with tasks under them; progress, warnings, overdue alerts |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 

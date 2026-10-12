@@ -7,11 +7,12 @@ import { PriorityBadge, statusLabels } from '@/components/tasks/badges'
 import { TaskDetailDialog } from '@/components/tasks/TaskDetailDialog'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
+import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { isOverdue } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
-import type { Task, TaskStatus } from '@/types/database'
+import type { Milestone, Task, TaskStatus } from '@/types/database'
 import { cn } from '@/lib/utils'
 
 const columns: TaskStatus[] = ['todo', 'in_progress', 'review', 'done']
@@ -30,12 +31,15 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
   const qc = useQueryClient()
   const { data, isLoading, error } = useProjectTasks(projectId)
   const { data: members } = useProjectMembers(projectId)
+  const { data: milestones } = useMilestones(projectId)
+  const [milestoneFilter, setMilestoneFilter] = useState('')
   const [dragId, setDragId] = useState<number | null>(null)
   const [over, setOver] = useState<TaskStatus | null>(null)
   const [openId, setOpenId] = useState<number | null>(null)
 
-  const tasks = data?.tasks ?? []
-  const open = tasks.find((t) => t.id === openId) ?? null
+  const allTasks = data?.tasks ?? []
+  const open = allTasks.find((t) => t.id === openId) ?? null
+  const tasks = allTasks.filter((t) => !milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter)))
 
   const counts = useQuery({
     queryKey: ['comment-counts', projectId, tasks.map((t) => t.id).join(',')],
@@ -83,7 +87,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
   })
 
   function drop(status: TaskStatus) {
-    const task = tasks.find((t) => t.id === dragId)
+    const task = allTasks.find((t) => t.id === dragId)
     setDragId(null)
     setOver(null)
     if (task && task.status !== status && canEdit) move.mutate({ id: task.id, status })
@@ -94,6 +98,22 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
 
   return (
     <>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <select
+          aria-label="Filter by milestone"
+          className={cn(selectClass, 'w-56')}
+          value={milestoneFilter}
+          onChange={(e) => setMilestoneFilter(e.target.value)}
+        >
+          <option value="">All milestones</option>
+          <option value="none">Unplanned (no milestone)</option>
+          {milestones?.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.title}
+            </option>
+          ))}
+        </select>
+      </div>
       <p className="mb-3 text-sm text-muted-foreground">
         {canEdit ? 'Add cards, drag them between columns, and click a card to edit it, assign people and comment.' : 'You can look at the cards and comment, but not change them.'}
       </p>
@@ -122,6 +142,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
                     key={t.id}
                     task={t}
                     names={t.assignee_ids.map(nameOf)}
+                    milestone={milestones?.find((m) => m.id === t.milestone_id)}
                     comments={counts.data?.get(t.id) ?? 0}
                     draggable={canEdit}
                     dragging={dragId === t.id}
@@ -148,6 +169,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
 function Card({
   task,
   names,
+  milestone,
   comments,
   draggable,
   dragging,
@@ -158,6 +180,7 @@ function Card({
 }: {
   task: Task
   names: string[]
+  milestone?: Milestone
   comments: number
   draggable: boolean
   dragging: boolean
@@ -175,7 +198,10 @@ function Card({
       onClick={onOpen}
       className={`space-y-2 rounded-lg border bg-card p-3 shadow-soft transition-shadow hover:shadow-lift ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${dragging ? 'opacity-50' : ''}`}
     >
-      <PriorityBadge priority={task.priority} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        <PriorityBadge priority={task.priority} />
+        {milestone && <span className="rounded bg-primary-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">◆ {milestone.title}</span>}
+      </div>
       <div className="text-sm font-medium break-words">{task.title}</div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
         {task.due_date && (

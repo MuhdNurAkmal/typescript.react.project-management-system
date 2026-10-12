@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Gantt, { type GanttTask } from 'frappe-gantt'
 import { addSeconds, format } from 'date-fns'
 import { toast } from 'sonner'
@@ -7,9 +7,12 @@ import '@/styles/frappe-gantt.css'
 import { Button } from '@/components/ui/button'
 import { AssigneeStack } from '@/components/tasks/AssigneeStack'
 import { Card, CardContent } from '@/components/ui/card'
+import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
+import { milestoneProgress } from '@/lib/milestoneUtils'
 import { supabase } from '@/lib/supabase'
+import { todayString } from '@/lib/taskValidation'
 
 const VIEW_MODES = ['Day', 'Week', 'Month'] as const
 const statusClass = { todo: 'gantt-todo', in_progress: 'gantt-in-progress', review: 'gantt-review', done: 'gantt-done' }
@@ -32,17 +35,10 @@ interface ListRow {
   assignees: string[]
   milestone: boolean
   done: boolean
-}
-
-export function useMilestones(projectId: number) {
-  return useQuery({
-    queryKey: ['milestones', projectId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('milestones').select('*').eq('project_id', projectId).order('due_date')
-      if (error) throw error
-      return data
-    },
-  })
+  /** Tasks sit one step in under their milestone. */
+  indent: boolean
+  /** For a milestone: "6/9". */
+  detail?: string
 }
 
 export function GanttChart({ projectId, canManage }: { projectId: number; canManage: boolean }) {
@@ -58,18 +54,21 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
   const { ganttTasks, unscheduled, listRows } = useMemo(() => {
     const scheduled: GanttTask[] = []
     const list: ListRow[] = []
-    const nameOf = new Map((members ?? []).map((m) => [m.member.user_id, m.profile?.full_name || m.profile?.email || 'Unknown']))
     const skipped: string[] = []
     const ids = new Set<number>()
-    for (const t of data?.tasks ?? []) {
+    const today = todayString()
+    const nameOf = new Map((members ?? []).map((m) => [m.member.user_id, m.profile?.full_name || m.profile?.email || 'Unknown']))
+    const tasks = data?.tasks ?? []
+
+    const addTask = (t: (typeof tasks)[number], indent: boolean) => {
       const start = t.start_date ?? t.due_date
       const end = t.due_date ?? t.start_date
       if (!start || !end) {
         skipped.push(t.title)
-        continue
+        return
       }
       ids.add(t.id)
-      list.push({ id: String(t.id), name: t.title, assignees: t.assignee_ids.map((id) => nameOf.get(id) ?? 'Unknown'), milestone: false, done: t.status === 'done' })
+      list.push({ id: String(t.id), name: t.title, assignees: t.assignee_ids.map((id) => nameOf.get(id) ?? 'Unknown'), milestone: false, done: t.status === 'done', indent })
       scheduled.push({
         id: String(t.id),
         name: t.title,
@@ -81,21 +80,29 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         dependencies: '',
       })
     }
+
+    // each milestone is a long bar for the whole phase, with its tasks listed right under it
+    for (const m of milestones ?? []) {
+      const p = milestoneProgress(m, tasks, today)
+      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', indent: false, detail: p.total ? `${p.done}/${p.total}` : undefined })
+      scheduled.push({
+        id: `m-${m.id}`,
+        name: m.title,
+        start: m.start_date,
+        end: m.end_date,
+        progress: p.percent,
+        custom_class: p.state === 'overdue' ? 'gantt-milestone-overdue' : 'gantt-milestone',
+      })
+      for (const t of tasks.filter((x) => x.milestone_id === m.id)) addTask(t, true)
+    }
+    // tasks under no milestone come last
+    const known = new Set((milestones ?? []).map((m) => m.id))
+    for (const t of tasks.filter((x) => x.milestone_id === null || !known.has(x.milestone_id))) addTask(t, false)
+
     for (const d of data?.deps ?? []) {
       if (!ids.has(d.task_id) || !ids.has(d.depends_on_task_id)) continue
       const task = scheduled.find((s) => s.id === String(d.task_id))!
       task.dependencies = [task.dependencies, String(d.depends_on_task_id)].filter(Boolean).join(',')
-    }
-    for (const m of milestones ?? []) {
-      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: m.completed })
-      scheduled.push({
-        id: `m-${m.id}`,
-        name: `◆ ${m.title}`,
-        start: m.due_date,
-        end: m.due_date,
-        progress: m.completed ? 100 : 0,
-        custom_class: 'gantt-milestone',
-      })
     }
     return { ganttTasks: scheduled, unscheduled: skipped, listRows: list }
   }, [data, milestones, members])
@@ -182,10 +189,14 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
               </div>
               <ul>
                 {listRows.map((r) => (
-                  <li key={r.id} className="flex items-center gap-2 border-b px-3 text-sm" style={{ height: ROW_HEIGHT }}>
-                    <span className={`min-w-0 flex-1 truncate ${r.done ? 'text-muted-foreground line-through' : 'font-medium'}`} title={r.name}>
+                  <li key={r.id} className={`flex items-center gap-2 border-b px-3 text-sm ${r.milestone ? 'bg-muted/50' : ''}`} style={{ height: ROW_HEIGHT }}>
+                    <span
+                      className={`min-w-0 flex-1 truncate ${r.indent ? 'pl-4' : ''} ${r.done ? 'text-muted-foreground line-through' : r.milestone ? 'font-semibold' : 'font-medium'}`}
+                      title={r.name}
+                    >
                       {r.milestone ? '◆ ' : ''}
                       {r.name}
+                      {r.detail && <span className="ml-1.5 text-xs font-normal text-muted-foreground">{r.detail}</span>}
                     </span>
                     <span className="flex w-24 shrink-0 items-center gap-1.5 sm:w-28">
                       {r.assignees.length > 0 ? (

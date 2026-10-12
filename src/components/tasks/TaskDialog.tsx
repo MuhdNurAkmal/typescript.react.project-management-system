@@ -8,7 +8,9 @@ import { MultiCombobox } from '@/components/ui/multi-combobox'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
+import { outsideMessage, taskOutsideMilestone } from '@/lib/milestoneUtils'
 import { createsDependencyCycle, createsParentCycle, validateTaskDates } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskDependency, TaskPriority, TaskStatus } from '@/types/database'
@@ -36,6 +38,7 @@ export function TaskDialog({ task, ...rest }: Props) {
 function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & { task: Task | null }) {
   const qc = useQueryClient()
   const { data: members } = useProjectMembers(projectId)
+  const { data: milestones } = useMilestones(projectId)
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [assignees, setAssignees] = useState<string[]>(task?.assignee_ids ?? [])
@@ -44,11 +47,15 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
   const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? 'medium')
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo')
   const [parent, setParent] = useState<number | ''>(task?.parent_task_id ?? '')
+  const [milestone, setMilestone] = useState<number | ''>(task?.milestone_id ?? '')
   const [depIds, setDepIds] = useState<number[]>(
     task ? deps.filter((d) => d.task_id === task.id).map((d) => d.depends_on_task_id) : [],
   )
 
   const others = tasks.filter((t) => t.id !== task?.id)
+  const chosenMilestone = milestones?.find((m) => m.id === milestone)
+  const side = chosenMilestone ? taskOutsideMilestone({ start_date: start || null, due_date: due || null }, chosenMilestone) : null
+  const warning = chosenMilestone && side ? outsideMessage(side, chosenMilestone) : null
   const activeMembers = members?.filter((m) => m.member.is_active) ?? []
 
   const save = useMutation({
@@ -79,6 +86,7 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
         status,
         progress: status === 'done' ? 100 : (task?.progress ?? 0),
         parent_task_id: parent === '' ? null : parent,
+        milestone_id: milestone === '' ? null : milestone,
       }
 
       let taskId = task?.id
@@ -145,6 +153,22 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
             emptyText="No member matches."
           />
           <p className="text-xs text-muted-foreground">Everyone chosen can update this task's status and progress.</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="t-milestone">Milestone</Label>
+          <select id="t-milestone" className={selectClass} value={milestone} onChange={(e) => setMilestone(e.target.value === '' ? '' : Number(e.target.value))}>
+            <option value="">No milestone (unplanned)</option>
+            {milestones?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.title} ({m.start_date} to {m.end_date})
+              </option>
+            ))}
+          </select>
+          {warning && (
+            <p role="status" className="rounded-lg bg-warning-soft px-3 py-2 text-xs text-warning-foreground">
+              {warning}
+            </p>
+          )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">

@@ -162,3 +162,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Every active member of a project, whatever their role, can create, edit, assign and delete any card.
 - [ ] A person who is not in the project still cannot do any of it.
 - [ ] Switching can_edit or can_delete off for one role stops exactly that role.
+
+## Milestone phases (027)
+- [ ] Only project managers can create, edit and delete milestones; any editing member can set a task's milestone.
+- [ ] A task cannot be linked to a milestone of another project.
+- [ ] Marking the last open task of a milestone done completes the milestone; reopening a task reopens it; a milestone with no tasks keeps its manual Done tick.
+- [ ] Deleting a milestone leaves its tasks in place as unplanned.
+- [ ] check_milestone_deadlines notifies each project manager once per overdue milestone, only for members of that project, and again after the end date is moved later and passes again.

@@ -12,7 +12,9 @@ import { Label } from '@/components/ui/label'
 import { MultiCombobox } from '@/components/ui/multi-combobox'
 import { useAuth } from '@/hooks/useAuth'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
+import { outsideMessage, taskOutsideMilestone } from '@/lib/milestoneUtils'
 import { validateTaskDates } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskPriority, TaskStatus } from '@/types/database'
@@ -43,6 +45,7 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: { task: Task; ca
   const qc = useQueryClient()
   const confirm = useConfirm()
   const { data: members } = useProjectMembers(task.project_id)
+  const { data: milestones } = useMilestones(task.project_id)
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description ?? '')
   const [start, setStart] = useState(task.start_date ?? '')
@@ -63,7 +66,7 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: { task: Task; ca
   }
 
   const update = useMutation({
-    mutationFn: async (patch: Partial<Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'start_date' | 'due_date' | 'progress'>>) => {
+    mutationFn: async (patch: Partial<Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'start_date' | 'due_date' | 'progress' | 'milestone_id'>>) => {
       const { error } = await supabase.from('tasks').update(patch).eq('id', task.id)
       if (error) throw error
     },
@@ -153,6 +156,10 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: { task: Task; ca
     if (text.trim()) add.mutate()
   }
 
+  const chosenMilestone = milestones?.find((m) => m.id === task.milestone_id)
+  const side = chosenMilestone ? taskOutsideMilestone({ start_date: start || null, due_date: due || null }, chosenMilestone) : null
+  const warning = chosenMilestone && side ? outsideMessage(side, chosenMilestone) : null
+
   const field = 'space-y-1.5'
   return (
     <>
@@ -191,6 +198,29 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: { task: Task; ca
               />
             ) : (
               <p className="text-sm">{assignees.length ? assignees.map(nameOf).join(', ') : 'Nobody yet'}</p>
+            )}
+          </div>
+
+          <div className={field}>
+            <Label htmlFor="c-milestone">Milestone</Label>
+            <select
+              id="c-milestone"
+              className={selectClass}
+              disabled={!canEdit}
+              value={task.milestone_id ?? ''}
+              onChange={(e) => update.mutate({ milestone_id: e.target.value === '' ? null : Number(e.target.value) })}
+            >
+              <option value="">No milestone (unplanned)</option>
+              {milestones?.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.title} ({m.start_date} to {m.end_date})
+                </option>
+              ))}
+            </select>
+            {warning && (
+              <p role="status" className="rounded-lg bg-warning-soft px-3 py-2 text-xs text-warning-foreground">
+                {warning}
+              </p>
             )}
           </div>
 

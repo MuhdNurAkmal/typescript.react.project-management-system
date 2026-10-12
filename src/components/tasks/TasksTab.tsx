@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useConfirm } from '@/hooks/useConfirm'
+import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { summarizeTasks } from '@/lib/reportUtils'
@@ -25,6 +26,8 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
   const confirm = useConfirm()
   const { data, isLoading, error } = useProjectTasks(projectId)
   const { data: members } = useProjectMembers(projectId)
+  const { data: milestones } = useMilestones(projectId)
+  const [milestoneFilter, setMilestoneFilter] = useState('')
   const [search, setSearch] = useState('')
   const [assignee, setAssignee] = useState('')
   const [status, setStatus] = useState('')
@@ -46,10 +49,11 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
       (t) =>
         (!q || t.title.toLowerCase().includes(q) || (t.description ?? '').toLowerCase().includes(q)) &&
         (!assignee || (assignee === 'none' ? t.assignee_ids.length === 0 : t.assignee_ids.includes(assignee))) &&
+        (!milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter))) &&
         (!status || t.status === status) &&
         (!priority || t.priority === priority),
     )
-  }, [data, search, assignee, status, priority])
+  }, [data, search, assignee, milestoneFilter, status, priority])
 
   const remove = useMutation({
     mutationFn: async (id: number) => {
@@ -78,6 +82,15 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
           {members?.map(({ member, profile }) => (
             <option key={member.id} value={member.user_id}>
               {profile?.full_name || profile?.email}
+            </option>
+          ))}
+        </select>
+        <select className={cn(selectClass, 'w-40 lg:w-auto lg:min-w-0 lg:max-w-48 lg:flex-[1_1_8rem]')} value={milestoneFilter} onChange={(e) => setMilestoneFilter(e.target.value)} aria-label="Filter by milestone">
+          <option value="">All milestones</option>
+          <option value="none">Unplanned</option>
+          {milestones?.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.title}
             </option>
           ))}
         </select>
@@ -122,6 +135,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                 <TableRow>
                   <TableHead>Task</TableHead>
                   <TableHead>Assignee</TableHead>
+                  <TableHead>Milestone</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Due</TableHead>
@@ -139,6 +153,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                         </button>
                       </TableCell>
                       <TableCell>{t.assignee_ids.length ? t.assignee_ids.map(nameOf).join(', ') : 'Unassigned'}</TableCell>
+                      <TableCell className="text-muted-foreground">{milestones?.find((m) => m.id === t.milestone_id)?.title ?? 'Unplanned'}</TableCell>
                       <TableCell><TaskStatusBadge status={t.status} /></TableCell>
                       <TableCell><PriorityBadge priority={t.priority} /></TableCell>
                       <TableCell className={isOverdue(t) ? 'font-medium text-destructive' : ''}>{t.due_date ?? '—'}</TableCell>

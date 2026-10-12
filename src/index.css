@@ -72,5 +72,7 @@
 .gantt-container .bar-wrapper.gantt-review .bar-progress { fill: #f59e0b; }
 .gantt-container .bar-wrapper.gantt-done .bar { fill: #86efac; }
 .gantt-container .bar-wrapper.gantt-done .bar-progress { fill: #22c55e; }
-.gantt-container .bar-wrapper.gantt-milestone .bar,
-.gantt-container .bar-wrapper.gantt-milestone .bar-progress { fill: #a855f7; }
+.gantt-container .bar-wrapper.gantt-milestone .bar { fill: #ddd6fe; }
+.gantt-container .bar-wrapper.gantt-milestone .bar-progress { fill: #8b5cf6; }
+.gantt-container .bar-wrapper.gantt-milestone-overdue .bar { fill: #fecaca; }
+.gantt-container .bar-wrapper.gantt-milestone-overdue .bar-progress { fill: #ef4444; }

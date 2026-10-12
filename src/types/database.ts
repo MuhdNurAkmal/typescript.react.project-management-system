@@ -88,6 +88,7 @@ export type TaskRow = {
   project_id: number
   title: string
   description: string | null
+  milestone_id: number | null
   start_date: string | null
   due_date: string | null
   status: TaskStatus
@@ -182,7 +183,8 @@ export type Milestone = {
   id: number
   project_id: number
   title: string
-  due_date: string
+  start_date: string
+  end_date: string
   completed: boolean
 }
 
@@ -298,12 +300,13 @@ export type Database = {
       admin_audit_log: Table<AdminAuditEntry, Pick<AdminAuditEntry, 'action' | 'target_type' | 'summary'>>
       milestones: Table<
         Milestone,
-        Pick<Milestone, 'project_id' | 'title' | 'due_date'> &
-          Partial<Omit<Milestone, 'project_id' | 'title' | 'due_date'>>
+        Pick<Milestone, 'project_id' | 'title' | 'start_date' | 'end_date'> &
+          Partial<Omit<Milestone, 'project_id' | 'title' | 'start_date' | 'end_date'>>
       >
     }
     Views: Record<string, never>
     Functions: {
+      check_milestone_deadlines: { Args: { p_project_id: number }; Returns: number }
       set_task_assignees: { Args: { p_task_id: number; p_user_ids: string[] }; Returns: undefined }
       get_invite_info: { Args: { p_code: string }; Returns: { organization_name: string }[] }
       join_company: { Args: { p_code: string }; Returns: number }
