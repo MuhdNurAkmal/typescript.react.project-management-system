@@ -1,12 +1,11 @@
 /*
- * Phase > task > subtask. Everything here is pure so it can be tested.
+ * Phase > task. Everything here is pure so it can be tested.
  * Order is by date, not by when a task was created: earliest start first (falling back to the due date),
  * then earliest due date, then creation order as a tie-break. Numbers are given in that order, so they
  * move if the dates change.
  */
 export interface TreeTask {
   id: number
-  parent_task_id: number | null
   milestone_id: number | null
   start_date: string | null
   due_date: string | null
@@ -24,41 +23,15 @@ export function byDate<T extends TreeTask>(a: T, b: T) {
   return a.id - b.id
 }
 
-export const topLevel = <T extends TreeTask>(tasks: T[]) => tasks.filter((t) => t.parent_task_id === null)
-
-export const subtasksOf = <T extends TreeTask>(tasks: T[], parentId: number) =>
-  tasks.filter((t) => t.parent_task_id === parentId).sort(byDate)
-
-/** Tasks that are not split into subtasks, plus the subtasks themselves: the real units of work. */
-export function leafTasks<T extends TreeTask>(tasks: T[]) {
-  const parents = new Set(tasks.map((t) => t.parent_task_id).filter((id): id is number => id !== null))
-  return tasks.filter((t) => !parents.has(t.id))
-}
-
-/**
- * The code of every task inside its phase: tasks are 1, 2, 3 and their subtasks 1.1, 1.2 ...
- * Tasks under no phase are numbered the same way among themselves.
- */
+/** The number of every task inside its phase: 1, 2, 3 ... Tasks under no phase are numbered among themselves. */
 export function taskCodes<T extends TreeTask>(tasks: T[]) {
   const codes = new Map<number, string>()
   const groups = new Map<number | null, T[]>()
-  for (const t of topLevel(tasks)) groups.set(t.milestone_id, [...(groups.get(t.milestone_id) ?? []), t])
-  for (const group of groups.values()) {
-    group.sort(byDate).forEach((t, i) => {
-      const code = String(i + 1)
-      codes.set(t.id, code)
-      subtasksOf(tasks, t.id).forEach((s, j) => codes.set(s.id, `${code}.${j + 1}`))
-    })
-  }
+  for (const t of tasks) groups.set(t.milestone_id, [...(groups.get(t.milestone_id) ?? []), t])
+  for (const group of groups.values()) group.sort(byDate).forEach((t, i) => codes.set(t.id, String(i + 1)))
   return codes
 }
 
-/** Tasks in display order: each task followed by its subtasks, grouped by phase in the order given. */
-export function orderedWithin<T extends TreeTask>(tasks: T[], milestoneId: number | null): { task: T; indent: boolean }[] {
-  const out: { task: T; indent: boolean }[] = []
-  for (const t of topLevel(tasks).filter((x) => x.milestone_id === milestoneId).sort(byDate)) {
-    out.push({ task: t, indent: false })
-    for (const s of subtasksOf(tasks, t.id)) out.push({ task: s, indent: true })
-  }
-  return out
-}
+/** The tasks of one phase (or of no phase) in date order. */
+export const tasksIn = <T extends TreeTask>(tasks: T[], milestoneId: number | null) =>
+  tasks.filter((t) => t.milestone_id === milestoneId).sort(byDate)

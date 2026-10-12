@@ -16,7 +16,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { summarizeTasks } from '@/lib/reportUtils'
-import { leafTasks, taskCodes } from '@/lib/taskTree'
+import { taskCodes } from '@/lib/taskTree'
 import { isOverdue, todayString } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
@@ -56,18 +56,16 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
     )
   }, [data, search, assignee, milestoneFilter, status, priority])
 
-  // phase by phase in date order, each task followed by its subtasks
+  // phase by phase, in date order
   const codes = useMemo(() => taskCodes(data?.tasks ?? []), [data])
   const rows = useMemo(() => {
     const rank = new Map((milestones ?? []).map((m, i) => [m.id, i]))
-    const part = (id: number) => (codes.get(id) ?? '9999').split('.').map(Number)
+    const num = (id: number) => Number(codes.get(id) ?? 9999)
     return [...filtered].sort((a, b) => {
       const ra = a.milestone_id === null ? 9999 : (rank.get(a.milestone_id) ?? 9998)
       const rb = b.milestone_id === null ? 9999 : (rank.get(b.milestone_id) ?? 9998)
       if (ra !== rb) return ra - rb
-      const pa = part(a.id)
-      const pb = part(b.id)
-      return pa[0] - pb[0] || (pa[1] ?? 0) - (pb[1] ?? 0)
+      return num(a.id) - num(b.id)
     })
   }, [filtered, codes, milestones])
 
@@ -84,8 +82,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
   })
 
   async function onDelete(t: Task) {
-    const subs = (data?.tasks ?? []).filter((x) => x.parent_task_id === t.id).length
-    const ok = await confirm({ title: `Delete task "${t.title}"?`, description: subs ? `Its ${subs} subtask(s) are deleted too. This cannot be undone.` : 'This cannot be undone.', confirmLabel: 'Delete' })
+    const ok = await confirm({ title: `Delete task "${t.title}"?`, description: 'The card, its checklist and its comments are removed for good.', confirmLabel: 'Delete' })
     if (ok) remove.mutate(t.id)
   }
 
@@ -135,7 +132,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
       {data && data.tasks.length > 0 && (
         <Card>
           <CardContent>
-            <StatusBar counts={summarizeTasks(leafTasks(data.tasks), todayString()).byStatus} />
+            <StatusBar counts={summarizeTasks(data.tasks, todayString()).byStatus} />
           </CardContent>
         </Card>
       )}
@@ -165,7 +162,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                   return (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">
-                        <button className={`text-left hover:underline ${t.parent_task_id !== null ? 'pl-5' : ''}`} onClick={() => setViewingId(t.id)}>
+                        <button className="text-left hover:underline" onClick={() => setViewingId(t.id)}>
                           <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{codes.get(t.id)}</span>
                           {t.title}
                         </button>
@@ -200,7 +197,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
       {canEdit && (
         <TaskDialog projectId={projectId} task={editing} tasks={data?.tasks ?? []} deps={data?.deps ?? []} onClose={() => setEditing(undefined)} />
       )}
-      <TaskDetailDialog task={viewing} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onOpenTask={setViewingId} onClose={() => setViewingId(null)} />
+      <TaskDetailDialog task={viewing} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onClose={() => setViewingId(null)} />
     </div>
   )
 }

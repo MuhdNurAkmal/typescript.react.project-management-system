@@ -29,16 +29,3 @@ export function createsDependencyCycle(taskId: number, newDeps: number[], edges:
   }
   return false
 }
-
-/** True if making `parentId` the parent of `taskId` would make a task its own ancestor. */
-export function createsParentCycle(taskId: number, parentId: number | null, parentOf: Map<number, number | null>): boolean {
-  let current = parentId
-  const seen = new Set<number>()
-  while (current != null) {
-    if (current === taskId) return true
-    if (seen.has(current)) return false
-    seen.add(current)
-    current = parentOf.get(current) ?? null
-  }
-  return false
-}

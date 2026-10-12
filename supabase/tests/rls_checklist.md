@@ -177,3 +177,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A task without subtasks keeps its own status, progress and dates.
 - [ ] Deleting a task deletes its subtasks; deleting the last subtask leaves the task with its last roll-up values, editable again.
 - [ ] A milestone completes when all its top-level tasks are done and reopens when one is reopened.
+
+## Task checklists (029)
+- [ ] A project member can read a task's checklist; a read-only member cannot add, change or delete items.
+- [ ] A checklist item always takes its project from its task (the project_id sent by the caller is ignored); an item cannot move to another task.
+- [ ] A tick box accepts only 0 or 100; a percentage accepts 0-100.
+- [ ] Changing items updates the task's percentage (average); typing a percentage on a task with a checklist has no effect; a Done task is 100.
+- [ ] Items are not visible to people outside the project, to suspended users, or writable in a suspended company.

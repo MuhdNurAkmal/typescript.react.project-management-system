@@ -11,7 +11,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { milestoneProgress } from '@/lib/milestoneUtils'
-import { orderedWithin, taskCodes } from '@/lib/taskTree'
+import { taskCodes, tasksIn } from '@/lib/taskTree'
 import { supabase } from '@/lib/supabase'
 import { todayString } from '@/lib/taskValidation'
 
@@ -64,7 +64,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     const tasks = data?.tasks ?? []
 
     const codes = taskCodes(tasks)
-    const addTask = (t: (typeof tasks)[number], indent: boolean, base: number) => {
+    const addTask = (t: (typeof tasks)[number], level: number) => {
       const start = t.start_date ?? t.due_date
       const end = t.due_date ?? t.start_date
       if (!start || !end) {
@@ -79,7 +79,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         assignees: t.assignee_ids.map((id) => nameOf.get(id) ?? 'Unknown'),
         milestone: false,
         done: t.status === 'done',
-        level: base + (indent ? 1 : 0),
+        level,
         code,
       })
       scheduled.push({
@@ -94,7 +94,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       })
     }
 
-    // each milestone is a long bar for the whole phase; its tasks follow in date order, each with its subtasks
+    // each milestone is a long bar for the whole phase; its tasks follow in date order
     for (const m of milestones ?? []) {
       const p = milestoneProgress(m, tasks, today)
       list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', level: 0, detail: p.total ? `${p.percent}%` : undefined })
@@ -106,12 +106,12 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         progress: p.percent,
         custom_class: p.state === 'overdue' ? 'gantt-milestone-overdue' : 'gantt-milestone',
       })
-      for (const { task, indent } of orderedWithin(tasks, m.id)) addTask(task, indent, 1)
+      for (const task of tasksIn(tasks, m.id)) addTask(task, 1)
     }
     // tasks under no milestone come last
     const known = new Set((milestones ?? []).map((m) => m.id))
     const orphan = tasks.map((t) => (t.milestone_id !== null && !known.has(t.milestone_id) ? { ...t, milestone_id: null } : t))
-    for (const { task, indent } of orderedWithin(orphan, null)) addTask(task, indent, 0)
+    for (const task of tasksIn(orphan, null)) addTask(task, 0)
 
     for (const d of data?.deps ?? []) {
       if (!ids.has(d.task_id) || !ids.has(d.depends_on_task_id)) continue

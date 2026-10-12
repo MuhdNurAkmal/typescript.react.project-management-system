@@ -1,11 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
-import { ArrowLeft, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
-import { AssigneeStack } from '@/components/tasks/AssigneeStack'
-import { TaskStatusBadge, priorityLabels, statusLabels } from '@/components/tasks/badges'
+import { Checklist } from '@/components/tasks/Checklist'
+import { priorityLabels, statusLabels } from '@/components/tasks/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
@@ -18,7 +17,8 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { outsideMessage, taskOutsideMilestone } from '@/lib/milestoneUtils'
-import { subtasksOf, taskCodes } from '@/lib/taskTree'
+import { checklistPercent } from '@/lib/checklist'
+import { taskCodes } from '@/lib/taskTree'
 import { validateTaskDates } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskPriority, TaskStatus } from '@/types/database'
@@ -32,12 +32,10 @@ interface Props {
   canDelete: boolean
   /** Project managers can also delete other people's comments. */
   canManage: boolean
-  /** Open another card (a subtask, or the task above) in this same panel. */
-  onOpenTask?: (id: number) => void
   onClose: () => void
 }
 
-/** The card: edit it in place (changes save as you go), assign people, split it into subtasks, and talk about it. */
+/** The card: edit it in place (changes save as you go), assign people, tick off its checklist, and talk about it. */
 export function TaskDetailDialog({ task, ...rest }: Props) {
   return (
     <Dialog open={!!task} onOpenChange={(o) => !o && rest.onClose()}>
@@ -46,7 +44,7 @@ export function TaskDetailDialog({ task, ...rest }: Props) {
   )
 }
 
-function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Props & { task: Task }) {
+function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: Task }) {
   const { user } = useAuth()
   const qc = useQueryClient()
   const confirm = useConfirm()
@@ -60,14 +58,11 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
   const [progress, setProgress] = useState(task.progress)
   const [assignees, setAssignees] = useState(task.assignee_ids)
   const [text, setText] = useState('')
-  const [subtitle, setSubtitle] = useState('')
 
   const allTasks = all?.tasks ?? []
   const codes = taskCodes(allTasks)
-  const children = subtasksOf(allTasks, task.id)
-  const parent = task.parent_task_id !== null ? allTasks.find((t) => t.id === task.parent_task_id) : undefined
-  const hasSubtasks = children.length > 0
-  const isSubtask = task.parent_task_id !== null
+  const checklist = (all?.items ?? []).filter((i) => i.task_id === task.id)
+  const hasChecklist = checklist.length > 0
 
   const activeMembers = members?.filter((m) => m.member.is_active) ?? []
   const nameOf = (id: string) => {
@@ -102,18 +97,6 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
     },
   })
 
-  const addSubtask = useMutation({
-    mutationFn: async (name: string) => {
-      const { error } = await supabase.from('tasks').insert({ project_id: task.project_id, title: name, parent_task_id: task.id })
-      if (error) throw error
-    },
-    onSuccess: async () => {
-      setSubtitle('')
-      await refreshTasks()
-    },
-    onError: (e: Error) => toast.error(e.message),
-  })
-
   const remove = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from('tasks').delete().eq('id', task.id)
@@ -121,9 +104,8 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
     },
     onSuccess: async () => {
       await refreshTasks()
-      toast.success(hasSubtasks ? 'Task and its subtasks deleted' : 'Card deleted')
-      if (parent && onOpenTask) onOpenTask(parent.id)
-      else onClose()
+      toast.success('Card deleted')
+      onClose()
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -185,14 +167,12 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
     if (text.trim()) add.mutate()
   }
 
-  // a task with subtasks takes its percentage, status and dates from them
-  const shownStart = hasSubtasks ? (task.start_date ?? '') : start
-  const shownDue = hasSubtasks ? (task.due_date ?? '') : due
-  const shownProgress = hasSubtasks ? task.progress : progress
-  const lockedHint = hasSubtasks ? `Worked out from its ${children.length} subtask${children.length === 1 ? '' : 's'}.` : null
+  // with a checklist the percentage is the average of its items
+  const shownProgress = hasChecklist ? (task.status === 'done' ? 100 : checklistPercent(checklist)) : progress
+  const lockedHint = hasChecklist ? 'The percentage is the average of the checklist.' : null
 
   const chosenMilestone = milestones?.find((m) => m.id === task.milestone_id)
-  const side = chosenMilestone ? taskOutsideMilestone({ start_date: shownStart || null, due_date: shownDue || null }, chosenMilestone) : null
+  const side = chosenMilestone ? taskOutsideMilestone({ start_date: start || null, due_date: due || null }, chosenMilestone) : null
   const warning = chosenMilestone && side ? outsideMessage(side, chosenMilestone) : null
 
   const field = 'space-y-1.5'
@@ -201,11 +181,6 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
     <>
       <div className="space-y-1 pr-6">
         <DialogTitle className="sr-only">{task.title}</DialogTitle>
-        {parent && (
-          <button type="button" onClick={() => onOpenTask?.(parent.id)} className="flex items-center gap-1 px-1 text-xs text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-3.5" /> Subtask of {codes.get(parent.id)} {parent.title}
-          </button>
-        )}
         <div className="flex items-center gap-2">
           {code && <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground tabular-nums">{code}</span>}
           <input
@@ -250,7 +225,7 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
             <select
               id="c-milestone"
               className={selectClass}
-              disabled={!canEdit || isSubtask}
+              disabled={!canEdit}
               value={task.milestone_id ?? ''}
               onChange={(e) => update.mutate({ milestone_id: e.target.value === '' ? null : Number(e.target.value) })}
             >
@@ -261,7 +236,6 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
                 </option>
               ))}
             </select>
-            {isSubtask && <p className="text-xs text-muted-foreground">A subtask is in the same milestone as its task.</p>}
             {warning && (
               <p role="status" className="rounded-lg bg-warning-soft px-3 py-2 text-xs text-warning-foreground">
                 {warning}
@@ -290,7 +264,7 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
             <select
               id="c-status"
               className={selectClass}
-              disabled={!canEdit || hasSubtasks}
+              disabled={!canEdit}
               value={task.status}
               onChange={(e) => {
                 const status = e.target.value as TaskStatus
@@ -321,8 +295,8 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
               <Input
                 id="c-start"
                 type="date"
-                disabled={!canEdit || hasSubtasks}
-                value={shownStart}
+                disabled={!canEdit}
+                value={start}
                 onChange={(e) => {
                   setStart(e.target.value)
                   saveDates(e.target.value, due)
@@ -334,8 +308,8 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
               <Input
                 id="c-due"
                 type="date"
-                disabled={!canEdit || hasSubtasks}
-                value={shownDue}
+                disabled={!canEdit}
+                value={due}
                 onChange={(e) => {
                   setDue(e.target.value)
                   saveDates(start, e.target.value)
@@ -350,7 +324,7 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
               type="number"
               min={0}
               max={100}
-              disabled={!canEdit || hasSubtasks}
+              disabled={!canEdit || hasChecklist}
               value={shownProgress}
               onChange={(e) => setProgress(Number(e.target.value))}
               onBlur={saveProgress}
@@ -365,58 +339,18 @@ function Body({ task, canEdit, canDelete, canManage, onOpenTask, onClose }: Prop
               onClick={async () =>
                 (await confirm({
                   title: `Delete "${task.title}"?`,
-                  description: hasSubtasks ? `Its ${children.length} subtask(s) and all comments are removed for good.` : 'The card and its comments are removed for good.',
+                  description: 'The card, its checklist and its comments are removed for good.',
                   confirmLabel: 'Delete',
                 })) && remove.mutate()
               }
             >
-              {isSubtask ? 'Delete subtask' : 'Delete card'}
+              Delete card
             </Button>
           )}
         </div>
       </div>
 
-      {!isSubtask && (
-        <section className="space-y-3 border-t pt-3">
-          <h3 className="text-sm font-semibold">
-            Subtasks {hasSubtasks ? `(${children.filter((c) => c.status === 'done').length}/${children.length} done)` : ''}
-          </h3>
-          {!hasSubtasks && <p className="text-sm text-muted-foreground">Optional. Split this task into smaller steps, each with its own people and progress.</p>}
-          {hasSubtasks && (
-            <ul className="divide-y rounded-lg border">
-              {children.map((c) => (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => onOpenTask?.(c.id)}
-                    className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-left text-sm hover:bg-muted/60"
-                  >
-                    <span className="w-9 shrink-0 text-xs text-muted-foreground tabular-nums">{codes.get(c.id)}</span>
-                    <span className={`min-w-0 flex-1 truncate ${c.status === 'done' ? 'text-muted-foreground line-through' : ''}`}>{c.title}</span>
-                    <AssigneeStack names={c.assignee_ids.map(nameOf)} max={2} />
-                    <span className="w-10 text-right text-xs text-muted-foreground tabular-nums">{c.progress}%</span>
-                    <TaskStatusBadge status={c.status} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {canEdit && (
-            <form
-              className="flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (subtitle.trim()) addSubtask.mutate(subtitle.trim())
-              }}
-            >
-              <Input aria-label="New subtask" placeholder="Add a subtask…" maxLength={200} value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
-              <Button type="submit" variant="outline" disabled={addSubtask.isPending || !subtitle.trim()}>
-                <Plus /> Add
-              </Button>
-            </form>
-          )}
-        </section>
-      )}
+      <Checklist task={task} items={checklist} canEdit={canEdit} />
 
       <section className="space-y-3 border-t pt-3">
         <h3 className="text-sm font-semibold">Comments {comments.data ? `(${comments.data.length})` : ''}</h3>

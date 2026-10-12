@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createsDependencyCycle, createsParentCycle, isOverdue, validateTaskDates } from '@/lib/taskValidation'
+import { createsDependencyCycle, isOverdue, validateTaskDates } from '@/lib/taskValidation'
 
 describe('validateTaskDates', () => {
   it('accepts equal, ordered or missing dates', () => {
@@ -52,22 +52,5 @@ describe('createsDependencyCycle', () => {
       [6, [5]],
     ])
     expect(createsDependencyCycle(1, [5], loop)).toBe(false)
-  })
-})
-
-describe('createsParentCycle', () => {
-  // 3 -> 2 -> 1 (child -> parent)
-  const parentOf = new Map<number, number | null>([
-    [1, null],
-    [2, 1],
-    [3, 2],
-  ])
-  it('rejects being your own parent or ancestor', () => {
-    expect(createsParentCycle(1, 1, parentOf)).toBe(true)
-    expect(createsParentCycle(1, 3, parentOf)).toBe(true)
-  })
-  it('allows a valid parent or none', () => {
-    expect(createsParentCycle(3, 1, parentOf)).toBe(false)
-    expect(createsParentCycle(3, null, parentOf)).toBe(false)
   })
 })

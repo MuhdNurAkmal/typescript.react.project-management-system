@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { outsideMessage, taskOutsideMilestone } from '@/lib/milestoneUtils'
-import { createsDependencyCycle, createsParentCycle, validateTaskDates } from '@/lib/taskValidation'
+import { createsDependencyCycle, validateTaskDates } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskDependency, TaskPriority, TaskStatus } from '@/types/database'
 import { cn } from '@/lib/utils'
@@ -46,16 +46,12 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
   const [due, setDue] = useState(task?.due_date ?? '')
   const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? 'medium')
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo')
-  const [parent, setParent] = useState<number | ''>(task?.parent_task_id ?? '')
   const [milestone, setMilestone] = useState<number | ''>(task?.milestone_id ?? '')
   const [depIds, setDepIds] = useState<number[]>(
     task ? deps.filter((d) => d.task_id === task.id).map((d) => d.depends_on_task_id) : [],
   )
 
   const others = tasks.filter((t) => t.id !== task?.id)
-  // only a top-level task can have subtasks, and a task that already has subtasks cannot become one
-  const hasChildren = !!task && tasks.some((t) => t.parent_task_id === task.id)
-  const possibleParents = others.filter((t) => t.parent_task_id === null)
   const chosenMilestone = milestones?.find((m) => m.id === milestone)
   const side = chosenMilestone ? taskOutsideMilestone({ start_date: start || null, due_date: due || null }, chosenMilestone) : null
   const warning = chosenMilestone && side ? outsideMessage(side, chosenMilestone) : null
@@ -73,10 +69,6 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
           edges.set(d.task_id, [...(edges.get(d.task_id) ?? []), d.depends_on_task_id])
         }
         if (createsDependencyCycle(task.id, depIds, edges)) throw new Error('Dependencies cannot form a cycle')
-        const parentOf = new Map(tasks.map((t) => [t.id, t.parent_task_id] as const))
-        if (createsParentCycle(task.id, parent === '' ? null : parent, parentOf)) {
-          throw new Error('A task cannot be its own ancestor')
-        }
       }
 
       const payload = {
@@ -88,7 +80,6 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
         priority,
         status,
         progress: status === 'done' ? 100 : (task?.progress ?? 0),
-        parent_task_id: parent === '' ? null : parent,
         milestone_id: milestone === '' ? null : milestone,
       }
 
@@ -159,7 +150,7 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
         </div>
         <div className="space-y-2">
           <Label htmlFor="t-milestone">Milestone</Label>
-          <select id="t-milestone" className={selectClass} disabled={parent !== ''} value={milestone} onChange={(e) => setMilestone(e.target.value === '' ? '' : Number(e.target.value))}>
+          <select id="t-milestone" className={selectClass} value={milestone} onChange={(e) => setMilestone(e.target.value === '' ? '' : Number(e.target.value))}>
             <option value="">No milestone (unplanned)</option>
             {milestones?.map((m) => (
               <option key={m.id} value={m.id}>
@@ -186,43 +177,21 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
           </div>
           <div className="space-y-2">
             <Label htmlFor="t-start">Start date</Label>
-            <Input id="t-start" type="date" disabled={hasChildren} value={start} onChange={(e) => setStart(e.target.value)} />
+            <Input id="t-start" type="date" value={start} onChange={(e) => setStart(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="t-due">Due date</Label>
-            <Input id="t-due" type="date" disabled={hasChildren} value={due} min={start || undefined} onChange={(e) => setDue(e.target.value)} />
+            <Input id="t-due" type="date" value={due} min={start || undefined} onChange={(e) => setDue(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="t-status">Status</Label>
-            <select id="t-status" className={selectClass} disabled={hasChildren} value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)}>
+            <select id="t-status" className={selectClass} value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)}>
               {Object.entries(statusLabels).map(([v, l]) => (
                 <option key={v} value={v}>
                   {l}
                 </option>
               ))}
             </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="t-parent">Subtask of</Label>
-            <select
-              id="t-parent"
-              className={selectClass}
-              disabled={hasChildren}
-              value={parent}
-              onChange={(e) => {
-                const next = e.target.value === '' ? '' : Number(e.target.value)
-                setParent(next)
-                if (next !== '') setMilestone(tasks.find((t) => t.id === next)?.milestone_id ?? '')
-              }}
-            >
-              <option value="">None (a task)</option>
-              {possibleParents.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.title}
-                </option>
-              ))}
-            </select>
-            {hasChildren && <p className="text-xs text-muted-foreground">This task has subtasks, so it cannot be a subtask itself. Its status, dates and progress come from them.</p>}
           </div>
         </div>
         <div className="space-y-2">

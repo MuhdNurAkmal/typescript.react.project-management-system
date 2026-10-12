@@ -30,7 +30,13 @@ export function useProjectTasks(projectId: number | undefined) {
         ? await supabase.from('task_dependencies').select('*').in('task_id', ids)
         : { data: [], error: null }
       if (dErr) throw dErr
-      return { tasks, deps }
+      const { data: items, error: cErr } = await supabase
+        .from('task_checklist_items')
+        .select('*')
+        .eq('project_id', projectId!)
+        .order('id')
+      if (cErr) throw cErr
+      return { tasks, deps, items }
     },
   })
 }

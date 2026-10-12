@@ -14,7 +14,6 @@ import { useMonthAttendance } from '@/hooks/useDashboard'
 import { useMyProjects, useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { durationMinutes, formatDuration, formatTime } from '@/lib/attendanceUtils'
-import { leafTasks } from '@/lib/taskTree'
 import { downloadCsv, summarizeAttendance, summarizeTasks, toCsv } from '@/lib/reportUtils'
 import { todayString } from '@/lib/taskValidation'
 import type { TaskStatus } from '@/types/database'
@@ -141,7 +140,7 @@ function TaskReport() {
     const p = members?.find((m) => m.member.user_id === id)?.profile
     return p?.full_name || p?.email || 'Unknown'
   }
-  const summary = summarizeTasks(leafTasks(data?.tasks ?? []), today)
+  const summary = summarizeTasks(data?.tasks ?? [], today)
   const projectName = projects?.find((p) => p.project.id === projectId)?.project.name ?? 'project'
 
   function exportTasks() {

@@ -10,10 +10,11 @@ import { Button } from '@/components/ui/button'
 import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
-import { byDate, subtasksOf, taskCodes, topLevel } from '@/lib/taskTree'
+import { checklistPercent } from '@/lib/checklist'
+import { byDate, taskCodes } from '@/lib/taskTree'
 import { isOverdue } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
-import type { Milestone, Task, TaskStatus } from '@/types/database'
+import type { ChecklistItem, Milestone, Task, TaskStatus } from '@/types/database'
 import { cn } from '@/lib/utils'
 
 const columns: TaskStatus[] = ['todo', 'in_progress', 'review', 'done']
@@ -41,7 +42,8 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
   const allTasks = data?.tasks ?? []
   const open = allTasks.find((t) => t.id === openId) ?? null
   const codes = taskCodes(allTasks)
-  const tasks = topLevel(allTasks).filter((t) => !milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter)))
+  const checklists = data?.items ?? []
+  const tasks = allTasks.filter((t) => !milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter)))
 
   const counts = useQuery({
     queryKey: ['comment-counts', projectId, tasks.map((t) => t.id).join(',')],
@@ -92,7 +94,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
     const task = allTasks.find((t) => t.id === dragId)
     setDragId(null)
     setOver(null)
-    if (task && task.status !== status && canEdit && subtasksOf(allTasks, task.id).length === 0) move.mutate({ id: task.id, status })
+    if (task && task.status !== status && canEdit) move.mutate({ id: task.id, status })
   }
 
   if (isLoading) return <p className="text-muted-foreground">Loading board…</p>
@@ -145,10 +147,10 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
                     task={t}
                     names={t.assignee_ids.map(nameOf)}
                     code={codes.get(t.id)}
-                    subtasks={subtasksOf(allTasks, t.id)}
+                    checklist={checklists.filter((i) => i.task_id === t.id)}
                     milestone={milestones?.find((m) => m.id === t.milestone_id)}
                     comments={counts.data?.get(t.id) ?? 0}
-                    draggable={canEdit && subtasksOf(allTasks, t.id).length === 0}
+                    draggable={canEdit}
                     dragging={dragId === t.id}
                     onDragStart={() => setDragId(t.id)}
                     onDragEnd={() => {
@@ -156,7 +158,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
                       setOver(null)
                     }}
                     onOpen={() => setOpenId(t.id)}
-                    onMove={canEdit && subtasksOf(allTasks, t.id).length === 0 ? (s) => move.mutate({ id: t.id, status: s }) : undefined}
+                    onMove={canEdit ? (s) => move.mutate({ id: t.id, status: s }) : undefined}
                   />
                 ))}
               </div>
@@ -165,7 +167,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
           )
         })}
       </div>
-      <TaskDetailDialog task={open} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onOpenTask={setOpenId} onClose={() => setOpenId(null)} />
+      <TaskDetailDialog task={open} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onClose={() => setOpenId(null)} />
     </>
   )
 }
@@ -174,7 +176,7 @@ function Card({
   task,
   names,
   code,
-  subtasks,
+  checklist,
   milestone,
   comments,
   draggable,
@@ -187,7 +189,7 @@ function Card({
   task: Task
   names: string[]
   code?: string
-  subtasks: Task[]
+  checklist: ChecklistItem[]
   milestone?: Milestone
   comments: number
   draggable: boolean
@@ -214,16 +216,16 @@ function Card({
         {code && <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{code}</span>}
         {task.title}
       </div>
-      {subtasks.length > 0 && (
-        <div title="The percentage is the average of the subtasks">
+      {checklist.length > 0 && (
+        <div title="The percentage is the average of the checklist">
           <div className="mb-1 flex justify-between text-xs text-muted-foreground">
             <span>
-              {subtasks.filter((x) => x.status === 'done').length}/{subtasks.length} subtasks
+              {checklist.filter((x) => x.progress === 100).length}/{checklist.length} checklist
             </span>
-            <span>{task.progress}%</span>
+            <span>{task.status === 'done' ? 100 : checklistPercent(checklist)}%</span>
           </div>
           <div className="h-1.5 rounded-full bg-muted">
-            <div className="h-1.5 rounded-full bg-primary" style={{ width: `${task.progress}%` }} />
+            <div className="h-1.5 rounded-full bg-primary" style={{ width: `${task.status === 'done' ? 100 : checklistPercent(checklist)}%` }} />
           </div>
         </div>
       )}
