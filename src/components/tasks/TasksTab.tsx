@@ -16,6 +16,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { summarizeTasks } from '@/lib/reportUtils'
+import { leafTasks, taskCodes } from '@/lib/taskTree'
 import { isOverdue, todayString } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
@@ -55,6 +56,21 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
     )
   }, [data, search, assignee, milestoneFilter, status, priority])
 
+  // phase by phase in date order, each task followed by its subtasks
+  const codes = useMemo(() => taskCodes(data?.tasks ?? []), [data])
+  const rows = useMemo(() => {
+    const rank = new Map((milestones ?? []).map((m, i) => [m.id, i]))
+    const part = (id: number) => (codes.get(id) ?? '9999').split('.').map(Number)
+    return [...filtered].sort((a, b) => {
+      const ra = a.milestone_id === null ? 9999 : (rank.get(a.milestone_id) ?? 9998)
+      const rb = b.milestone_id === null ? 9999 : (rank.get(b.milestone_id) ?? 9998)
+      if (ra !== rb) return ra - rb
+      const pa = part(a.id)
+      const pb = part(b.id)
+      return pa[0] - pb[0] || (pa[1] ?? 0) - (pb[1] ?? 0)
+    })
+  }, [filtered, codes, milestones])
+
   const remove = useMutation({
     mutationFn: async (id: number) => {
       const { error } = await supabase.from('tasks').delete().eq('id', id)
@@ -68,7 +84,8 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
   })
 
   async function onDelete(t: Task) {
-    const ok = await confirm({ title: `Delete task "${t.title}"?`, description: 'This cannot be undone.', confirmLabel: 'Delete' })
+    const subs = (data?.tasks ?? []).filter((x) => x.parent_task_id === t.id).length
+    const ok = await confirm({ title: `Delete task "${t.title}"?`, description: subs ? `Its ${subs} subtask(s) are deleted too. This cannot be undone.` : 'This cannot be undone.', confirmLabel: 'Delete' })
     if (ok) remove.mutate(t.id)
   }
 
@@ -118,7 +135,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
       {data && data.tasks.length > 0 && (
         <Card>
           <CardContent>
-            <StatusBar counts={summarizeTasks(data.tasks, todayString()).byStatus} />
+            <StatusBar counts={summarizeTasks(leafTasks(data.tasks), todayString()).byStatus} />
           </CardContent>
         </Card>
       )}
@@ -144,11 +161,12 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((t) => {
+                {rows.map((t) => {
                   return (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">
-                        <button className="text-left hover:underline" onClick={() => setViewingId(t.id)}>
+                        <button className={`text-left hover:underline ${t.parent_task_id !== null ? 'pl-5' : ''}`} onClick={() => setViewingId(t.id)}>
+                          <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{codes.get(t.id)}</span>
                           {t.title}
                         </button>
                       </TableCell>
@@ -182,7 +200,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
       {canEdit && (
         <TaskDialog projectId={projectId} task={editing} tasks={data?.tasks ?? []} deps={data?.deps ?? []} onClose={() => setEditing(undefined)} />
       )}
-      <TaskDetailDialog task={viewing} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onClose={() => setViewingId(null)} />
+      <TaskDetailDialog task={viewing} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onOpenTask={setViewingId} onClose={() => setViewingId(null)} />
     </div>
   )
 }

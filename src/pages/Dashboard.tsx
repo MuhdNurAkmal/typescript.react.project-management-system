@@ -15,6 +15,7 @@ import { useMyProjects } from '@/hooks/useProjectData'
 import { useMyTasks } from '@/hooks/useTasks'
 import { formatDuration, formatTime, minutesToday } from '@/lib/attendanceUtils'
 import { projectProgress, summarizeTasks } from '@/lib/reportUtils'
+import { leafTasks, topLevel } from '@/lib/taskTree'
 import { addDays, format } from 'date-fns'
 import { isOverdue, todayString } from '@/lib/taskValidation'
 
@@ -54,7 +55,7 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {projects.map(({ project }) => {
           const tasks = data?.tasks.filter((t) => t.project_id === project.id) ?? []
-          const stats = projectProgress(tasks, today)
+          const stats = projectProgress(topLevel(tasks), today)
           const memberIds = new Set(data?.members.filter((m) => m.project_id === project.id).map((m) => m.user_id))
           const clockedIn = data?.open.filter((o) => memberIds.has(o.user_id)) ?? []
           return (
@@ -79,7 +80,7 @@ function ManagedProjects({ projects, today }: { projects: NonNullable<ReturnType
                       <div className="h-full rounded-full bg-primary" style={{ width: `${stats.avgProgress}%` }} />
                     </div>
                   </div>
-                  <StatusBar counts={summarizeTasks(tasks, today).byStatus} />
+                  <StatusBar counts={summarizeTasks(leafTasks(tasks), today).byStatus} />
                   {isAdmin && (
                     <div>
                       <span className="text-muted-foreground">Clocked in now: </span>

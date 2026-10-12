@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { daysUntil, milestoneProgress, taskOutsideMilestone } from '@/lib/milestoneUtils'
 
 const m = { id: 1, start_date: '2026-06-01', end_date: '2026-06-30', completed: false }
-const task = (over: Partial<{ milestone_id: number | null; status: 'todo' | 'in_progress' | 'review' | 'done'; start_date: string | null; due_date: string | null }> = {}) => ({
+const task = (over: Partial<{ milestone_id: number | null; parent_task_id: number | null; status: 'todo' | 'in_progress' | 'review' | 'done'; progress: number; start_date: string | null; due_date: string | null }> = {}) => ({
   milestone_id: 1,
+  parent_task_id: null,
   status: 'todo' as const,
+  progress: 0,
   start_date: '2026-06-02',
   due_date: '2026-06-20',
   ...over,
@@ -20,8 +22,18 @@ describe('daysUntil', () => {
 
 describe('milestoneProgress', () => {
   it('counts only the tasks under this milestone', () => {
-    const p = milestoneProgress(m, [task({ status: 'done' }), task(), task({ milestone_id: 2 }), task({ milestone_id: null })], '2026-06-01')
+    const p = milestoneProgress(m, [task({ status: 'done', progress: 100 }), task(), task({ milestone_id: 2 }), task({ milestone_id: null })], '2026-06-01')
     expect(p).toMatchObject({ total: 2, done: 1, open: 1, percent: 50, state: 'on_track' })
+  })
+
+  it('is the average of the tasks percentages, with each task counted once', () => {
+    const tasks = [
+      task({ progress: 100, status: 'done' }),
+      task({ progress: 50, status: 'in_progress' }),
+      task({ progress: 0 }),
+      task({ progress: 0, parent_task_id: 2 }), // a subtask: already inside its task's percentage
+    ]
+    expect(milestoneProgress(m, tasks, '2026-06-01')).toMatchObject({ total: 3, done: 1, percent: 50 })
   })
 
   it('is empty with no tasks and not due', () => {
@@ -34,7 +46,7 @@ describe('milestoneProgress', () => {
   })
 
   it('is done when completed, even after the end date', () => {
-    expect(milestoneProgress({ ...m, completed: true }, [task({ status: 'done' })], '2026-07-10')).toMatchObject({ state: 'done', percent: 100 })
+    expect(milestoneProgress({ ...m, completed: true }, [task({ status: 'done', progress: 100 })], '2026-07-10')).toMatchObject({ state: 'done', percent: 100 })
   })
 
   it('is at risk within a week of the end with tasks open', () => {

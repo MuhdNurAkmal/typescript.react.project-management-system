@@ -11,6 +11,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { milestoneProgress } from '@/lib/milestoneUtils'
+import { orderedWithin, taskCodes } from '@/lib/taskTree'
 import { supabase } from '@/lib/supabase'
 import { todayString } from '@/lib/taskValidation'
 
@@ -35,9 +36,11 @@ interface ListRow {
   assignees: string[]
   milestone: boolean
   done: boolean
-  /** Tasks sit one step in under their milestone. */
-  indent: boolean
-  /** For a milestone: "6/9". */
+  /** 0 = phase, 1 = task, 2 = subtask. */
+  level: number
+  /** 1, 2 ... for tasks and 1.1, 1.2 ... for subtasks. */
+  code?: string
+  /** For a milestone: its percentage. */
   detail?: string
 }
 
@@ -60,18 +63,28 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     const nameOf = new Map((members ?? []).map((m) => [m.member.user_id, m.profile?.full_name || m.profile?.email || 'Unknown']))
     const tasks = data?.tasks ?? []
 
-    const addTask = (t: (typeof tasks)[number], indent: boolean) => {
+    const codes = taskCodes(tasks)
+    const addTask = (t: (typeof tasks)[number], indent: boolean, base: number) => {
       const start = t.start_date ?? t.due_date
       const end = t.due_date ?? t.start_date
       if (!start || !end) {
         skipped.push(t.title)
         return
       }
+      const code = codes.get(t.id)
       ids.add(t.id)
-      list.push({ id: String(t.id), name: t.title, assignees: t.assignee_ids.map((id) => nameOf.get(id) ?? 'Unknown'), milestone: false, done: t.status === 'done', indent })
-      scheduled.push({
+      list.push({
         id: String(t.id),
         name: t.title,
+        assignees: t.assignee_ids.map((id) => nameOf.get(id) ?? 'Unknown'),
+        milestone: false,
+        done: t.status === 'done',
+        level: base + (indent ? 1 : 0),
+        code,
+      })
+      scheduled.push({
+        id: String(t.id),
+        name: code ? `${code}  ${t.title}` : t.title,
         start,
         end,
         progress: t.progress,
@@ -81,10 +94,10 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       })
     }
 
-    // each milestone is a long bar for the whole phase, with its tasks listed right under it
+    // each milestone is a long bar for the whole phase; its tasks follow in date order, each with its subtasks
     for (const m of milestones ?? []) {
       const p = milestoneProgress(m, tasks, today)
-      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', indent: false, detail: p.total ? `${p.done}/${p.total}` : undefined })
+      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', level: 0, detail: p.total ? `${p.percent}%` : undefined })
       scheduled.push({
         id: `m-${m.id}`,
         name: m.title,
@@ -93,11 +106,12 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         progress: p.percent,
         custom_class: p.state === 'overdue' ? 'gantt-milestone-overdue' : 'gantt-milestone',
       })
-      for (const t of tasks.filter((x) => x.milestone_id === m.id)) addTask(t, true)
+      for (const { task, indent } of orderedWithin(tasks, m.id)) addTask(task, indent, 1)
     }
     // tasks under no milestone come last
     const known = new Set((milestones ?? []).map((m) => m.id))
-    for (const t of tasks.filter((x) => x.milestone_id === null || !known.has(x.milestone_id))) addTask(t, false)
+    const orphan = tasks.map((t) => (t.milestone_id !== null && !known.has(t.milestone_id) ? { ...t, milestone_id: null } : t))
+    for (const { task, indent } of orderedWithin(orphan, null)) addTask(task, indent, 0)
 
     for (const d of data?.deps ?? []) {
       if (!ids.has(d.task_id) || !ids.has(d.depends_on_task_id)) continue
@@ -191,10 +205,12 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
                 {listRows.map((r) => (
                   <li key={r.id} className={`flex items-center gap-2 border-b px-3 text-sm ${r.milestone ? 'bg-muted/50' : ''}`} style={{ height: ROW_HEIGHT }}>
                     <span
-                      className={`min-w-0 flex-1 truncate ${r.indent ? 'pl-4' : ''} ${r.done ? 'text-muted-foreground line-through' : r.milestone ? 'font-semibold' : 'font-medium'}`}
+                      style={{ paddingLeft: r.level * 14 }}
+                      className={`min-w-0 flex-1 truncate ${r.done ? 'text-muted-foreground line-through' : r.milestone ? 'font-semibold' : 'font-medium'}`}
                       title={r.name}
                     >
                       {r.milestone ? '◆ ' : ''}
+                      {r.code && <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{r.code}</span>}
                       {r.name}
                       {r.detail && <span className="ml-1.5 text-xs font-normal text-muted-foreground">{r.detail}</span>}
                     </span>

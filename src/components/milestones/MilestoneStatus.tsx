@@ -19,7 +19,7 @@ export function MilestoneStatePill({ state }: { state: MilestoneState }) {
 export function MilestoneProgress({ done, total, percent, state }: { done: number; total: number; percent: number; state: MilestoneState }) {
   return (
     <div className="min-w-32">
-      <div className="mb-1 text-xs text-muted-foreground">{total === 0 ? 'No tasks yet' : `${done} of ${total} tasks done`}</div>
+      <div className="mb-1 text-xs text-muted-foreground">{total === 0 ? 'No tasks yet' : `${percent}% · ${done} of ${total} tasks done`}</div>
       <div className="h-1.5 rounded-full bg-muted" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="Milestone progress">
         <div className={`h-1.5 rounded-full ${bars[state]}`} style={{ width: `${percent}%` }} />
       </div>

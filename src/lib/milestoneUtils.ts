@@ -11,7 +11,10 @@ export interface MilestoneLike {
 
 export interface MilestoneTaskLike {
   milestone_id: number | null
+  /** Subtasks are inside their task's percentage, so a phase only counts top-level tasks. */
+  parent_task_id: number | null
   status: TaskStatus
+  progress: number
   start_date: string | null
   due_date: string | null
 }
@@ -31,18 +34,20 @@ export function daysUntil(end: string, today: string) {
 }
 
 /**
- * How a milestone is doing: tasks done, and whether it is on track.
+ * How a milestone is doing: its percentage, tasks done, and whether it is on track.
+ * The percentage is the average of its tasks' percentages (a task with subtasks already carries the average of
+ * its subtasks). Each task counts once, however many subtasks it has.
  * - done: finished (all its tasks done, or ticked by hand when it has none)
  * - overdue: the end date has passed and it is not done
  * - at risk: tasks still open and the end is within a week, or an open task is planned after the end date
  * - empty: no tasks yet, not due yet
  */
 export function milestoneProgress(m: MilestoneLike, tasks: MilestoneTaskLike[], today: string) {
-  const mine = tasks.filter((t) => t.milestone_id === m.id)
+  const mine = tasks.filter((t) => t.milestone_id === m.id && t.parent_task_id === null)
   const total = mine.length
   const done = mine.filter((t) => t.status === 'done').length
   const open = total - done
-  const percent = total === 0 ? (m.completed ? 100 : 0) : Math.round((done / total) * 100)
+  const percent = total === 0 ? (m.completed ? 100 : 0) : Math.round(mine.reduce((sum, t) => sum + t.progress, 0) / total)
   const daysLeft = daysUntil(m.end_date, today)
   const plannedAfterEnd = mine.some((t) => t.status !== 'done' && t.due_date !== null && t.due_date > m.end_date)
 

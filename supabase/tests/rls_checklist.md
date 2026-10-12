@@ -169,3 +169,11 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Marking the last open task of a milestone done completes the milestone; reopening a task reopens it; a milestone with no tasks keeps its manual Done tick.
 - [ ] Deleting a milestone leaves its tasks in place as unplanned.
 - [ ] check_milestone_deadlines notifies each project manager once per overdue milestone, only for members of that project, and again after the end date is moved later and passes again.
+
+## Subtasks and roll-up (028)
+- [ ] A subtask of a subtask is rejected; a task with subtasks cannot be made a subtask; a subtask must be in the same project as its task.
+- [ ] A subtask always has its task's milestone, and moving the task to another milestone moves its subtasks.
+- [ ] Changing a subtask's status, progress or dates updates its task: average percentage, status, earliest start and latest due. Editing those fields on a task that has subtasks by hand has no effect.
+- [ ] A task without subtasks keeps its own status, progress and dates.
+- [ ] Deleting a task deletes its subtasks; deleting the last subtask leaves the task with its last roll-up values, editable again.
+- [ ] A milestone completes when all its top-level tasks are done and reopens when one is reopened.

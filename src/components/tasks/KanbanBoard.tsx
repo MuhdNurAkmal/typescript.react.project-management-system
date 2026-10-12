@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
+import { byDate, subtasksOf, taskCodes, topLevel } from '@/lib/taskTree'
 import { isOverdue } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Milestone, Task, TaskStatus } from '@/types/database'
@@ -39,7 +40,8 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
 
   const allTasks = data?.tasks ?? []
   const open = allTasks.find((t) => t.id === openId) ?? null
-  const tasks = allTasks.filter((t) => !milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter)))
+  const codes = taskCodes(allTasks)
+  const tasks = topLevel(allTasks).filter((t) => !milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter)))
 
   const counts = useQuery({
     queryKey: ['comment-counts', projectId, tasks.map((t) => t.id).join(',')],
@@ -90,7 +92,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
     const task = allTasks.find((t) => t.id === dragId)
     setDragId(null)
     setOver(null)
-    if (task && task.status !== status && canEdit) move.mutate({ id: task.id, status })
+    if (task && task.status !== status && canEdit && subtasksOf(allTasks, task.id).length === 0) move.mutate({ id: task.id, status })
   }
 
   if (isLoading) return <p className="text-muted-foreground">Loading board…</p>
@@ -119,7 +121,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
       </p>
       <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-4">
         {columns.map((status) => {
-          const items = tasks.filter((t) => t.status === status)
+          const items = tasks.filter((t) => t.status === status).sort(byDate)
           return (
             <section
               key={status}
@@ -142,9 +144,11 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
                     key={t.id}
                     task={t}
                     names={t.assignee_ids.map(nameOf)}
+                    code={codes.get(t.id)}
+                    subtasks={subtasksOf(allTasks, t.id)}
                     milestone={milestones?.find((m) => m.id === t.milestone_id)}
                     comments={counts.data?.get(t.id) ?? 0}
-                    draggable={canEdit}
+                    draggable={canEdit && subtasksOf(allTasks, t.id).length === 0}
                     dragging={dragId === t.id}
                     onDragStart={() => setDragId(t.id)}
                     onDragEnd={() => {
@@ -152,7 +156,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
                       setOver(null)
                     }}
                     onOpen={() => setOpenId(t.id)}
-                    onMove={canEdit ? (s) => move.mutate({ id: t.id, status: s }) : undefined}
+                    onMove={canEdit && subtasksOf(allTasks, t.id).length === 0 ? (s) => move.mutate({ id: t.id, status: s }) : undefined}
                   />
                 ))}
               </div>
@@ -161,7 +165,7 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
           )
         })}
       </div>
-      <TaskDetailDialog task={open} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onClose={() => setOpenId(null)} />
+      <TaskDetailDialog task={open} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onOpenTask={setOpenId} onClose={() => setOpenId(null)} />
     </>
   )
 }
@@ -169,6 +173,8 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
 function Card({
   task,
   names,
+  code,
+  subtasks,
   milestone,
   comments,
   draggable,
@@ -180,6 +186,8 @@ function Card({
 }: {
   task: Task
   names: string[]
+  code?: string
+  subtasks: Task[]
   milestone?: Milestone
   comments: number
   draggable: boolean
@@ -202,7 +210,23 @@ function Card({
         <PriorityBadge priority={task.priority} />
         {milestone && <span className="rounded bg-primary-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">◆ {milestone.title}</span>}
       </div>
-      <div className="text-sm font-medium break-words">{task.title}</div>
+      <div className="text-sm font-medium break-words">
+        {code && <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{code}</span>}
+        {task.title}
+      </div>
+      {subtasks.length > 0 && (
+        <div title="The percentage is the average of the subtasks">
+          <div className="mb-1 flex justify-between text-xs text-muted-foreground">
+            <span>
+              {subtasks.filter((x) => x.status === 'done').length}/{subtasks.length} subtasks
+            </span>
+            <span>{task.progress}%</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-muted">
+            <div className="h-1.5 rounded-full bg-primary" style={{ width: `${task.progress}%` }} />
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
         {task.due_date && (
           <span className={`rounded px-1.5 py-0.5 ${task.status === 'done' ? 'bg-success-soft text-success-foreground' : overdue ? 'bg-danger-soft text-danger-foreground' : 'bg-muted'}`}>
