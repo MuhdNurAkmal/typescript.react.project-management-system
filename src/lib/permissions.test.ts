@@ -11,17 +11,17 @@ describe('permissionsFor', () => {
     expect(permissionsFor({ name: 'lead', is_pm: true }).canManageTasks).toBe(true)
   })
 
-  it('lets a developer edit cards but not manage the project', () => {
+  it('lets any member edit and delete cards but not manage the project', () => {
     const p = permissionsFor({ name: 'developer', is_pm: false })
-    expect(p).toMatchObject({ isMember: true, roleName: 'developer', isPm: false, canManageProject: false, canManageMembers: false, canManageTasks: false, canEditTasks: true, canDeleteTasks: false })
+    expect(p).toMatchObject({ isMember: true, roleName: 'developer', isPm: false, canManageProject: false, canManageMembers: false, canManageTasks: false, canEditTasks: true, canDeleteTasks: true })
   })
 
   it('keeps a read-only role (can_edit false) from editing', () => {
     expect(permissionsFor({ name: 'viewer', is_pm: false, can_edit: false })).toMatchObject({ isMember: true, canEditTasks: false, canManageTasks: false })
   })
 
-  it('lets a role flagged can_delete delete cards without being a manager', () => {
-    expect(permissionsFor({ name: 'lead dev', is_pm: false, can_edit: true, can_delete: true })).toMatchObject({ canDeleteTasks: true, canManageTasks: false })
+  it('lets a team switch deleting off for one role', () => {
+    expect(permissionsFor({ name: 'intern', is_pm: false, can_edit: true, can_delete: false })).toMatchObject({ canEditTasks: true, canDeleteTasks: false, canManageTasks: false })
   })
 
   it('never lets a role delete cards it cannot edit', () => {

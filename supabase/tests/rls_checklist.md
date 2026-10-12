@@ -157,3 +157,8 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A role with can_delete (and can_edit) can delete any card in its project; a role without it cannot, even for cards it created.
 - [ ] Project managers can always delete cards; a role cannot be saved with can_delete but not can_edit.
 - [ ] Switching can_delete off for a role takes effect on the next page load for everyone with that role.
+
+## Everyone edits and deletes (026)
+- [ ] Every active member of a project, whatever their role, can create, edit, assign and delete any card.
+- [ ] A person who is not in the project still cannot do any of it.
+- [ ] Switching can_edit or can_delete off for one role stops exactly that role.

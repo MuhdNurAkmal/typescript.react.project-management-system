@@ -96,7 +96,7 @@ function RolesCard({
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="ghost" onClick={() => setEditing({ id: r.id, name: r.name, description: r.description ?? '', flag: r.flagOn, flag2: r.flag2On ?? true, flag3: r.flag3On ?? false })}>
+                    <Button size="sm" variant="ghost" onClick={() => setEditing({ id: r.id, name: r.name, description: r.description ?? '', flag: r.flagOn, flag2: r.flag2On ?? true, flag3: r.flag3On ?? true })}>
                       Edit
                     </Button>
                     {!r.isSystem && (
@@ -110,7 +110,7 @@ function RolesCard({
             </TableBody>
           </Table>
         </div>
-        <Button variant="outline" onClick={() => setEditing({ id: null, name: '', description: '', flag: false, flag2: true, flag3: false })}>
+        <Button variant="outline" onClick={() => setEditing({ id: null, name: '', description: '', flag: false, flag2: true, flag3: true })}>
           <Plus /> New role
         </Button>
       </CardContent>

@@ -204,3 +204,5 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [ ] Later, if wanted: manual card order inside a column (needs a position column), labels with colours, checklists, card attachments.
 - [x] Deleting a card is now a power of the role too (`025_role_can_delete_tasks.sql`, `roles.can_delete`), so each project team decides which roles can add/edit and which can delete. Project managers always can. Replaces the "creator can delete their own card" rule. Set both switches per role in Admin > Roles.
 - [ ] [HUMAN] Run `025_role_can_delete_tasks.sql` (after 024).
+- [x] Everyone in a project can add, edit and delete any card (`026_everyone_edits_and_deletes.sql`): the role switches stay but are ON for every role, including Viewer, and ON for new roles. A team can still switch editing or deleting off for one role in Admin > Roles.
+- [ ] [HUMAN] Run `026_everyone_edits_and_deletes.sql` (after 025).

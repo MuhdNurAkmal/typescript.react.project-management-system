@@ -3,7 +3,7 @@ export interface RoleLike {
   is_pm: boolean
   /** Can create and edit cards. Missing means yes, so older role objects keep working. */
   can_edit?: boolean
-  /** Can delete cards. Missing means no. */
+  /** Can delete cards. Missing means yes, like can_edit. */
   can_delete?: boolean
 }
 
@@ -11,7 +11,7 @@ export interface RoleLike {
 export function permissionsFor(role: RoleLike | null) {
   const isPm = role?.is_pm ?? false
   const canEdit = role !== null && (isPm || (role.can_edit ?? true))
-  const canDelete = role !== null && (isPm || ((role.can_delete ?? false) && canEdit))
+  const canDelete = role !== null && (isPm || ((role.can_delete ?? true) && canEdit))
   return {
     isMember: role !== null,
     roleName: role?.name ?? null,
@@ -20,7 +20,7 @@ export function permissionsFor(role: RoleLike | null) {
     canManageMembers: isPm,
     /** Edit milestones, delete other people's comments. */
     canManageTasks: isPm,
-    /** Delete cards (a power of the role, so each team decides). */
+    /** Delete cards (on for every role by default; a team can switch it off for a role). */
     canDeleteTasks: canDelete,
     /** Create, edit, move and assign cards (Trello style). Everyone but read-only roles. */
     canEditTasks: canEdit,
