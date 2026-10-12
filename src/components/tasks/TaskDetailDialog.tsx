@@ -22,7 +22,9 @@ interface Props {
   task: Task | null
   /** Can change the card (everyone except read-only roles). */
   canEdit: boolean
-  /** Project managers can delete any card; the creator can delete their own. */
+  /** The role may delete cards. */
+  canDelete: boolean
+  /** Project managers can also delete other people's comments. */
   canManage: boolean
   onClose: () => void
 }
@@ -36,7 +38,7 @@ export function TaskDetailDialog({ task, ...rest }: Props) {
   )
 }
 
-function Body({ task, canEdit, canManage, onClose }: { task: Task; canEdit: boolean; canManage: boolean; onClose: () => void }) {
+function Body({ task, canEdit, canDelete, canManage, onClose }: { task: Task; canEdit: boolean; canDelete: boolean; canManage: boolean; onClose: () => void }) {
   const { user } = useAuth()
   const qc = useQueryClient()
   const confirm = useConfirm()
@@ -54,7 +56,6 @@ function Body({ task, canEdit, canManage, onClose }: { task: Task; canEdit: bool
     const p = members?.find((m) => m.member.user_id === id)?.profile
     return p?.full_name || p?.email || 'Former member'
   }
-  const canDelete = canManage || task.created_by === user?.id
 
   const refreshTasks = async () => {
     await qc.invalidateQueries({ queryKey: ['tasks', task.project_id] })

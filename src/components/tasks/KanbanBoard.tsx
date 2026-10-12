@@ -24,9 +24,9 @@ const accent: Record<TaskStatus, string> = {
 
 /**
  * Trello-style board. Anyone who can edit can add cards, drag them between columns, open them and assign people.
- * `canManage` (project managers) additionally lets people delete any card.
+ * `canDelete` (a power of the role) lets them delete cards.
  */
-export function KanbanBoard({ projectId, canEdit, canManage }: { projectId: number; canEdit: boolean; canManage: boolean }) {
+export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { projectId: number; canEdit: boolean; canDelete: boolean; canManage: boolean }) {
   const qc = useQueryClient()
   const { data, isLoading, error } = useProjectTasks(projectId)
   const { data: members } = useProjectMembers(projectId)
@@ -140,7 +140,7 @@ export function KanbanBoard({ projectId, canEdit, canManage }: { projectId: numb
           )
         })}
       </div>
-      <TaskDetailDialog task={open} canEdit={canEdit} canManage={canManage} onClose={() => setOpenId(null)} />
+      <TaskDetailDialog task={open} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onClose={() => setOpenId(null)} />
     </>
   )
 }

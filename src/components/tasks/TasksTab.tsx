@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useAuth } from '@/hooks/useAuth'
 import { useConfirm } from '@/hooks/useConfirm'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
@@ -21,8 +20,7 @@ import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
 import { cn } from '@/lib/utils'
 
-export function TasksTab({ projectId, canEdit, canManage }: { projectId: number; canEdit: boolean; canManage: boolean }) {
-  const { user } = useAuth()
+export function TasksTab({ projectId, canEdit, canDelete, canManage }: { projectId: number; canEdit: boolean; canDelete: boolean; canManage: boolean }) {
   const qc = useQueryClient()
   const confirm = useConfirm()
   const { data, isLoading, error } = useProjectTasks(projectId)
@@ -133,7 +131,6 @@ export function TasksTab({ projectId, canEdit, canManage }: { projectId: number;
               </TableHeader>
               <TableBody>
                 {filtered.map((t) => {
-                  const canDelete = canManage || t.created_by === user?.id
                   return (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">
@@ -170,7 +167,7 @@ export function TasksTab({ projectId, canEdit, canManage }: { projectId: number;
       {canEdit && (
         <TaskDialog projectId={projectId} task={editing} tasks={data?.tasks ?? []} deps={data?.deps ?? []} onClose={() => setEditing(undefined)} />
       )}
-      <TaskDetailDialog task={viewing} canEdit={canEdit} canManage={canManage} onClose={() => setViewingId(null)} />
+      <TaskDetailDialog task={viewing} canEdit={canEdit} canDelete={canDelete} canManage={canManage} onClose={() => setViewingId(null)} />
     </div>
   )
 }

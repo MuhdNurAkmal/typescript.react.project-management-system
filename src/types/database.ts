@@ -67,6 +67,8 @@ export type Role = {
   is_pm: boolean
   /** Can create, edit and move cards. False for read-only roles such as Viewer. */
   can_edit: boolean
+  /** Can delete cards. Project managers always can. */
+  can_delete: boolean
   is_system: boolean
   created_by: string | null
   created_at: string

@@ -152,3 +152,8 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Only a project manager or the card's creator can delete it.
 - [ ] Anyone who can edit can add and remove dependencies and assignees; assignees must be active project members.
 - [ ] Milestones can still only be changed by project managers.
+
+## Role can delete cards (025)
+- [ ] A role with can_delete (and can_edit) can delete any card in its project; a role without it cannot, even for cards it created.
+- [ ] Project managers can always delete cards; a role cannot be saved with can_delete but not can_edit.
+- [ ] Switching can_delete off for a role takes effect on the next page load for everyone with that role.

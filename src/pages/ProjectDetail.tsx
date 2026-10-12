@@ -77,10 +77,10 @@ export default function ProjectDetail() {
           </div>
         </TabsContent>
         <TabsContent value="tasks" className="pt-4">
-          <TasksTab projectId={project.id} canEdit={perms.canEditTasks} canManage={perms.canManageTasks} />
+          <TasksTab projectId={project.id} canEdit={perms.canEditTasks} canDelete={perms.canDeleteTasks} canManage={perms.canManageTasks} />
         </TabsContent>
         <TabsContent value="board" className="pt-4">
-          <KanbanBoard projectId={project.id} canEdit={perms.canEditTasks} canManage={perms.canManageTasks} />
+          <KanbanBoard projectId={project.id} canEdit={perms.canEditTasks} canDelete={perms.canDeleteTasks} canManage={perms.canManageTasks} />
         </TabsContent>
         <TabsContent value="gantt" className="pt-4">
           <GanttTab projectId={project.id} canEdit={perms.canEditTasks} canManage={perms.canManageTasks} />
