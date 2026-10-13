@@ -7,14 +7,13 @@ const at = (month: number, day: number, h: number) => new Date(2026, month - 1, 
 const now = new Date(2026, 11, 31, 12, 0)
 
 const rows = [
-  { user_id: 'u2', clock_in: at(1, 5, 9), clock_out: at(1, 5, 17), status: 'approved' as const, note: null },
-  { user_id: 'u1', clock_in: at(1, 6, 9), clock_out: at(1, 6, 13), status: 'pending' as const, note: 'half day' },
-  { user_id: 'u1', clock_in: at(3, 2, 9), clock_out: at(3, 2, 11), status: 'approved' as const, note: null },
-  { user_id: 'u1', clock_in: at(3, 3, 9), clock_out: at(3, 3, 10), status: 'rejected' as const, note: null },
+  { user_id: 'u2', clock_in: at(1, 5, 9), clock_out: at(1, 5, 17), note: null },
+  { user_id: 'u1', clock_in: at(1, 6, 9), clock_out: at(1, 6, 13), note: 'half day' },
+  { user_id: 'u1', clock_in: at(3, 2, 9), clock_out: at(3, 2, 11), note: null },
 ]
 
 describe('monthlySummaryCsv', () => {
-  it('lists people alphabetically with totals, skipping rejected records', () => {
+  it('lists people alphabetically with totals', () => {
     const lines = monthlySummaryCsv(rows, nameOf, now).split('\r\n')
     expect(lines[0]).toBe('Person,Sessions,Total hours,Average hours per session')
     expect(lines[1]).toBe('Aina,2,6.00,3.00')
@@ -34,11 +33,10 @@ describe('yearlySummaryCsv', () => {
 })
 
 describe('detailCsv', () => {
-  it('lists every session oldest first, including rejected ones', () => {
+  it('lists every session oldest first', () => {
     const lines = detailCsv(rows, nameOf, now).split('\r\n')
-    expect(lines).toHaveLength(5)
+    expect(lines).toHaveLength(4)
     expect(lines[1].startsWith('Budi,2026-01-05')).toBe(true)
-    expect(lines[4]).toContain('rejected')
     expect(lines[2]).toContain('half day')
   })
 })

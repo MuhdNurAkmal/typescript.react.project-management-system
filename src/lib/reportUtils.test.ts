@@ -24,15 +24,15 @@ describe('csv', () => {
 describe('summarizeAttendance', () => {
   const now = new Date('2026-05-10T12:00:00Z')
   const rows = [
-    { user_id: 'u1', clock_in: '2026-05-01T01:00:00Z', clock_out: '2026-05-01T09:00:00Z', status: 'approved' as const },
-    { user_id: 'u1', clock_in: '2026-05-02T01:00:00Z', clock_out: '2026-05-02T03:00:00Z', status: 'pending' as const },
-    { user_id: 'u2', clock_in: '2026-05-02T01:00:00Z', clock_out: '2026-05-02T02:00:00Z', status: 'rejected' as const },
+    { user_id: 'u1', clock_in: '2026-05-01T01:00:00Z', clock_out: '2026-05-01T09:00:00Z' },
+    { user_id: 'u1', clock_in: '2026-05-02T01:00:00Z', clock_out: '2026-05-02T03:00:00Z' },
+    { user_id: 'u2', clock_in: '2026-05-02T01:00:00Z', clock_out: '2026-05-02T02:00:00Z' },
   ]
-  it('totals minutes per person and skips rejected records by default', () => {
-    expect(summarizeAttendance(rows, now)).toEqual([{ user_id: 'u1', sessions: 2, minutes: 600 }])
-  })
-  it('can include rejected records', () => {
-    expect(summarizeAttendance(rows, now, true)).toHaveLength(2)
+  it('totals minutes and sessions per person, longest first', () => {
+    expect(summarizeAttendance(rows, now)).toEqual([
+      { user_id: 'u1', sessions: 2, minutes: 600 },
+      { user_id: 'u2', sessions: 1, minutes: 60 },
+    ])
   })
 })
 

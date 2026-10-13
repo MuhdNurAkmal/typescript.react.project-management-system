@@ -5,7 +5,7 @@ export type ProjectType = 'grant' | 'industrial'
 export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed'
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high'
-export type AttendanceStatus = 'pending' | 'approved' | 'rejected'
+export type AttendanceStatus = 'pending' | 'approved' | 'rejected' // still used by leave requests
 
 export type Profile = {
   id: string
@@ -133,7 +133,6 @@ export type Attendance = {
   clock_in: string
   clock_out: string | null
   note: string | null
-  status: AttendanceStatus
 }
 
 export type TaskComment = {

@@ -3,13 +3,13 @@ import { durationMinutes, formatTime } from '@/lib/attendanceUtils'
 import { summarizeAttendance, toCsv } from '@/lib/reportUtils'
 import type { Attendance } from '@/types/database'
 
-type Row = Pick<Attendance, 'user_id' | 'clock_in' | 'clock_out' | 'status' | 'note'>
+type Row = Pick<Attendance, 'user_id' | 'clock_in' | 'clock_out' | 'note'>
 type NameOf = (userId: string) => string
 
 const hours = (minutes: number) => (minutes / 60).toFixed(2)
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-/** One line per person: sessions, total hours and average hours per session. Rejected records are left out. */
+/** One line per person: sessions, total hours and average hours per session. */
 export function monthlySummaryCsv(rows: Row[], nameOf: NameOf, now = new Date()) {
   const summary = summarizeAttendance(rows, now).sort((a, b) => nameOf(a.user_id).localeCompare(nameOf(b.user_id)))
   const lines = summary.map((s) => [nameOf(s.user_id), s.sessions, hours(s.minutes), hours(s.minutes / s.sessions)])
@@ -18,11 +18,10 @@ export function monthlySummaryCsv(rows: Row[], nameOf: NameOf, now = new Date())
   return toCsv(['Person', 'Sessions', 'Total hours', 'Average hours per session'], lines)
 }
 
-/** One line per person with hours for each month of the year, then the year total. Rejected records are left out. */
+/** One line per person with hours for each month of the year, then the year total. */
 export function yearlySummaryCsv(rows: Row[], nameOf: NameOf, now = new Date()) {
   const perUser = new Map<string, { months: number[]; sessions: number }>()
   for (const r of rows) {
-    if (r.status === 'rejected') continue
     const entry = perUser.get(r.user_id) ?? { months: Array<number>(12).fill(0), sessions: 0 }
     entry.months[new Date(r.clock_in).getMonth()] += durationMinutes(r.clock_in, r.clock_out, now)
     entry.sessions += 1
@@ -40,7 +39,7 @@ export function yearlySummaryCsv(rows: Row[], nameOf: NameOf, now = new Date()) 
   return toCsv(['Person', ...MONTHS, 'Total hours', 'Sessions'], lines)
 }
 
-/** Every session in the period, oldest first, including rejected ones (the status column says which). */
+/** Every session in the period, oldest first. */
 export function detailCsv(rows: Row[], nameOf: NameOf, now = new Date()) {
   const sorted = [...rows].sort((a, b) => a.clock_in.localeCompare(b.clock_in))
   const lines = sorted.map((r) => [
@@ -49,8 +48,7 @@ export function detailCsv(rows: Row[], nameOf: NameOf, now = new Date()) {
     formatTime(r.clock_in),
     r.clock_out ? formatTime(r.clock_out) : '',
     hours(durationMinutes(r.clock_in, r.clock_out, now)),
-    r.status,
     r.note,
   ])
-  return toCsv(['Person', 'Date', 'Clock in', 'Clock out', 'Hours', 'Status', 'Note'], lines)
+  return toCsv(['Person', 'Date', 'Clock in', 'Clock out', 'Hours', 'Note'], lines)
 }

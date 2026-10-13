@@ -66,10 +66,9 @@ function AttendanceReport() {
       formatTime(r.clock_in),
       r.clock_out ? formatTime(r.clock_out) : '',
       (durationMinutes(r.clock_in, r.clock_out, now) / 60).toFixed(2),
-      r.status,
       r.note,
     ])
-    downloadCsv(`attendance-detail-${month}.csv`, toCsv(['Person', 'Date', 'Clock in', 'Clock out', 'Hours', 'Status', 'Note'], rows))
+    downloadCsv(`attendance-detail-${month}.csv`, toCsv(['Person', 'Date', 'Clock in', 'Clock out', 'Hours', 'Note'], rows))
   }
 
   return (

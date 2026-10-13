@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { AttendanceReportDownload } from '@/components/attendance/AttendanceReportDownload'
-import { AttendanceStatusBadge } from '@/components/attendance/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useTeamAttendance } from '@/hooks/useAttendance'
 import { durationMinutes, formatDate, formatDuration, formatTime, isStaleSession, toLocalInput } from '@/lib/attendanceUtils'
 import { supabase } from '@/lib/supabase'
-import type { Attendance, AttendanceStatus } from '@/types/database'
+import type { Attendance } from '@/types/database'
 import { cn } from '@/lib/utils'
 
 /** Manager view: attendance of everyone on the projects you manage. */
@@ -63,7 +62,6 @@ export function PmAttendance() {
               <TableHead>In</TableHead>
               <TableHead>Out</TableHead>
               <TableHead>Duration</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Note</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -84,11 +82,10 @@ export function PmAttendance() {
                   )}
                 </TableCell>
                 <TableCell>{formatDuration(durationMinutes(r.clock_in, r.clock_out, now))}</TableCell>
-                <TableCell><AttendanceStatusBadge status={r.status} /></TableCell>
                 <TableCell className="max-w-48 truncate">{r.note}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
                   <Button size="sm" variant="outline" onClick={() => setReviewing(r)}>
-                    Review
+                    Edit
                   </Button>
                 </TableCell>
               </TableRow>
@@ -231,7 +228,6 @@ export function PmAttendance() {
 }
 
 function ReviewForm({ row, name, onDone, onCancel }: { row: Attendance; name: string; onDone: () => Promise<void>; onCancel: () => void }) {
-  const [status, setStatus] = useState<AttendanceStatus>(row.status)
   const [note, setNote] = useState(row.note ?? '')
   const [clockOut, setClockOut] = useState(row.clock_out ? toLocalInput(row.clock_out) : '')
   const originalOut = row.clock_out ? toLocalInput(row.clock_out) : ''
@@ -245,7 +241,7 @@ function ReviewForm({ row, name, onDone, onCancel }: { row: Attendance; name: st
         })
         if (error) throw error
       }
-      const { error } = await supabase.from('attendance').update({ status, note: note.trim() || null }).eq('id', row.id)
+      const { error } = await supabase.from('attendance').update({ note: note.trim() || null }).eq('id', row.id)
       if (error) throw error
     },
     onSuccess: async () => {
@@ -258,20 +254,12 @@ function ReviewForm({ row, name, onDone, onCancel }: { row: Attendance; name: st
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Review attendance</DialogTitle>
+        <DialogTitle>Edit attendance</DialogTitle>
         <DialogDescription>
           {name}, {formatDate(row.clock_in)} from {formatTime(row.clock_in)}
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="r-status">Status</Label>
-          <select id="r-status" className={selectClass} value={status} onChange={(e) => setStatus(e.target.value as AttendanceStatus)}>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
         <div className="space-y-2">
           <Label htmlFor="r-out">Clock out (correct if forgotten)</Label>
           <Input id="r-out" type="datetime-local" min={toLocalInput(row.clock_in)} value={clockOut} onChange={(e) => setClockOut(e.target.value)} />

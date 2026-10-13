@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, Info } from 'lucide-react'
-import { AttendanceStatusBadge } from '@/components/attendance/badges'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -109,7 +108,6 @@ export function MyAttendance() {
                   <TableHead>Clock in</TableHead>
                   <TableHead>Clock out</TableHead>
                   <TableHead>Duration</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Note</TableHead>
                 </TableRow>
               </TableHeader>
@@ -120,7 +118,6 @@ export function MyAttendance() {
                     <TableCell>{formatTime(r.clock_in)}</TableCell>
                     <TableCell>{r.clock_out ? formatTime(r.clock_out) : <em>in progress</em>}</TableCell>
                     <TableCell>{formatDuration(durationMinutes(r.clock_in, r.clock_out, now))}</TableCell>
-                    <TableCell><AttendanceStatusBadge status={r.status} /></TableCell>
                     <TableCell className="max-w-48 truncate">{r.note}</TableCell>
                   </TableRow>
                 ))}

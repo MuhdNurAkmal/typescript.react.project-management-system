@@ -30,15 +30,13 @@ export interface AttendanceSummary {
   minutes: number
 }
 
-/** Total worked minutes and session count per person. Rejected records are excluded unless asked for. */
+/** Total worked minutes and session count per person. */
 export function summarizeAttendance(
-  rows: Pick<Attendance, 'user_id' | 'clock_in' | 'clock_out' | 'status'>[],
+  rows: Pick<Attendance, 'user_id' | 'clock_in' | 'clock_out'>[],
   now = new Date(),
-  includeRejected = false,
 ): AttendanceSummary[] {
   const byUser = new Map<string, AttendanceSummary>()
   for (const r of rows) {
-    if (!includeRejected && r.status === 'rejected') continue
     const entry = byUser.get(r.user_id) ?? { user_id: r.user_id, sessions: 0, minutes: 0 }
     entry.sessions += 1
     entry.minutes += durationMinutes(r.clock_in, r.clock_out, now)
