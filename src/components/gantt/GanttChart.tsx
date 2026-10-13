@@ -51,7 +51,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
   const { data: members } = useProjectMembers(projectId)
   const containerRef = useRef<HTMLDivElement>(null)
   const ganttRef = useRef<Gantt | null>(null)
-  const [viewMode, setViewMode] = useState<(typeof VIEW_MODES)[number]>('Week')
+  const [viewMode, setViewMode] = useState<(typeof VIEW_MODES)[number]>('Month')
   const viewModeRef = useRef(viewMode)
 
   const { ganttTasks, unscheduled, listRows } = useMemo(() => {
