@@ -72,25 +72,25 @@ export default function ProjectDetail() {
         </TabsList>
         </div>
         <TabsContent value="overview" className="pt-4">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
-            {/* On phones the project details come first; on wide screens they sit on the right */}
-            <div className="order-first lg:order-last">
-              <OverviewTab project={project} canManage={perms.canManageProject} />
-            </div>
-            <div className="min-w-0 space-y-8">
-              <section className="space-y-3">
+          <div className="space-y-8">
+            <section className="min-w-0 space-y-3">
+              <h2 className="text-lg font-semibold">Timeline</h2>
+              <GanttChart projectId={project.id} canManage={perms.canEditTasks} />
+            </section>
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+              {/* On phones the project details come first; on wide screens they sit on the right */}
+              <div className="order-first lg:order-last">
+                <OverviewTab project={project} canManage={perms.canManageProject} />
+              </div>
+              <section className="min-w-0 space-y-3">
                 <h2 className="text-lg font-semibold">Milestones</h2>
                 <MilestoneSummary projectId={project.id} />
               </section>
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold">Timeline</h2>
-                <GanttChart projectId={project.id} canManage={perms.canEditTasks} />
-              </section>
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold">Members</h2>
-                <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
-              </section>
             </div>
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Members</h2>
+              <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
+            </section>
           </div>
         </TabsContent>
         <TabsContent value="tasks" className="pt-4">
