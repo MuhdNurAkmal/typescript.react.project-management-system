@@ -9,6 +9,8 @@ import {
   ListChecks,
   ShieldCheck,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -38,6 +40,15 @@ const nav = [
   { to: "/admin", label: "Admin", icon: ShieldCheck, superOnly: true },
 ];
 
+const PIN_KEY = "sidebar-expanded";
+function readPinned() {
+  try {
+    return localStorage.getItem(PIN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 const noCompanyNav = new Set(["/", "/company", "/admin"]);
 
 export default function AppLayout() {
@@ -46,6 +57,19 @@ export default function AppLayout() {
   const { current } = useOrg();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  // desktop: icons only by default; hovering (or focusing) shows the text, the button keeps it open
+  const [pinned, setPinned] = useState(readPinned);
+  const [hover, setHover] = useState(false);
+  const wide = pinned || hover;
+  function togglePinned() {
+    const next = !pinned;
+    setPinned(next);
+    try {
+      localStorage.setItem(PIN_KEY, next ? "1" : "0");
+    } catch {
+      /* the choice just isn't remembered */
+    }
+  }
   const name = profile?.full_name || user?.email || "Account";
 
   async function onSignOut() {
@@ -74,17 +98,24 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
+    <div className="min-h-screen md:grid md:grid-cols-[var(--sb)_1fr]" style={{ "--sb": pinned ? "15rem" : "4rem" } as React.CSSProperties}>
+      <div className="md:sticky md:top-0 md:z-40 md:h-screen">
       <aside
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onFocus={() => setHover(true)}
+        onBlur={(e) => !e.currentTarget.contains(e.relatedTarget) && setHover(false)}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r bg-sidebar px-3 py-4 text-sidebar-foreground transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-60 flex-col overflow-hidden border-r bg-sidebar px-3 py-4 text-sidebar-foreground transition-[transform,width] duration-200 md:absolute md:translate-x-0",
+          wide ? "md:w-60" : "md:w-16",
+          wide && !pinned && "md:shadow-lift",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="mb-6 flex items-center justify-between px-2">
-          <span className="flex items-center gap-2.5">
-            <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">U</span>
-            <span className="text-base font-semibold tracking-tight">UrusProgres</span>
+        <div className="mb-6 flex items-center justify-between px-1">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">U</span>
+            <span className={cn("truncate text-base font-semibold tracking-tight", !wide && "md:hidden")}>UrusProgres</span>
           </span>
           <Button
             variant="ghost"
@@ -95,8 +126,18 @@ export default function AppLayout() {
           >
             <X />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("hidden text-sidebar-foreground hover:bg-muted", wide && "md:inline-flex")}
+            onClick={togglePinned}
+            aria-label={pinned ? "Collapse sidebar" : "Keep sidebar open"}
+            title={pinned ? "Collapse sidebar" : "Keep sidebar open"}
+          >
+            {pinned ? <PanelLeftClose /> : <PanelLeftOpen />}
+          </Button>
         </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden">
           {nav
             .filter(({ to }) => current || noCompanyNav.has(to))
             .filter(({ superOnly }) => !superOnly || profile?.is_superadmin)
@@ -105,6 +146,7 @@ export default function AppLayout() {
                 key={to}
                 to={to}
                 end={end}
+                title={label}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
                   cn(
@@ -114,15 +156,16 @@ export default function AppLayout() {
                   )
                 }
               >
-                <Icon className="size-4" />
-                {label}
+                <Icon className="size-4 shrink-0" />
+                <span className={cn("truncate", !wide && "md:hidden")}>{label}</span>
               </NavLink>
             ))}
         </nav>
         <div className="border-t border-sidebar-border pt-4">
-          <CompanySwitcher onPicked={() => setOpen(false)} />
+          <CompanySwitcher compact={!wide} onPicked={() => setOpen(false)} />
         </div>
       </aside>
+      </div>
       {open && (
         <div
           className="fixed inset-0 z-30 bg-black/50 md:hidden"

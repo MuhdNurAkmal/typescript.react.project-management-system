@@ -8,7 +8,7 @@ import { useOpenSessions } from '@/hooks/useAttendance'
 import { useOrg } from '@/hooks/useOrg'
 
 /** Sidebar button showing the current company; clicking it opens a popup to pick another one. */
-export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
+export function CompanySwitcher({ onPicked, compact = false }: { onPicked?: () => void; compact?: boolean }) {
   const { orgs, current, setCurrentId } = useOrg()
   const { data: sessions } = useOpenSessions()
   const navigate = useNavigate()
@@ -31,7 +31,8 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
         render={
           <button
             type="button"
-            className="flex w-full items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/50 p-2.5 text-left transition-colors hover:bg-sidebar-accent"
+            title={current.org.name}
+            className={`flex w-full items-center gap-2.5 overflow-hidden rounded-md border border-sidebar-border bg-sidebar-accent/50 p-2.5 text-left transition-colors hover:bg-sidebar-accent ${compact ? "md:p-0.5" : ""}`}
             aria-label={`Current company: ${current.org.name}. Change company`}
           />
         }
@@ -39,11 +40,11 @@ export function CompanySwitcher({ onPicked }: { onPicked?: () => void }) {
         <span className="grid size-9 shrink-0 place-items-center rounded-md bg-sidebar-primary/15 text-sidebar-primary">
           <Building2 className="size-4" />
         </span>
-        <span className="min-w-0 flex-1">
+        <span className={`min-w-0 flex-1 ${compact ? "md:hidden" : ""}`}>
           <span className="block truncate text-sm font-medium">{current.org.name}</span>
           <span className="block text-xs text-sidebar-foreground/60">{current.member ? current.role.name : "Superadmin"}</span>
         </span>
-        <ChevronsUpDown className="size-4 shrink-0 text-sidebar-foreground/50" />
+        <ChevronsUpDown className={`size-4 shrink-0 text-sidebar-foreground/50 ${compact ? "md:hidden" : ""}`} />
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
