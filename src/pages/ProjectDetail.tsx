@@ -5,7 +5,6 @@ import { ArrowLeft } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { ActivityTab } from '@/components/projects/ActivityTab'
 import { KanbanBoard } from '@/components/tasks/KanbanBoard'
-import { GanttChart } from '@/components/gantt/GanttChart'
 import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { MilestoneSummary } from '@/components/milestones/MilestoneSummary'
@@ -73,10 +72,6 @@ export default function ProjectDetail() {
         </div>
         <TabsContent value="overview" className="pt-4">
           <div className="space-y-8">
-            <section className="min-w-0 space-y-3">
-              <h2 className="text-lg font-semibold">Timeline</h2>
-              <GanttChart projectId={project.id} canManage={perms.canEditTasks} />
-            </section>
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
               {/* On phones the project details come first; on wide screens they sit on the right */}
               <div className="order-first lg:order-last">
