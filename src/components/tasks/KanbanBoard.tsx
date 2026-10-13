@@ -11,7 +11,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { checklistPercent } from '@/lib/checklist'
-import { byDate, taskCodes } from '@/lib/taskTree'
+import { byDate } from '@/lib/taskTree'
 import { isOverdue } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { ChecklistItem, Milestone, Task, TaskStatus } from '@/types/database'
@@ -41,7 +41,6 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
 
   const allTasks = data?.tasks ?? []
   const open = allTasks.find((t) => t.id === openId) ?? null
-  const codes = taskCodes(allTasks)
   const checklists = data?.items ?? []
   const tasks = allTasks.filter((t) => !milestoneFilter || (milestoneFilter === 'none' ? t.milestone_id === null : t.milestone_id === Number(milestoneFilter)))
 
@@ -146,7 +145,6 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
                     key={t.id}
                     task={t}
                     names={t.assignee_ids.map(nameOf)}
-                    code={codes.get(t.id)}
                     checklist={checklists.filter((i) => i.task_id === t.id)}
                     milestone={milestones?.find((m) => m.id === t.milestone_id)}
                     comments={counts.data?.get(t.id) ?? 0}
@@ -175,7 +173,6 @@ export function KanbanBoard({ projectId, canEdit, canDelete, canManage }: { proj
 function Card({
   task,
   names,
-  code,
   checklist,
   milestone,
   comments,
@@ -188,7 +185,6 @@ function Card({
 }: {
   task: Task
   names: string[]
-  code?: string
   checklist: ChecklistItem[]
   milestone?: Milestone
   comments: number
@@ -210,10 +206,9 @@ function Card({
     >
       <div className="flex flex-wrap items-center gap-1.5">
         <PriorityBadge priority={task.priority} />
-        {milestone && <span className="rounded bg-primary-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">◆ {milestone.title}</span>}
+        {milestone && <span className="rounded bg-primary-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">{milestone.title}</span>}
       </div>
       <div className="text-sm font-medium break-words">
-        {code && <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{code}</span>}
         {task.title}
       </div>
       {checklist.length > 0 && (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { taskCodes, tasksIn } from '@/lib/taskTree'
+import { tasksIn } from '@/lib/taskTree'
 
 const t = (id: number, over: Partial<{ milestone_id: number | null; start_date: string | null; due_date: string | null }> = {}) => ({
   id,
@@ -15,16 +15,6 @@ describe('task order', () => {
     t(2, { start_date: '2026-06-01', due_date: '2026-06-09' }),
     t(5, { milestone_id: null, due_date: '2026-06-05' }),
   ]
-
-  it('numbers tasks by date inside their phase', () => {
-    const codes = taskCodes(tasks)
-    expect(codes.get(2)).toBe('1')
-    expect(codes.get(1)).toBe('2')
-  })
-
-  it('numbers tasks with no phase among themselves', () => {
-    expect(taskCodes(tasks).get(5)).toBe('1')
-  })
 
   it('lists the tasks of a phase in date order', () => {
     expect(tasksIn(tasks, 1).map((x) => x.id)).toEqual([2, 1])

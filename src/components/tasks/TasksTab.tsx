@@ -16,7 +16,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { summarizeTasks } from '@/lib/reportUtils'
-import { taskCodes } from '@/lib/taskTree'
+import { byDate } from '@/lib/taskTree'
 import { isOverdue, todayString } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task } from '@/types/database'
@@ -57,17 +57,15 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
   }, [data, search, assignee, milestoneFilter, status, priority])
 
   // phase by phase, in date order
-  const codes = useMemo(() => taskCodes(data?.tasks ?? []), [data])
   const rows = useMemo(() => {
     const rank = new Map((milestones ?? []).map((m, i) => [m.id, i]))
-    const num = (id: number) => Number(codes.get(id) ?? 9999)
     return [...filtered].sort((a, b) => {
       const ra = a.milestone_id === null ? 9999 : (rank.get(a.milestone_id) ?? 9998)
       const rb = b.milestone_id === null ? 9999 : (rank.get(b.milestone_id) ?? 9998)
       if (ra !== rb) return ra - rb
-      return num(a.id) - num(b.id)
+      return byDate(a, b)
     })
-  }, [filtered, codes, milestones])
+  }, [filtered, milestones])
 
   const remove = useMutation({
     mutationFn: async (id: number) => {
@@ -163,7 +161,6 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">
                         <button className="text-left hover:underline" onClick={() => setViewingId(t.id)}>
-                          <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{codes.get(t.id)}</span>
                           {t.title}
                         </button>
                       </TableCell>
@@ -175,7 +172,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                       <TableCell>{t.progress}%</TableCell>
                       <TableCell className="space-x-2 text-right whitespace-nowrap">
                         {canEdit && (
-                          <Button size="sm" variant="outline" onClick={() => setEditing(t)}>
+                          <Button size="sm" variant="outline" onClick={() => setViewingId(t.id)}>
                             Edit
                           </Button>
                         )}

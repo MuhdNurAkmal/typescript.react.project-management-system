@@ -18,7 +18,6 @@ import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { outsideMessage, taskOutsideMilestone } from '@/lib/milestoneUtils'
 import { checklistPercent } from '@/lib/checklist'
-import { taskCodes } from '@/lib/taskTree'
 import { validateTaskDates } from '@/lib/taskValidation'
 import { supabase } from '@/lib/supabase'
 import type { Task, TaskPriority, TaskStatus } from '@/types/database'
@@ -59,8 +58,6 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
   const [assignees, setAssignees] = useState(task.assignee_ids)
   const [text, setText] = useState('')
 
-  const allTasks = all?.tasks ?? []
-  const codes = taskCodes(allTasks)
   const checklist = (all?.items ?? []).filter((i) => i.task_id === task.id)
   const hasChecklist = checklist.length > 0
 
@@ -176,13 +173,11 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
   const warning = chosenMilestone && side ? outsideMessage(side, chosenMilestone) : null
 
   const field = 'space-y-1.5'
-  const code = codes.get(task.id)
   return (
     <>
       <div className="space-y-1 pr-6">
         <DialogTitle className="sr-only">{task.title}</DialogTitle>
         <div className="flex items-center gap-2">
-          {code && <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground tabular-nums">{code}</span>}
           <input
             aria-label="Card title"
             value={title}

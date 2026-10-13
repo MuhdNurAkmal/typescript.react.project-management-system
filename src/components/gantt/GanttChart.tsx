@@ -11,7 +11,7 @@ import { useMilestones } from '@/hooks/useMilestones'
 import { useProjectMembers } from '@/hooks/useProjectData'
 import { useProjectTasks } from '@/hooks/useTasks'
 import { milestoneProgress } from '@/lib/milestoneUtils'
-import { taskCodes, tasksIn } from '@/lib/taskTree'
+import { tasksIn } from '@/lib/taskTree'
 import { supabase } from '@/lib/supabase'
 import { todayString } from '@/lib/taskValidation'
 
@@ -39,7 +39,6 @@ interface ListRow {
   /** 0 = phase, 1 = task, 2 = subtask. */
   level: number
   /** 1, 2 ... for tasks and 1.1, 1.2 ... for subtasks. */
-  code?: string
   /** For a milestone: its percentage. */
   detail?: string
 }
@@ -63,7 +62,6 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     const nameOf = new Map((members ?? []).map((m) => [m.member.user_id, m.profile?.full_name || m.profile?.email || 'Unknown']))
     const tasks = data?.tasks ?? []
 
-    const codes = taskCodes(tasks)
     const addTask = (t: (typeof tasks)[number], level: number) => {
       const start = t.start_date ?? t.due_date
       const end = t.due_date ?? t.start_date
@@ -71,7 +69,6 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         skipped.push(t.title)
         return
       }
-      const code = codes.get(t.id)
       ids.add(t.id)
       list.push({
         id: String(t.id),
@@ -80,11 +77,10 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         milestone: false,
         done: t.status === 'done',
         level,
-        code,
       })
       scheduled.push({
         id: String(t.id),
-        name: code ? `${code}  ${t.title}` : t.title,
+        name: t.title,
         start,
         end,
         progress: t.progress,
@@ -209,8 +205,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
                       className={`min-w-0 flex-1 truncate ${r.done ? 'text-muted-foreground line-through' : r.milestone ? 'font-semibold' : 'font-medium'}`}
                       title={r.name}
                     >
-                      {r.milestone ? '◆ ' : ''}
-                      {r.code && <span className="mr-1.5 text-xs font-normal text-muted-foreground tabular-nums">{r.code}</span>}
+
                       {r.name}
                       {r.detail && <span className="ml-1.5 text-xs font-normal text-muted-foreground">{r.detail}</span>}
                     </span>
