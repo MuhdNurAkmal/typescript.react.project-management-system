@@ -40,7 +40,8 @@ interface ListRow {
   level: number
   /** 1, 2 ... for tasks and 1.1, 1.2 ... for subtasks. */
   /** For a milestone: its percentage. */
-  detail?: string
+  /** Completion percentage. */
+  percent: number
 }
 
 export function GanttChart({ projectId, canManage }: { projectId: number; canManage: boolean }) {
@@ -77,6 +78,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         milestone: false,
         done: t.status === 'done',
         level,
+        percent: t.status === 'done' ? 100 : t.progress,
       })
       scheduled.push({
         id: String(t.id),
@@ -93,7 +95,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     // each milestone is a long bar for the whole phase; its tasks follow in date order
     for (const m of milestones ?? []) {
       const p = milestoneProgress(m, tasks, today)
-      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', level: 0, detail: p.total ? `${p.percent}%` : undefined })
+      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', level: 0, percent: p.percent })
       scheduled.push({
         id: `m-${m.id}`,
         name: m.title,
@@ -192,10 +194,11 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       {ganttTasks.length > 0 && (
         <Card>
           <CardContent className="flex p-0">
-            <div className="w-56 shrink-0 border-r bg-card sm:w-72" aria-label="Task list">
+            <div className="w-64 shrink-0 border-r bg-card sm:w-80" aria-label="Task list">
               <div className="flex items-end border-b px-3 pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase" style={{ height: HEADER_HEIGHT }}>
                 <span className="flex-1">Task</span>
                 <span className="w-24 shrink-0 sm:w-28">Assignee</span>
+                <span className="w-10 shrink-0 text-right">%</span>
               </div>
               <ul>
                 {listRows.map((r) => (
@@ -207,7 +210,6 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
                     >
 
                       {r.name}
-                      {r.detail && <span className="ml-1.5 text-xs font-normal text-muted-foreground">{r.detail}</span>}
                     </span>
                     <span className="flex w-24 shrink-0 items-center gap-1.5 sm:w-28">
                       {r.assignees.length > 0 ? (
@@ -223,6 +225,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
                         !r.milestone && <span className="text-xs text-muted-foreground">Unassigned</span>
                       )}
                     </span>
+                    <span className="w-10 shrink-0 text-right text-xs text-muted-foreground tabular-nums">{r.percent}%</span>
                   </li>
                 ))}
               </ul>
