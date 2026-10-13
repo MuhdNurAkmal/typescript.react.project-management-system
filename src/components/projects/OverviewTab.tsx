@@ -95,12 +95,12 @@ export function OverviewTab({ project, canManage }: { project: Project; canManag
       <CardContent className="space-y-6">
         <p className="whitespace-pre-wrap">{project.description || 'No description'}</p>
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-          <Field label="Type"><span className="capitalize">{project.type}</span></Field>
+          {canManage && <Field label="Type"><span className="capitalize">{project.type}</span></Field>}
           <Field label="Status"><StatusBadge status={project.status} /></Field>
-          <Field label="Sponsor">{project.sponsor}</Field>
+          {canManage && <Field label="Sponsor">{project.sponsor}</Field>}
           <Field label="Start date">{project.start_date}</Field>
           <Field label="End date">{project.end_date}</Field>
-          <Field label="Budget">{project.budget == null ? '' : `RM ${project.budget.toLocaleString()}`}</Field>
+          {canManage && <Field label="Budget">{project.budget == null ? '' : `RM ${project.budget.toLocaleString()}`}</Field>}
         </dl>
         {canManage && (
           <div className="flex flex-wrap items-end gap-4 border-t pt-4">
