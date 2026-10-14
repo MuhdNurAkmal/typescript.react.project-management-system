@@ -53,6 +53,8 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
   const ganttRef = useRef<Gantt | null>(null)
   const [viewMode, setViewMode] = useState<(typeof VIEW_MODES)[number]>('Month')
   const viewModeRef = useRef(viewMode)
+  // until the person picks a view, the chart is squeezed so the earliest date up to today fits the screen
+  const fitRef = useRef(true)
 
   const { ganttTasks, unscheduled, listRows } = useMemo(() => {
     const scheduled: GanttTask[] = []
@@ -141,8 +143,16 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     el.innerHTML = ''
     ganttRef.current = null
     if (ganttTasks.length === 0) return
+    let columnWidth: number | null = null
+    if (fitRef.current && viewModeRef.current === 'Month') {
+      const first = Math.min(...ganttTasks.map((t) => Date.parse(t.start)))
+      const last = Date.now() > first ? Date.now() : Math.max(...ganttTasks.map((t) => Date.parse(t.end)))
+      const months = (last - first) / (30.44 * 86_400_000) + 1 + 4 // plus the margin the chart adds on both sides
+      columnWidth = Math.max(16, Math.floor(el.clientWidth / months))
+    }
     ganttRef.current = new Gantt(el, ganttTasks, {
       view_mode: viewModeRef.current,
+      column_width: columnWidth,
       bar_height: BAR_HEIGHT,
       padding: ROW_PADDING,
       // the default popup writes the task name into the page as HTML; escape it so a task title cannot inject markup
@@ -181,7 +191,15 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         {VIEW_MODES.map((m) => (
-          <Button key={m} size="sm" variant={m === viewMode ? 'default' : 'outline'} onClick={() => setViewMode(m)}>
+          <Button key={m} size="sm" variant={m === viewMode ? 'default' : 'outline'} onClick={() => {
+              fitRef.current = false
+              if (ganttRef.current) {
+                ;(ganttRef.current as unknown as { options: { column_width: number | null } }).options.column_width = null
+                ganttRef.current.change_view_mode(m, true)
+              }
+              setViewMode(m)
+            }}
+          >
             {m}
           </Button>
         ))}
