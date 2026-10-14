@@ -146,7 +146,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Task</TableHead>
+                  <TableHead className="w-72">Task</TableHead>
                   <TableHead className="w-28">Assignee</TableHead>
                   <TableHead className="w-28">Milestone</TableHead>
                   <TableHead className="w-28">Status</TableHead>
