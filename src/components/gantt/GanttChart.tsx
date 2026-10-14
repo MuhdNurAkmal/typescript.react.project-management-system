@@ -232,11 +232,11 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         ))}
         {(milestones?.length ?? 0) > 0 && (
           <span className="ml-auto flex gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setAll(true)}>
-              Collapse all
+            <Button size="sm" variant="outline" onClick={() => setAll(true)}>
+              Collapse ALL
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setAll(false)}>
-              Expand all
+            <Button size="sm" variant="outline" onClick={() => setAll(false)}>
+              Expand ALL
             </Button>
           </span>
         )}
