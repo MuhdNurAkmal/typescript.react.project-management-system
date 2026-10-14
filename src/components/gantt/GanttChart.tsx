@@ -15,6 +15,20 @@ import { tasksIn } from '@/lib/taskTree'
 import { supabase } from '@/lib/supabase'
 import { todayString } from '@/lib/taskValidation'
 
+/**
+ * The chart only covers the dates the tasks use. For a project that ended in the past that left today outside it,
+ * so the Today button had nowhere to go. This keeps the end of the chart at least a month past today.
+ */
+class ChartWithToday extends Gantt {
+  setup_gantt_dates(refresh?: boolean) {
+    super.setup_gantt_dates(refresh)
+    const end = new Date()
+    end.setMonth(end.getMonth() + 1)
+    end.setHours(0, 0, 0, 0)
+    if (!refresh && this.gantt_end < end) this.gantt_end = end
+  }
+}
+
 const VIEW_MODES = ['Day', 'Week', 'Month'] as const
 const statusClass = { todo: 'gantt-todo', in_progress: 'gantt-in-progress', review: 'gantt-review', done: 'gantt-done' }
 const dateOnly = (d: Date) => format(d, 'yyyy-MM-dd')
@@ -141,7 +155,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     el.innerHTML = ''
     ganttRef.current = null
     if (ganttTasks.length === 0) return
-    ganttRef.current = new Gantt(el, ganttTasks, {
+    ganttRef.current = new ChartWithToday(el, ganttTasks, {
       view_mode: viewModeRef.current,
       bar_height: BAR_HEIGHT,
       padding: ROW_PADDING,

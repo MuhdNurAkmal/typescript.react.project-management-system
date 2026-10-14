@@ -23,6 +23,8 @@ declare module 'frappe-gantt' {
 
   export default class Gantt {
     constructor(wrapper: HTMLElement | string, tasks: GanttTask[], options?: GanttOptions)
+    gantt_end: Date
+    setup_gantt_dates(refresh?: boolean): void
     refresh(tasks: GanttTask[]): void
     change_view_mode(mode?: string, maintainPos?: boolean): void
   }
