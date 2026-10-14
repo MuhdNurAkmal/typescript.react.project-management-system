@@ -1,3 +1,4 @@
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Gantt, { type GanttTask } from 'frappe-gantt'
@@ -45,6 +46,9 @@ const escapeHtml = (text: string) =>
   text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string)
 
 interface ListRow {
+  /** For a milestone row: its id and how many tasks it holds, so the row can be collapsed. */
+  milestoneId?: number
+  taskCount?: number
   id: string
   name: string
   assignees: string[]
@@ -65,6 +69,9 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
   const { data: members } = useProjectMembers(projectId)
   const containerRef = useRef<HTMLDivElement>(null)
   const ganttRef = useRef<Gantt | null>(null)
+  // milestones whose tasks are folded away, so only the phase bar and its progress show
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+  const keepScrollRef = useRef(false)
   const [viewMode, setViewMode] = useState<(typeof VIEW_MODES)[number]>('Month')
   const viewModeRef = useRef(viewMode)
 
@@ -109,7 +116,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
     // each milestone is a long bar for the whole phase; its tasks follow in date order
     for (const m of milestones ?? []) {
       const p = milestoneProgress(m, tasks, today)
-      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, done: p.state === 'done', level: 0, percent: p.percent })
+      list.push({ id: `m-${m.id}`, name: m.title, assignees: [], milestone: true, milestoneId: m.id, taskCount: p.total, done: p.state === 'done', level: 0, percent: p.percent })
       scheduled.push({
         id: `m-${m.id}`,
         name: m.title,
@@ -118,7 +125,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         progress: p.percent,
         custom_class: p.state === 'overdue' ? 'gantt-milestone-overdue' : 'gantt-milestone',
       })
-      for (const task of tasksIn(tasks, m.id)) addTask(task, 1)
+      if (!collapsed.has(m.id)) for (const task of tasksIn(tasks, m.id)) addTask(task, 1)
     }
     // tasks under no milestone come last
     const known = new Set((milestones ?? []).map((m) => m.id))
@@ -131,7 +138,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       task.dependencies = [task.dependencies, String(d.depends_on_task_id)].filter(Boolean).join(',')
     }
     return { ganttTasks: scheduled, unscheduled: skipped, listRows: list }
-  }, [data, milestones, members])
+  }, [data, milestones, members, collapsed])
 
   const reschedule = useMutation({
     mutationFn: async (v: { id: number; patch: { start_date?: string; due_date?: string; progress?: number } }) => {
@@ -152,6 +159,10 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
+    // folding a phase redraws the chart; keep the sideways scroll where it was
+    const scroller = el.querySelector('.gantt-container')
+    const savedLeft = keepScrollRef.current ? (scroller?.scrollLeft ?? 0) : 0
+    const savedOuter = keepScrollRef.current ? (el.parentElement?.scrollLeft ?? 0) : 0
     el.innerHTML = ''
     ganttRef.current = null
     if (ganttTasks.length === 0) return
@@ -189,7 +200,27 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
         rescheduleRef.current({ id: Number(task.id), patch: { progress: Math.round(progress) } })
       },
     })
+    if (keepScrollRef.current) {
+      keepScrollRef.current = false
+      requestAnimationFrame(() => {
+        el.querySelector('.gantt-container')?.scrollTo({ left: savedLeft, behavior: 'instant' })
+        el.parentElement?.scrollTo({ left: savedOuter, behavior: 'instant' })
+      })
+    }
   }, [ganttTasks, canManage, projectId, qc])
+
+  function toggle(id: number) {
+    keepScrollRef.current = true
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (!next.delete(id)) next.add(id)
+      return next
+    })
+  }
+  function setAll(fold: boolean) {
+    keepScrollRef.current = true
+    setCollapsed(fold ? new Set((milestones ?? []).map((m) => m.id)) : new Set())
+  }
 
   return (
     <div className="space-y-3">
@@ -199,6 +230,16 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
             {m}
           </Button>
         ))}
+        {(milestones?.length ?? 0) > 0 && (
+          <span className="ml-auto flex gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setAll(true)}>
+              Collapse all
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setAll(false)}>
+              Expand all
+            </Button>
+          </span>
+        )}
         {!canManage && <span className="text-sm text-muted-foreground">Read-only: your role cannot reschedule tasks.</span>}
       </div>
 
@@ -219,6 +260,18 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
               <ul>
                 {listRows.map((r) => (
                   <li key={r.id} className={`flex items-center gap-2 border-b px-3 text-sm ${r.milestone ? 'bg-muted/50' : ''}`} style={{ height: ROW_HEIGHT }}>
+                    {r.milestoneId !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => toggle(r.milestoneId!)}
+                        aria-expanded={!collapsed.has(r.milestoneId)}
+                        aria-label={`${collapsed.has(r.milestoneId) ? 'Show' : 'Hide'} tasks of ${r.name}`}
+                        title={collapsed.has(r.milestoneId) ? `Show ${r.taskCount} task(s)` : 'Hide tasks'}
+                        className="-ml-1 shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        {collapsed.has(r.milestoneId) ? <ChevronRight className="size-4" /> : <ChevronDown className="size-4" />}
+                      </button>
+                    )}
                     <span
                       style={{ paddingLeft: r.level * 14 }}
                       className={`min-w-0 flex-1 truncate ${r.done ? 'text-muted-foreground line-through' : r.milestone ? 'font-semibold' : 'font-medium'}`}
