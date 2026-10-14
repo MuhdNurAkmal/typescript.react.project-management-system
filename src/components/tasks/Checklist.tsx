@@ -102,7 +102,7 @@ export function Checklist({ task, items, canEdit }: Props) {
               <Percent className="size-4" />
             </KindButton>
           </div>
-          <Button type="submit" variant="outline" disabled={add.isPending || !title.trim()}>
+          <Button type="submit" variant="success" disabled={add.isPending || !title.trim()}>
             <Plus /> Add
           </Button>
         </form>

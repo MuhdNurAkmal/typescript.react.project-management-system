@@ -86,10 +86,7 @@ export default function ProjectDetail() {
                 <h2 className="text-lg font-semibold">Members</h2>
                 <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
               </section>
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold">Teams</h2>
-                <TeamsSection projectId={project.id} canManage={perms.canManageMembers} />
-              </section>
+              <TeamsSection projectId={project.id} canManage={perms.canManageMembers} />
             </div>
           </div>
         </TabsContent>

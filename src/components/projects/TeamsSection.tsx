@@ -39,7 +39,15 @@ export function TeamsSection({ projectId, canManage }: { projectId: number; canM
   })
 
   return (
-    <div className="space-y-3">
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Teams</h2>
+        {canManage && (
+          <Button size="sm" variant="success" onClick={() => setEditing(null)}>
+            <Plus /> New team
+          </Button>
+        )}
+      </div>
       {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
       {error && <p className="text-sm text-destructive">{error.message}</p>}
       {teams?.length === 0 && (
@@ -83,11 +91,6 @@ export function TeamsSection({ projectId, canManage }: { projectId: number; canM
           </CardContent>
         </Card>
       )}
-      {canManage && (
-        <Button size="sm" variant="outline" onClick={() => setEditing(null)}>
-          <Plus /> New team
-        </Button>
-      )}
 
       <Dialog open={editing !== undefined} onOpenChange={(o) => !o && setEditing(undefined)}>
         <DialogContent>
@@ -104,7 +107,7 @@ export function TeamsSection({ projectId, canManage }: { projectId: number; canM
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   )
 }
 

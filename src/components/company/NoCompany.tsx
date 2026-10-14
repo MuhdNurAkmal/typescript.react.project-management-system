@@ -50,7 +50,7 @@ export function NoCompany() {
             <CardDescription>You become its owner and can add people and create projects.</CardDescription>
           </CardHeader>
           <CardContent>
-            {creating ? <CreateCompanyForm /> : <Button onClick={() => setCreating(true)}>Create a company</Button>}
+            {creating ? <CreateCompanyForm /> : <Button variant="success" onClick={() => setCreating(true)}>Create a company</Button>}
           </CardContent>
         </Card>
       </div>

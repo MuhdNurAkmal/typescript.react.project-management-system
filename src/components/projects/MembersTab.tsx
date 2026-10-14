@@ -138,7 +138,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                   ))}
                 </select>
               </div>
-              <Button type="submit" disabled={add.isPending || defaultRoleId === null}>
+              <Button variant="success" type="submit" disabled={add.isPending || defaultRoleId === null}>
                 {add.isPending ? 'Adding…' : 'Add'}
               </Button>
             </form>
@@ -201,16 +201,16 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                       {canManage && (
                         <TableCell className="space-x-2 text-right whitespace-nowrap">
                           {member.is_active ? (
-                            <Button variant="outline" size="sm" disabled={lastPm} onClick={() => deactivate(member.id, name)}>
+                            <Button variant="destructive" size="sm" disabled={lastPm} onClick={() => deactivate(member.id, name)}>
                               Deactivate
                             </Button>
                           ) : (
-                            <Button variant="outline" size="sm" onClick={() => update.mutate({ id: member.id, patch: { is_active: true } })}>
+                            <Button size="sm" onClick={() => update.mutate({ id: member.id, patch: { is_active: true } })}>
                               Reactivate
                             </Button>
                           )}
                           {member.user_id !== user?.id && (
-                            <Button variant="outline" size="sm" disabled={lastPm} onClick={() => removeMember(member.id, name)}>
+                            <Button variant="destructive" size="sm" disabled={lastPm} onClick={() => removeMember(member.id, name)}>
                               Remove
                             </Button>
                           )}

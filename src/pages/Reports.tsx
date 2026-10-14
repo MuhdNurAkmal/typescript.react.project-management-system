@@ -78,10 +78,10 @@ function AttendanceReport() {
           <Label htmlFor="rep-month">Month</Label>
           <Input id="rep-month" type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
         </div>
-        <Button variant="outline" disabled={summary.length === 0} onClick={exportSummary}>
+        <Button disabled={summary.length === 0} onClick={exportSummary}>
           <Download /> Summary CSV
         </Button>
-        <Button variant="outline" disabled={!data?.rows.length} onClick={exportDetail}>
+        <Button disabled={!data?.rows.length} onClick={exportDetail}>
           <Download /> Detailed CSV
         </Button>
       </div>
@@ -168,7 +168,7 @@ function TaskReport() {
             ))}
           </select>
         </div>
-        <Button variant="outline" disabled={!data?.tasks.length} onClick={exportTasks}>
+        <Button disabled={!data?.tasks.length} onClick={exportTasks}>
           <Download /> Tasks CSV
         </Button>
       </div>

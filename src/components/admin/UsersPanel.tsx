@@ -99,19 +99,19 @@ export function UsersPanel() {
                       </TableCell>
                       <TableCell className="pr-5">
                         <div className="flex flex-wrap justify-end gap-1">
-                          <Button size="sm" variant="ghost" onClick={() => open(u, 'rename')}>
+                          <Button size="sm" onClick={() => open(u, 'rename')}>
                             Rename
                           </Button>
-                          <Button size="sm" variant="ghost" disabled={!u.email || reset.isPending} onClick={() => u.email && reset.mutate(u.email)}>
+                          <Button size="sm" disabled={!u.email || reset.isPending} onClick={() => u.email && reset.mutate(u.email)}>
                             Reset password
                           </Button>
                           {!me &&
                             (u.suspended_at ? (
-                              <Button size="sm" variant="ghost" onClick={() => suspend.mutate({ id: u.id, on: false })}>
+                              <Button size="sm" onClick={() => suspend.mutate({ id: u.id, on: false })}>
                                 Reactivate
                               </Button>
                             ) : (
-                              <Button size="sm" variant="ghost" onClick={() => open(u, 'suspend')}>
+                              <Button size="sm" variant="destructive" onClick={() => open(u, 'suspend')}>
                                 Suspend
                               </Button>
                             ))}
@@ -149,7 +149,7 @@ export function UsersPanel() {
             <Button variant="outline" onClick={close}>
               Cancel
             </Button>
-            <Button
+            <Button variant={mode === 'rename' ? 'default' : 'destructive'}
               disabled={suspend.isPending || rename.isPending}
               onClick={async () => {
                 if (!target) return

@@ -309,7 +309,7 @@ function Composer({ onAdd }: { onAdd: (title: string) => Promise<unknown> }) {
         }}
       />
       <div className="flex items-center gap-1">
-        <Button type="submit" size="sm" disabled={busy || !title.trim()}>
+        <Button variant="success" type="submit" size="sm" disabled={busy || !title.trim()}>
           Add card
         </Button>
         <Button type="button" size="icon-sm" variant="ghost" aria-label="Close" onClick={() => setOpen(false)}>

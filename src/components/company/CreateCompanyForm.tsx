@@ -37,7 +37,7 @@ export function CreateCompanyForm({ onDone, submitLabel = 'Create company' }: { 
         <Label htmlFor="company-name">Company or group name</Label>
         <Input id="company-name" required maxLength={120} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Faculty Research Group" />
       </div>
-      <Button type="submit" disabled={busy || !name.trim()}>
+      <Button type="submit" variant="success" disabled={busy || !name.trim()}>
         {busy ? 'Creating…' : submitLabel}
       </Button>
     </form>

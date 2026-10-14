@@ -86,7 +86,7 @@ export function GanttTab({ projectId, canEdit, canManage }: { projectId: number;
             <CardDescription>A milestone is a phase with a start and an end date. Put tasks under it; they should all be done by the end date.</CardDescription>
           </div>
           {canManage && (
-            <Button size="sm" className="shrink-0" onClick={() => setDraft({ id: null, title: '', start: today, end: today })}>
+            <Button variant="success" size="sm" className="shrink-0" onClick={() => setDraft({ id: null, title: '', start: today, end: today })}>
               <Plus /> New milestone
             </Button>
           )}
@@ -118,12 +118,12 @@ export function GanttTab({ projectId, canEdit, canManage }: { projectId: number;
                           Done
                         </label>
                       )}
-                      <Button size="sm" variant="outline" onClick={() => setDraft({ id: m.id, title: m.title, start: m.start_date, end: m.end_date })}>
+                      <Button size="sm" onClick={() => setDraft({ id: m.id, title: m.title, start: m.start_date, end: m.end_date })}>
                         Edit
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="destructive"
                         onClick={async () => (await confirm({ title: `Delete milestone "${m.title}"?`, description: 'Its tasks are kept and move to Unplanned.', confirmLabel: 'Delete' })) && remove.mutate(m.id)}
                       >
                         Delete

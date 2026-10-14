@@ -121,7 +121,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
           <option value="low">Low</option>
         </select>
         {canEdit && (
-          <Button className="ml-auto shrink-0" onClick={() => setEditing(null)}>
+          <Button variant="success" className="ml-auto shrink-0" onClick={() => setEditing(null)}>
             <Plus /> New task
           </Button>
         )}

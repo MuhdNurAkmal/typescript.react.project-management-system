@@ -84,7 +84,7 @@ export function PmAttendance() {
                 <TableCell>{formatDuration(durationMinutes(r.clock_in, r.clock_out, now))}</TableCell>
                 <TableCell className="max-w-48 truncate">{r.note}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">
-                  <Button size="sm" variant="outline" onClick={() => setReviewing(r)}>
+                  <Button size="sm" onClick={() => setReviewing(r)}>
                     Edit
                   </Button>
                 </TableCell>

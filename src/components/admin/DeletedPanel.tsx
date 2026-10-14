@@ -52,7 +52,7 @@ export function DeletedPanel() {
                   {d.deleted_by_name ? ` by ${d.deleted_by_name}` : ''}
                 </TableCell>
                 <TableCell className="pr-5 text-right">
-                  <Button size="sm" variant="outline" disabled={!d.company_exists || restore.isPending} onClick={() => restore.mutate(d.id)}>
+                  <Button size="sm" disabled={!d.company_exists || restore.isPending} onClick={() => restore.mutate(d.id)}>
                     Restore
                   </Button>
                 </TableCell>

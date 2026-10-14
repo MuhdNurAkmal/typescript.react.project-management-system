@@ -61,7 +61,7 @@ export default function Company() {
         description="People, roles and settings for this company."
         actions={
         <Dialog open={newOpen} onOpenChange={setNewOpen}>
-          <DialogTrigger render={<Button variant="outline" />}>
+          <DialogTrigger render={<Button variant="success" />}>
             <Plus /> New company
           </DialogTrigger>
           <DialogContent>
@@ -128,7 +128,7 @@ export default function Company() {
                           {editable && (
                             <Button
                               size="sm"
-                              variant="outline"
+                              variant="destructive"
                               onClick={async () => {
                                 const ok = await confirm({
                                   title: `Remove ${name} from ${current.org.name}?`,
@@ -242,7 +242,7 @@ function RenameCard({ orgId, name }: { orgId: number; name: string }) {
             <Label htmlFor="org-name">Company name</Label>
             <Input id="org-name" maxLength={120} value={value} onChange={(e) => setValue(e.target.value)} />
           </div>
-          <Button type="submit" variant="secondary" disabled={save.isPending || !value.trim() || value.trim() === name}>
+          <Button type="submit" disabled={save.isPending || !value.trim() || value.trim() === name}>
             Rename
           </Button>
         </form>
@@ -318,7 +318,7 @@ function AddMemberCard({ orgId, onAdded }: { orgId: number; onAdded: () => void 
               ))}
             </select>
           </div>
-          <Button type="submit" disabled={add.isPending}>
+          <Button variant="success" type="submit" disabled={add.isPending}>
             {add.isPending ? 'Adding…' : 'Add'}
           </Button>
         </form>

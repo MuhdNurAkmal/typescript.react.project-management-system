@@ -46,7 +46,7 @@ export function CompaniesPanel() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => open(null, 'create')}>
+        <Button variant="success" onClick={() => open(null, 'create')}>
           <Plus /> New company
         </Button>
       </div>
@@ -84,7 +84,7 @@ export function CompaniesPanel() {
                       <div className="flex flex-wrap justify-end gap-1">
                         <Button
                           size="sm"
-                          variant="ghost"
+                         
                           onClick={() => {
                             setCurrentId(o.id)
                             navigate('/projects')
@@ -92,18 +92,18 @@ export function CompaniesPanel() {
                         >
                           Open
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => open(o, 'members')}>
+                        <Button size="sm" onClick={() => open(o, 'members')}>
                           Members
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => open(o, 'transfer')}>
+                        <Button size="sm" onClick={() => open(o, 'transfer')}>
                           Transfer
                         </Button>
                         {o.suspended_at ? (
-                          <Button size="sm" variant="ghost" onClick={() => setSuspended.mutate({ id: o.id, on: false })}>
+                          <Button size="sm" onClick={() => setSuspended.mutate({ id: o.id, on: false })}>
                             Reactivate
                           </Button>
                         ) : (
-                          <Button size="sm" variant="ghost" onClick={() => open(o, 'suspend')}>
+                          <Button size="sm" variant="destructive" onClick={() => open(o, 'suspend')}>
                             Suspend
                           </Button>
                         )}
@@ -179,6 +179,7 @@ function CreateDialog({ open, onClose }: { open: boolean; onClose: () => void })
             Cancel
           </Button>
           <Button
+            variant="success"
             disabled={!name.trim() || !email.trim() || create.isPending}
             onClick={async () => {
               await create.mutateAsync({ name, email }).then(() => {
@@ -260,7 +261,7 @@ function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; o
                   </option>
                 ))}
               </select>
-              <Button size="sm" variant="ghost" onClick={() => removeMember.mutate(m.id)}>
+              <Button size="sm" variant="destructive" onClick={() => removeMember.mutate(m.id)}>
                 Remove
               </Button>
             </li>
@@ -268,7 +269,7 @@ function MembersDialog({ open, org, onClose }: { open: boolean; org: AdminOrg; o
         </ul>
         <div className="flex gap-2">
           <Input type="email" placeholder="Add member by email" aria-label="Email of the user to add" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Button
+          <Button variant="success"
             disabled={!email.trim() || add.isPending}
             onClick={async () => {
               await add.mutateAsync(email).then(() => setEmail(''), () => undefined)
@@ -355,7 +356,7 @@ function SuspendDialog({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button disabled={pending} onClick={() => onSubmit(reason)}>
+          <Button variant="destructive" disabled={pending} onClick={() => onSubmit(reason)}>
             Suspend
           </Button>
         </DialogFooter>

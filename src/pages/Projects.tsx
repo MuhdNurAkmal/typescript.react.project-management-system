@@ -42,7 +42,7 @@ export default function Projects() {
         description="Everything you are part of in this company."
         actions={
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button />}>
+          <DialogTrigger render={<Button variant="success" />}>
             <Plus /> New project
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -91,7 +91,7 @@ export default function Projects() {
             </span>
             <p className="font-medium">No projects yet</p>
             <p className="text-sm text-muted-foreground">Create your first project to start planning.</p>
-            <Button size="sm" className="mt-1" onClick={() => setOpen(true)}>
+            <Button variant="success" size="sm" className="mt-1" onClick={() => setOpen(true)}>
               <Plus /> New project
             </Button>
           </CardContent>

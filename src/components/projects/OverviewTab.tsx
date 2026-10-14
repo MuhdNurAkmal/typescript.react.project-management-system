@@ -114,7 +114,7 @@ export function OverviewTab({ project, canManage }: { project: Project; canManag
                 ))}
               </select>
             </div>
-            <Button variant="secondary" disabled={status === project.status || save.isPending} onClick={() => save.mutate({ status })}>
+            <Button disabled={status === project.status || save.isPending} onClick={() => save.mutate({ status })}>
               Update status
             </Button>
             <Button onClick={() => setEditing(true)}>Edit details</Button>

@@ -66,7 +66,7 @@ export default function MyTasks() {
                   <PriorityBadge priority={task.priority} />
                   <TaskStatusBadge status={task.status} />
                   <span className="w-10 text-sm">{task.progress}%</span>
-                  <Button size="sm" variant="outline" onClick={() => setUpdating(task)}>
+                  <Button size="sm" onClick={() => setUpdating(task)}>
                     Update
                   </Button>
                 </div>

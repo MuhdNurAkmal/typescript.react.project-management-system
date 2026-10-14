@@ -139,7 +139,7 @@ export function LeaveSection() {
                     <TableCell className="max-w-48 truncate">{r.review_note}</TableCell>
                     <TableCell className="text-right">
                       {r.status === 'pending' && (
-                        <Button size="sm" variant="outline" onClick={async () => (await confirm({ title: 'Cancel this leave request?', confirmLabel: 'Cancel request' })) && cancel.mutate(r.id)}>
+                        <Button size="sm" variant="destructive" onClick={async () => (await confirm({ title: 'Cancel this leave request?', confirmLabel: 'Cancel request' })) && cancel.mutate(r.id)}>
                           Cancel
                         </Button>
                       )}

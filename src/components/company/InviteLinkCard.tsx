@@ -83,11 +83,11 @@ export function InviteLinkCard({ orgId, orgName }: { orgId: number; orgName: str
               </Button>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" disabled={toggle.isPending} onClick={() => toggle.mutate(!invite.data!.enabled)}>
+              <Button size="sm" disabled={toggle.isPending} onClick={() => toggle.mutate(!invite.data!.enabled)}>
                 {invite.data.enabled ? 'Turn link off' : 'Turn link on'}
               </Button>
               <Button
-                variant="outline"
+               
                 size="sm"
                 disabled={reset.isPending}
                 onClick={async () => {

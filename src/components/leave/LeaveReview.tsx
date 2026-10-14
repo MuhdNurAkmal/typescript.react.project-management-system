@@ -57,7 +57,7 @@ export function LeaveReview() {
                     <TableCell className="max-w-48 truncate">{r.reason}</TableCell>
                     <TableCell><AttendanceStatusBadge status={r.status} /></TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="outline" onClick={() => setReviewing(r)}>
+                      <Button size="sm" onClick={() => setReviewing(r)}>
                         Review
                       </Button>
                     </TableCell>

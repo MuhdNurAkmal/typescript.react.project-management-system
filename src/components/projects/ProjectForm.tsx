@@ -81,7 +81,7 @@ export function ProjectForm({
         </div>
         {extra}
       </div>
-      <Button type="submit" disabled={busy}>
+      <Button type="submit" variant={/^create/i.test(submitLabel) ? "success" : "default"} disabled={busy}>
         {busy ? 'Saving…' : submitLabel}
       </Button>
     </form>
