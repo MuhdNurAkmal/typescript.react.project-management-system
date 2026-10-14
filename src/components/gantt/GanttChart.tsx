@@ -217,6 +217,7 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       return next
     })
   }
+  const allCollapsed = (milestones?.length ?? 0) > 0 && (milestones ?? []).every((m) => collapsed.has(m.id))
   function setAll(fold: boolean) {
     keepScrollRef.current = true
     setCollapsed(fold ? new Set((milestones ?? []).map((m) => m.id)) : new Set())
@@ -231,14 +232,9 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
           </Button>
         ))}
         {(milestones?.length ?? 0) > 0 && (
-          <span className="ml-auto flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => setAll(true)}>
-              Collapse ALL
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setAll(false)}>
-              Expand ALL
-            </Button>
-          </span>
+          <Button className="ml-auto" size="sm" variant="outline" onClick={() => setAll(!allCollapsed)}>
+            {allCollapsed ? 'Expand ALL' : 'Collapse ALL'}
+          </Button>
         )}
         {!canManage && <span className="text-sm text-muted-foreground">Read-only: your role cannot reschedule tasks.</span>}
       </div>
