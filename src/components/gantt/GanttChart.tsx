@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Download } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Gantt, { type GanttTask } from "frappe-gantt";
@@ -8,6 +8,12 @@ import "@/styles/frappe-gantt.css";
 import { Button } from "@/components/ui/button";
 import { AssigneeStack } from "@/components/tasks/AssigneeStack";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useMilestones } from "@/hooks/useMilestones";
 import { useProjectMembers } from "@/hooks/useProjectData";
 import { useProjectTasks } from "@/hooks/useTasks";
@@ -29,6 +35,21 @@ class ChartWithToday extends Gantt {
     end.setMonth(end.getMonth() + 1);
     end.setHours(0, 0, 0, 0);
     if (!refresh && this.gantt_end < end) this.gantt_end = end;
+  }
+}
+
+/**
+ * Used only for the exported picture: the chart runs from the first date used to the last one, with no extra
+ * space before or after (the live chart keeps a margin and always reaches past today).
+ */
+class ExportChart extends Gantt {
+  setup_gantt_dates(refresh?: boolean) {
+    const mode = this.config.view_mode;
+    const saved = mode.padding;
+    // nothing before the first column; one more column after the last so the final date is inside the picture
+    mode.padding = ["0d", mode.name === "Month" ? "1m" : mode.name === "Week" ? "7d" : "1d"];
+    super.setup_gantt_dates(refresh);
+    mode.padding = saved;
   }
 }
 
@@ -87,6 +108,8 @@ export function GanttChart({
   const { data: milestones } = useMilestones(projectId);
   const { data: members } = useProjectMembers(projectId);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState(false);
   const ganttRef = useRef<Gantt | null>(null);
   // milestones whose tasks are folded away, so only the phase bar and its progress show
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
@@ -271,6 +294,51 @@ export function GanttChart({
     }
   }, [ganttTasks, canManage, projectId, qc]);
 
+  /** A .jpg of the task list and the chart as they are now, from the first date to the last, with nothing struck through. */
+  async function exportJpg() {
+    if (ganttTasks.length === 0 || !listRef.current) return;
+    setExporting(true);
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;left:-100000px;top:0;display:flex;background:#ffffff;";
+    try {
+      const list = listRef.current.cloneNode(true) as HTMLElement;
+      list.querySelectorAll(".line-through").forEach((n) => n.classList.remove("line-through"));
+      const chart = document.createElement("div");
+      chart.className = "gantt-wrapper";
+      host.append(list, chart);
+      document.body.append(host);
+      new ExportChart(chart, ganttTasks, {
+        view_mode: viewModeRef.current,
+        bar_height: BAR_HEIGHT,
+        padding: ROW_PADDING,
+        readonly: true,
+        today_button: false,
+        infinite_padding: false,
+        scroll_to: "start",
+      });
+      const svg = chart.querySelector("svg");
+      const container = chart.querySelector(".gantt-container") as HTMLElement | null;
+      if (svg && container) {
+        container.scrollLeft = 0;
+        container.style.overflow = "visible";
+        container.style.width = `${svg.getAttribute("width") ?? svg.getBoundingClientRect().width}px`;
+      }
+      // let the browser lay it out before taking the picture
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const { toJpeg } = await import("html-to-image");
+      const url = await toJpeg(host, { quality: 0.95, pixelRatio: 2, backgroundColor: "#ffffff" });
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `gantt-chart-${todayString()}.jpg`;
+      a.click();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not create the picture");
+    } finally {
+      host.remove();
+      setExporting(false);
+    }
+  }
+
   function toggle(id: number) {
     keepScrollRef.current = true;
     setCollapsed((prev) => {
@@ -302,16 +370,35 @@ export function GanttChart({
             {m}
           </Button>
         ))}
-        {(milestones?.length ?? 0) > 0 && (
-          <Button
-            className="ml-auto"
-            size="sm"
-            variant="outline"
-            onClick={() => setAll(!allCollapsed)}
-          >
-            {allCollapsed ? "Expand All" : "Collapse All"}
-          </Button>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {(milestones?.length ?? 0) > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setAll(!allCollapsed)}
+            >
+              {allCollapsed ? "Expand All" : "Collapse All"}
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={ganttTasks.length === 0 || exporting}
+                />
+              }
+            >
+              <Download /> {exporting ? "Exporting…" : "Export"}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => void exportJpg()}>
+                Image (.jpg)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         {!canManage && (
           <span className="text-sm text-muted-foreground">
             Read-only: your role cannot reschedule tasks.
@@ -331,6 +418,7 @@ export function GanttChart({
         <Card>
           <CardContent className="flex p-0">
             <div
+              ref={listRef}
               className="w-64 shrink-0 border-r bg-card sm:w-80"
               aria-label="Task list"
             >
