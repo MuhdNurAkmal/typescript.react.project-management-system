@@ -326,7 +326,15 @@ export function GanttChart({
       // let the browser lay it out before taking the picture
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       const { toJpeg } = await import("html-to-image");
-      const url = await toJpeg(host, { quality: 0.95, pixelRatio: 2, backgroundColor: "#ffffff" });
+      // the copy that gets drawn must not keep the off-screen position, or the picture comes out blank
+      const url = await toJpeg(host, {
+        quality: 0.95,
+        pixelRatio: 2,
+        backgroundColor: "#ffffff",
+        width: host.scrollWidth,
+        height: host.scrollHeight,
+        style: { position: "static", left: "0", top: "0", margin: "0" },
+      });
       const a = document.createElement("a");
       a.href = url;
       a.download = `gantt-chart-${todayString()}.jpg`;
