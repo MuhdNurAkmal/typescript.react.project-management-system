@@ -76,3 +76,10 @@
 .gantt-container .bar-wrapper.gantt-milestone .bar-progress { fill: #8b5cf6; }
 .gantt-container .bar-wrapper.gantt-milestone-overdue .bar { fill: #fecaca; }
 .gantt-container .bar-wrapper.gantt-milestone-overdue .bar-progress { fill: #ef4444; }
+/* actual dates: a bar under the planned one; green when on time, red when late, lighter while still running */
+.gantt-container .bar-wrapper.gantt-actual-ok .bar { fill: #16a34a; }
+.gantt-container .bar-wrapper.gantt-actual-late .bar { fill: #dc2626; }
+.gantt-container .bar-wrapper.gantt-actual-ok-ongoing .bar { fill: #4ade80; }
+.gantt-container .bar-wrapper.gantt-actual-late-ongoing .bar { fill: #f87171; }
+.gantt-container .bar-wrapper[class*="gantt-actual"] .bar-progress { fill: transparent; }
+.gantt-container .bar-wrapper[class*="gantt-actual"] .handle-group { display: none; }

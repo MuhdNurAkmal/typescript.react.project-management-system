@@ -91,6 +91,8 @@ export type TaskRow = {
   milestone_id: number | null
   start_date: string | null
   due_date: string | null
+  actual_start: string | null
+  actual_end: string | null
   status: TaskStatus
   priority: TaskPriority
   progress: number

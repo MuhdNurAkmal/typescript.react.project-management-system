@@ -75,7 +75,7 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
   }
 
   const update = useMutation({
-    mutationFn: async (patch: Partial<Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'start_date' | 'due_date' | 'progress' | 'milestone_id'>>) => {
+    mutationFn: async (patch: Partial<Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'start_date' | 'due_date' | 'actual_start' | 'actual_end' | 'progress' | 'milestone_id'>>) => {
       const { error } = await supabase.from('tasks').update(patch).eq('id', task.id)
       if (error) throw error
     },
@@ -121,6 +121,14 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
     const err = validateTaskDates(nextStart, nextDue)
     if (err) return toast.error(err)
     update.mutate({ start_date: nextStart || null, due_date: nextDue || null })
+  }
+  // the real dates are filled in as the status changes; they can be corrected here (saved when you leave the field)
+  function saveActual(field: 'actual_start' | 'actual_end', value: string) {
+    if (value === (task[field] ?? '')) return
+    const nextStart = field === 'actual_start' ? value : (task.actual_start ?? '')
+    const nextEnd = field === 'actual_end' ? value : (task.actual_end ?? '')
+    if (nextStart && nextEnd && nextEnd < nextStart) return toast.error('The actual end cannot be before the actual start')
+    update.mutate({ [field]: value || null })
   }
   function saveProgress() {
     const p = Math.min(100, Math.max(0, Math.round(Number(progress) || 0)))
@@ -298,7 +306,7 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
             <div className={field}>
-              <Label htmlFor="c-start">Start</Label>
+              <Label htmlFor="c-start">Planned start</Label>
               <Input
                 id="c-start"
                 type="date"
@@ -311,7 +319,7 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
               />
             </div>
             <div className={field}>
-              <Label htmlFor="c-due">Due</Label>
+              <Label htmlFor="c-due">Planned end</Label>
               <Input
                 id="c-due"
                 type="date"
@@ -323,6 +331,31 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
                 }}
               />
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
+            <div className={field}>
+              <Label htmlFor="c-astart">Actual start</Label>
+              <Input
+                id="c-astart"
+                type="date"
+                disabled={!canEdit}
+                key={`s-${task.actual_start ?? ''}`}
+                defaultValue={task.actual_start ?? ''}
+                onBlur={(e) => saveActual('actual_start', e.target.value)}
+              />
+            </div>
+            <div className={field}>
+              <Label htmlFor="c-aend">Actual end</Label>
+              <Input
+                id="c-aend"
+                type="date"
+                disabled={!canEdit}
+                key={`e-${task.actual_end ?? ''}`}
+                defaultValue={task.actual_end ?? ''}
+                onBlur={(e) => saveActual('actual_end', e.target.value)}
+              />
+            </div>
+            <p className="col-span-2 text-xs text-muted-foreground sm:col-span-1">Filled in when the card starts and when it is marked Done. Correct them if needed.</p>
           </div>
           <div className={field}>
             <Label htmlFor="c-progress">Progress (%)</Label>

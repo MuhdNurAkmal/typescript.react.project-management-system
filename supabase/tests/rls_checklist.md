@@ -191,3 +191,9 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] Only active members of the project can be added to a team; removing someone from the project removes them from its teams.
 - [ ] Two teams in one project cannot have the same name (ignoring case); the same name in another project is fine.
 - [ ] Teams are read-only for suspended users and in suspended companies.
+
+## Actual dates (032)
+- [ ] Moving a task out of To do fills the actual start with today (Malaysia time) when empty; marking it Done fills the actual end; reopening it clears the actual end.
+- [ ] A date typed by hand in the same change is not overwritten by the automatic one.
+- [ ] An actual end before the actual start is rejected.
+- [ ] Anyone who can edit the project can correct the actual dates; read-only members cannot.

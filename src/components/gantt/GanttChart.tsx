@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useMilestones } from "@/hooks/useMilestones";
 import { useProjectMembers } from "@/hooks/useProjectData";
 import { useProjectTasks } from "@/hooks/useTasks";
+import { daysBetween, milestoneActual, taskActual, type ActualBar } from "@/lib/actualDates";
 import { milestoneProgress } from "@/lib/milestoneUtils";
 import { tasksIn } from "@/lib/taskTree";
 import { supabase } from "@/lib/supabase";
@@ -39,6 +40,10 @@ const statusClass = {
   review: "gantt-review",
   done: "gantt-done",
 };
+const actualClass = (b: ActualBar) =>
+  b.late ? (b.ongoing ? "gantt-actual-late-ongoing" : "gantt-actual-late") : b.ongoing ? "gantt-actual-ok-ongoing" : "gantt-actual-ok";
+const dayWord = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
+
 const dateOnly = (d: Date) => format(d, "yyyy-MM-dd");
 
 // The task list on the left lines up with the chart on the right, row for row.
@@ -73,6 +78,10 @@ interface ListRow {
   /** For a milestone: its percentage. */
   /** Completion percentage. */
   percent: number;
+  /** An 'actual dates' row under a task or milestone. */
+  actual?: boolean;
+  /** For an actual row: how it compares with the plan. */
+  note?: string;
 }
 
 export function GanttChart({
@@ -94,6 +103,8 @@ export function GanttChart({
   const [viewMode, setViewMode] =
     useState<(typeof VIEW_MODES)[number]>("Month");
   const viewModeRef = useRef(viewMode);
+  // a second bar under each task and milestone showing when the work really happened
+  const [showActual, setShowActual] = useState(true);
 
   const { ganttTasks, unscheduled, listRows } = useMemo(() => {
     const scheduled: GanttTask[] = [];
@@ -108,6 +119,32 @@ export function GanttChart({
       ]),
     );
     const tasks = data?.tasks ?? [];
+
+    const addActual = (id: string, title: string, bar: ActualBar | null, plannedEnd: string | null, level: number) => {
+      if (!showActual || !bar) return;
+      const lateBy = plannedEnd && bar.end > plannedEnd ? daysBetween(plannedEnd, bar.end) : 0;
+      list.push({
+        id: `a-${id}`,
+        name: "Actual",
+        assignees: [],
+        milestone: false,
+        done: false,
+        level: level + 1,
+        percent: -1,
+        actual: true,
+        note: bar.ongoing ? (lateBy ? `running, ${dayWord(lateBy)} past plan` : "running") : lateBy ? `${dayWord(lateBy)} late` : "on time",
+      });
+      scheduled.push({
+        id: `a-${id}`,
+        name: `Actual: ${title}`,
+        start: bar.start,
+        end: bar.end,
+        progress: 0,
+        custom_class: actualClass(bar),
+        description: "",
+        dependencies: "",
+      });
+    };
 
     const addTask = (t: (typeof tasks)[number], level: number) => {
       const start = t.start_date ?? t.due_date;
@@ -136,6 +173,7 @@ export function GanttChart({
         description: t.description ?? "",
         dependencies: "",
       });
+      addActual(String(t.id), t.title, taskActual(t, today), t.due_date ?? t.start_date, level);
     };
 
     // each milestone is a long bar for the whole phase; its tasks follow in date order
@@ -161,6 +199,17 @@ export function GanttChart({
         custom_class:
           p.state === "overdue" ? "gantt-milestone-overdue" : "gantt-milestone",
       });
+      addActual(
+        `m-${m.id}`,
+        m.title,
+        milestoneActual(
+          tasks.filter((t) => t.milestone_id === m.id),
+          m.end_date,
+          today,
+        ),
+        m.end_date,
+        0,
+      );
       if (!collapsed.has(m.id))
         for (const task of tasksIn(tasks, m.id)) addTask(task, 1);
     }
@@ -181,7 +230,7 @@ export function GanttChart({
         .join(",");
     }
     return { ganttTasks: scheduled, unscheduled: skipped, listRows: list };
-  }, [data, milestones, members, collapsed]);
+  }, [data, milestones, members, collapsed, showActual]);
 
   const reschedule = useMutation({
     mutationFn: async (v: {
@@ -242,6 +291,11 @@ export function GanttChart({
       infinite_padding: false,
       scroll_to: "start",
       on_date_change: (task, start, end) => {
+        if (task.id.startsWith("a-")) {
+          // the actual bars are read-only: draw the chart again so the dragged bar snaps back
+          void qc.invalidateQueries({ queryKey: ["tasks", projectId] });
+          return;
+        }
         if (task.id.startsWith("m-")) {
           void qc.invalidateQueries({ queryKey: ["milestones", projectId] });
           return;
@@ -252,7 +306,7 @@ export function GanttChart({
         });
       },
       on_progress_change: (task, progress) => {
-        if (task.id.startsWith("m-")) return;
+        if (task.id.startsWith("m-") || task.id.startsWith("a-")) return;
         rescheduleRef.current({
           id: Number(task.id),
           patch: { progress: Math.round(progress) },
@@ -302,9 +356,18 @@ export function GanttChart({
             {m}
           </Button>
         ))}
+        <Button
+          className="ml-auto"
+          size="sm"
+          variant={showActual ? "default" : "outline"}
+          aria-pressed={showActual}
+          onClick={() => setShowActual((v) => !v)}
+          title="Show a bar under each task for the dates it really took"
+        >
+          Actual dates
+        </Button>
         {(milestones?.length ?? 0) > 0 && (
           <Button
-            className="ml-auto"
             size="sm"
             variant="outline"
             onClick={() => setAll(!allCollapsed)}
@@ -346,7 +409,7 @@ export function GanttChart({
                 {listRows.map((r) => (
                   <li
                     key={r.id}
-                    className={`flex items-center gap-2 border-b px-3 text-sm ${r.milestone ? "bg-muted/50" : ""}`}
+                    className={`flex items-center gap-2 border-b px-3 text-sm ${r.milestone ? "bg-muted/50" : ""} ${r.actual ? "text-xs" : ""}`}
                     style={{ height: ROW_HEIGHT }}
                   >
                     {r.milestoneId !== undefined && (
@@ -371,10 +434,11 @@ export function GanttChart({
                     )}
                     <span
                       style={{ paddingLeft: r.level * 14 }}
-                      className={`min-w-0 flex-1 truncate ${r.done ? "text-muted-foreground line-through" : r.milestone ? "font-semibold" : "font-medium"}`}
+                      className={`min-w-0 flex-1 truncate ${r.actual ? "text-muted-foreground" : r.done ? "text-muted-foreground line-through" : r.milestone ? "font-semibold" : "font-medium"}`}
                       title={r.name}
                     >
                       {r.name}
+                      {r.note && <span className="ml-1.5">({r.note})</span>}
                     </span>
                     <span className="flex w-24 shrink-0 items-center gap-1.5 sm:w-28">
                       {r.assignees.length > 0 ? (
@@ -390,7 +454,7 @@ export function GanttChart({
                           )}
                         </>
                       ) : (
-                        !r.milestone && (
+                        !r.milestone && !r.actual && (
                           <span className="text-xs text-muted-foreground">
                             Unassigned
                           </span>
@@ -398,7 +462,7 @@ export function GanttChart({
                       )}
                     </span>
                     <span className="w-10 shrink-0 text-right text-xs text-muted-foreground tabular-nums">
-                      {r.percent}%
+                      {r.percent >= 0 ? `${r.percent}%` : ""}
                     </span>
                   </li>
                 ))}
