@@ -34,7 +34,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <Button variant="outline" onClick={() => close(false)}>
               Cancel
             </Button>
-            <Button variant={options?.destructive === false ? 'default' : 'destructive'} onClick={() => close(true)}>
+            <Button variant={options?.warning ? 'warning' : options?.destructive === false ? 'default' : 'destructive'} onClick={() => close(true)}>
               {options?.confirmLabel ?? 'Confirm'}
             </Button>
           </DialogFooter>

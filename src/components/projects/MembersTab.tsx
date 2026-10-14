@@ -93,6 +93,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
       title: `Deactivate ${name}?`,
       description: 'They will lose access to this project. You can reactivate them later.',
       confirmLabel: 'Deactivate',
+      warning: true,
     })
     if (ok) {
       update.mutate({ id, patch: { is_active: false } })
@@ -201,7 +202,7 @@ export function MembersTab({ projectId, canManage }: { projectId: number; canMan
                       {canManage && (
                         <TableCell className="space-x-2 text-right whitespace-nowrap">
                           {member.is_active ? (
-                            <Button variant="destructive" size="sm" disabled={lastPm} onClick={() => deactivate(member.id, name)}>
+                            <Button variant="warning" size="sm" disabled={lastPm} onClick={() => deactivate(member.id, name)}>
                               Deactivate
                             </Button>
                           ) : (

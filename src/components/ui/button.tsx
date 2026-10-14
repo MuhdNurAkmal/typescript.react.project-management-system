@@ -17,6 +17,9 @@ const buttonVariants = cva(
         // red: delete, remove, suspend. green: adding something new. blue (default): everything else.
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:border-destructive/40 focus-visible:ring-destructive/30",
+        // yellow: switching something off without deleting it (deactivate)
+        warning:
+          "bg-warning text-neutral-900 hover:bg-warning/90 focus-visible:ring-warning/40",
         success:
           "bg-success text-white hover:bg-success/90 focus-visible:ring-success/30",
         link: "text-primary underline-offset-4 hover:underline",
