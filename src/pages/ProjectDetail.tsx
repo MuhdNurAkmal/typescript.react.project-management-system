@@ -9,6 +9,7 @@ import { GanttTab } from '@/components/gantt/GanttTab'
 import { MembersTab } from '@/components/projects/MembersTab'
 import { MilestoneSummary } from '@/components/milestones/MilestoneSummary'
 import { OverviewTab } from '@/components/projects/OverviewTab'
+import { TeamsSection } from '@/components/projects/TeamsSection'
 import { TasksTab } from '@/components/tasks/TasksTab'
 import { RoleBadge, StatusBadge } from '@/components/projects/badges'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -84,6 +85,10 @@ export default function ProjectDetail() {
               <section className="space-y-3">
                 <h2 className="text-lg font-semibold">Members</h2>
                 <MembersTab projectId={project.id} canManage={perms.canManageMembers} />
+              </section>
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold">Teams</h2>
+                <TeamsSection projectId={project.id} canManage={perms.canManageMembers} />
               </section>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { priorityLabels, statusLabels } from '@/components/tasks/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Button } from '@/components/ui/button'
+import { TeamPicker } from '@/components/tasks/TeamPicker'
 import { MultiCombobox } from '@/components/ui/multi-combobox'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -146,6 +147,7 @@ function Form({ projectId, task, tasks, deps, onClose }: Omit<Props, 'task'> & {
             placeholder="Choose one or more people"
             emptyText="No member matches."
           />
+          <TeamPicker projectId={projectId} value={assignees} activeIds={activeMembers.map((m) => m.member.user_id)} onChange={setAssignees} />
           <p className="text-xs text-muted-foreground">Everyone chosen can update this task's status and progress.</p>
         </div>
         <div className="space-y-2">

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
 import { Avatar } from '@/components/Avatar'
+import { TeamPicker } from '@/components/tasks/TeamPicker'
 import { Checklist } from '@/components/tasks/Checklist'
 import { priorityLabels, statusLabels } from '@/components/tasks/badges'
 import { selectClass } from '@/components/projects/ProjectForm'
@@ -212,6 +213,17 @@ function Body({ task, canEdit, canDelete, canManage, onClose }: Props & { task: 
               />
             ) : (
               <p className="text-sm">{assignees.length ? assignees.map(nameOf).join(', ') : 'Nobody yet'}</p>
+            )}
+            {canEdit && (
+              <TeamPicker
+                projectId={task.project_id}
+                value={assignees}
+                activeIds={activeMembers.map((m) => m.member.user_id)}
+                onChange={(ids) => {
+                  setAssignees(ids)
+                  assign.mutate(ids)
+                }}
+              />
             )}
           </div>
 

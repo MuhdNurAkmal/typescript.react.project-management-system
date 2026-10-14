@@ -108,6 +108,19 @@ export type TaskAssignee = {
   assigned_at: string
 }
 
+export type ProjectTeam = {
+  id: number
+  project_id: number
+  name: string
+  created_by: string | null
+  created_at: string
+}
+
+export type ProjectTeamMember = {
+  team_id: number
+  user_id: string
+}
+
 export type ChecklistKind = 'check' | 'percent'
 
 /** One line of a task's checklist: a tick box (0 or 100) or a percentage. */
@@ -297,6 +310,8 @@ export type Database = {
       >
       task_assignees: Table<TaskAssignee, Pick<TaskAssignee, 'task_id' | 'user_id'> & Partial<TaskAssignee>>
       task_dependencies: Table<TaskDependency, TaskDependency>
+      project_teams: Table<ProjectTeam, Pick<ProjectTeam, 'project_id' | 'name'> & Partial<ProjectTeam>>
+      project_team_members: Table<ProjectTeamMember, ProjectTeamMember>
       task_checklist_items: Table<ChecklistItem, Pick<ChecklistItem, 'task_id' | 'title'> & Partial<ChecklistItem>>
       attendance: Table<Attendance, Pick<Attendance, 'organization_id'> & Partial<Attendance>>
       task_comments: Table<TaskComment, Pick<TaskComment, 'task_id' | 'body'> & Partial<TaskComment>>

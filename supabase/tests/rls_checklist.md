@@ -184,3 +184,10 @@ Mark each case pass/fail after running it as the stated user (via the app, or th
 - [ ] A tick box accepts only 0 or 100; a percentage accepts 0-100.
 - [ ] Changing items updates the task's percentage (average); typing a percentage on a task with a checklist has no effect; a Done task is 100.
 - [ ] Items are not visible to people outside the project, to suspended users, or writable in a suspended company.
+
+## Project teams (031)
+- [ ] A project member can read the project's teams; someone outside the project cannot.
+- [ ] Only a project manager can create, rename, delete teams or change their members.
+- [ ] Only active members of the project can be added to a team; removing someone from the project removes them from its teams.
+- [ ] Two teams in one project cannot have the same name (ignoring case); the same name in another project is fine.
+- [ ] Teams are read-only for suspended users and in suspended companies.
