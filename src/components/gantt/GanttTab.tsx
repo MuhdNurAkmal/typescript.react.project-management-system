@@ -80,13 +80,13 @@ export function GanttTab({ projectId, canEdit, canManage }: { projectId: number;
       <GanttChart projectId={projectId} canManage={canEdit} />
 
       <Card>
-        <CardHeader className="flex-row items-start justify-between gap-3">
-          <div>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div className="min-w-0">
             <CardTitle>Milestones</CardTitle>
             <CardDescription>A milestone is a phase with a start and an end date. Put tasks under it; they should all be done by the end date.</CardDescription>
           </div>
           {canManage && (
-            <Button size="sm" onClick={() => setDraft({ id: null, title: '', start: today, end: today })}>
+            <Button size="sm" className="shrink-0" onClick={() => setDraft({ id: null, title: '', start: today, end: today })}>
               <Plus /> New milestone
             </Button>
           )}
