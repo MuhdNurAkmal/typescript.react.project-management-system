@@ -171,7 +171,7 @@ export function PmAttendance() {
           {filtered.length > 0 && (
             <>
               {table(shown)}
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm">
                 <label className="flex items-center gap-2 text-muted-foreground">
                   Rows per page
                   <select
