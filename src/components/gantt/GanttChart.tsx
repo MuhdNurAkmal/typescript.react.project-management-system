@@ -160,7 +160,9 @@ export function GanttChart({ projectId, canManage }: { projectId: number; canMan
       },
       readonly: !canManage,
       today_button: true,
-      scroll_to: 'today',
+      // show only the dates the project actually uses, starting from the earliest one
+      infinite_padding: false,
+      scroll_to: 'start',
       on_date_change: (task, start, end) => {
         if (task.id.startsWith('m-')) {
           void qc.invalidateQueries({ queryKey: ['milestones', projectId] })
