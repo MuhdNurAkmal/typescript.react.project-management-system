@@ -221,4 +221,3 @@ Decision: attendance and leave belong to a **company**, not to a project. Compan
 - [ ] [HUMAN] Run `032_actual_dates.sql` (after 031).
 - [ ] Optional later: keep the original plan as a locked baseline so a rescheduled task still shows how far it slipped.
 - [ ] Gantt chart: the second "actual" bar under each task and milestone was taken out again (planning a better version). The data (032 actual start/end, editable in the card panel) and `src/lib/actualDates.ts` remain for it.
-- [x] Gantt export: an Export dropdown above the chart with "Image (.jpg)". It saves the task list and chart as currently shown (collapsed milestones stay collapsed), from the first date used to the last (no extra margin, not extended to today), with done tasks not struck through. Uses `html-to-image`, loaded only when exporting. More formats (PDF, CSV) can be added to the same dropdown.
