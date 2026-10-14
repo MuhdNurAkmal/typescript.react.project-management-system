@@ -141,36 +141,38 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
       )}
       {filtered.length > 0 && (
         <Card>
-          <CardContent className="overflow-x-auto">
-            <Table>
+          <CardContent>
+            {/* fixed layout: the task title takes what is left and wraps over several lines, so the table never scrolls sideways */}
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
                   <TableHead>Task</TableHead>
-                  <TableHead>Assignee</TableHead>
-                  <TableHead>Milestone</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Due</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-28">Assignee</TableHead>
+                  <TableHead className="w-28">Milestone</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead className="w-24">Priority</TableHead>
+                  <TableHead className="w-28">Due</TableHead>
+                  <TableHead className="w-20">Progress</TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((t) => {
                   return (
                     <TableRow key={t.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium whitespace-normal break-words">
                         <button className="text-left hover:underline" onClick={() => setViewingId(t.id)}>
                           {t.title}
                         </button>
                       </TableCell>
-                      <TableCell>{t.assignee_ids.length ? t.assignee_ids.map(nameOf).join(', ') : 'Unassigned'}</TableCell>
-                      <TableCell className="text-muted-foreground">{milestones?.find((m) => m.id === t.milestone_id)?.title ?? 'Unplanned'}</TableCell>
+                      <TableCell className="whitespace-normal break-words">{t.assignee_ids.length ? t.assignee_ids.map(nameOf).join(', ') : 'Unassigned'}</TableCell>
+                      <TableCell className="whitespace-normal break-words text-muted-foreground">{milestones?.find((m) => m.id === t.milestone_id)?.title ?? 'Unplanned'}</TableCell>
                       <TableCell><TaskStatusBadge status={t.status} /></TableCell>
                       <TableCell><PriorityBadge priority={t.priority} /></TableCell>
                       <TableCell className={isOverdue(t) ? 'font-medium text-destructive' : ''}>{t.due_date ?? '—'}</TableCell>
                       <TableCell>{t.progress}%</TableCell>
-                      <TableCell className="space-x-2 text-right whitespace-nowrap">
+                      <TableCell className="whitespace-normal">
+                        <div className="flex flex-wrap justify-end gap-1.5">
                         {canEdit && (
                           <Button size="sm" variant="outline" onClick={() => setViewingId(t.id)}>
                             Edit
@@ -181,6 +183,7 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                             Delete
                           </Button>
                         )}
+                      </div>
                       </TableCell>
                     </TableRow>
                   )
