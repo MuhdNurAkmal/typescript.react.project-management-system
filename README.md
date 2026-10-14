@@ -72,6 +72,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `027_milestone_phases.sql` | Milestones are phases (start and end date) with tasks under them; progress, warnings, overdue alerts |
 | `028_subtasks_rollup.sql` | Subtasks (one level) and percentage / status / date roll-up to tasks and phases |
 | `029_task_checklists.sql` | Checklists inside a task (tick box or percentage items) replace subtasks |
+| `030_leaner_activity_log.sql` | Activity log keeps only important events; removes old noisy rows |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 
