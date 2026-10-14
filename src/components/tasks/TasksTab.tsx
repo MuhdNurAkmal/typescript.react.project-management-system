@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { PriorityBadge, TaskStatusBadge, statusLabels } from '@/components/tasks/badges'
@@ -172,15 +172,15 @@ export function TasksTab({ projectId, canEdit, canDelete, canManage }: { project
                       <TableCell className={isOverdue(t) ? 'font-medium text-destructive' : ''}>{t.due_date ?? '—'}</TableCell>
                       <TableCell>{t.progress}%</TableCell>
                       <TableCell className="whitespace-normal">
-                        <div className="flex flex-wrap justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-1.5">
                         {canEdit && (
-                          <Button size="sm" variant="outline" onClick={() => setViewingId(t.id)}>
+                          <Button size="sm" onClick={() => setViewingId(t.id)}>
                             Edit
                           </Button>
                         )}
                         {canDelete && (
-                          <Button size="sm" variant="outline" onClick={() => onDelete(t)}>
-                            Delete
+                          <Button size="icon-sm" variant="destructive" aria-label={`Delete ${t.title}`} title="Delete task" onClick={() => onDelete(t)}>
+                            <Trash2 />
                           </Button>
                         )}
                       </div>
