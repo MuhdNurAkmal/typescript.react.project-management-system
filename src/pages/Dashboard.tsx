@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { StatusBadge } from '@/components/projects/badges'
 import { PriorityBadge, TaskStatusBadge } from '@/components/tasks/badges'
-import { AlertTriangle, CalendarCheck, Clock, ListTodo } from 'lucide-react'
+import { AlertTriangle, CalendarCheck, CheckCircle2, Clock, ListTodo } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { KpiTile } from '@/components/KpiTile'
 import { Pill } from '@/components/Pill'
@@ -101,12 +101,14 @@ function Kpis({ today }: { today: string }) {
   const { data: rows } = useMyAttendance()
   const weekEnd = format(addDays(new Date(), 7), 'yyyy-MM-dd')
   const open = (data ?? []).map((d) => d.task).filter((t) => t.status !== 'done')
+  const done = (data ?? []).filter((d) => d.task.status === 'done').length
   const overdue = open.filter((t) => isOverdue(t, today)).length
   const dueSoon = open.filter((t) => t.due_date && t.due_date >= today && t.due_date <= weekEnd).length
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
       <KpiTile icon={ListTodo} label="Open tasks" value={open.length} />
+      <KpiTile icon={CheckCircle2} label="Done tasks" value={done} tone="green" />
       <KpiTile icon={AlertTriangle} label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'green'} />
       <KpiTile icon={CalendarCheck} label="Due in 7 days" value={dueSoon} tone="amber" />
       <KpiTile icon={Clock} label="Hours today" value={formatDuration(minutesToday(rows ?? []))} tone="green" />
