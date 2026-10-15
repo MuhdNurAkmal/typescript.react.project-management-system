@@ -35,7 +35,7 @@ export function LeaveSection() {
     mutationFn: async () => {
       const err = validateLeaveDates(start, end)
       if (err) throw new Error(err)
-      if (overlapsExisting(mine ?? [], start, end)) throw new Error('You already have a leave request covering some of these dates')
+      if (overlapsExisting(mine ?? [], start, end)) throw new Error('You already have a request covering some of these dates')
       const { error } = await supabase
         .from('leave_requests')
         .insert({ organization_id: current!.org.id, leave_type_id: selectedType!, start_date: start, end_date: end, reason: reason.trim() || null })
@@ -43,7 +43,7 @@ export function LeaveSection() {
     },
     onSuccess: async () => {
       setReason('')
-      toast.success('Leave request submitted')
+      toast.success(`${typeName(selectedType!)} request submitted`)
       await refresh()
     },
     onError: (e: Error) => toast.error(e.message),
@@ -69,10 +69,10 @@ export function LeaveSection() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Declare leave or absence</CardTitle>
+          <CardTitle>Request leave, absence or work from home</CardTitle>
           <CardDescription>
-            Annual leave, medical leave (MC) and other absences. Once a company admin approves it, you will not be able to clock in on
-            those days.
+            Annual leave, medical leave (MC), other absences, or working from home. Once a company admin approves leave, you will not be
+            able to clock in on those days. Work from home does not block clocking in.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -87,7 +87,11 @@ export function LeaveSection() {
                 ))}
               </select>
             </div>
-            <div className="hidden sm:block" />
+            <p className="self-end pb-2 text-xs text-muted-foreground">
+              {types?.find((t) => t.id === selectedType)?.blocks_clock_in === false
+                ? 'You still clock in and out as usual on these days.'
+                : 'You will not be able to clock in on approved days.'}
+            </p>
             <div className="space-y-2">
               <Label htmlFor="l-start">From</Label>
               <Input id="l-start" type="date" required value={start} onChange={(e) => setStart(e.target.value)} />
@@ -111,12 +115,12 @@ export function LeaveSection() {
 
       <Card>
         <CardHeader>
-          <CardTitle>My leave requests</CardTitle>
+          <CardTitle>My requests</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {isLoading && <p className="text-muted-foreground">Loading…</p>}
           {error && <p className="text-destructive">{error.message}</p>}
-          {mine && mine.length === 0 && <p className="text-muted-foreground">No leave requests yet.</p>}
+          {mine && mine.length === 0 && <p className="text-muted-foreground">No requests yet.</p>}
           {mine && mine.length > 0 && (
             <Table>
               <TableHeader>

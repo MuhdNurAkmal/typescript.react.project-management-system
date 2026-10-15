@@ -187,6 +187,8 @@ export type LeaveType = {
   name: string
   description: string | null
   is_system: boolean
+  /** Leave types stop you clocking in on approved days; work from home does not. */
+  blocks_clock_in: boolean
   created_by: string | null
   created_at: string
 }

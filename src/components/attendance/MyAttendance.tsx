@@ -35,8 +35,12 @@ export function MyAttendance() {
   }, [])
 
   const today = todayString()
-  const approvedToday = leaveOnDay(leave ?? [], 'approved', today)
-  const pendingToday = leaveOnDay(leave ?? [], 'pending', today)
+  // work from home is not time off: it never blocks clocking in
+  const isRemote = (typeId: number) => types?.find((t) => t.id === typeId)?.blocks_clock_in === false
+  const timeOff = (leave ?? []).filter((r) => !isRemote(r.leave_type_id))
+  const approvedToday = leaveOnDay(timeOff, 'approved', today)
+  const pendingToday = leaveOnDay(timeOff, 'pending', today)
+  const wfhToday = leaveOnDay((leave ?? []).filter((r) => isRemote(r.leave_type_id)), 'approved', today)
   const leaveName = (id: number) => types?.find((t) => t.id === id)?.name ?? 'leave'
   const stale = open && isStaleSession(open, now)
   const blocked = !open && !!approvedToday
@@ -53,6 +57,12 @@ export function MyAttendance() {
             </strong>
             . You probably forgot to clock out. Ask a company admin to correct the end time, or clock out now.
           </div>
+        </div>
+      )}
+      {wfhToday && (
+        <div className="flex items-start gap-2 rounded-lg border border-blue-500/50 bg-blue-500/10 p-3 text-sm">
+          <Info className="mt-0.5 size-4 shrink-0 text-blue-600" />
+          <div>You are approved to work from home today. Clock in and out as usual.</div>
         </div>
       )}
       {approvedToday && (
