@@ -104,10 +104,33 @@ function Kpis({ today }: { today: string }) {
   const done = (data ?? []).filter((d) => d.task.status === 'done').length
   const overdue = open.filter((t) => isOverdue(t, today)).length
   const dueSoon = open.filter((t) => t.due_date && t.due_date >= today && t.due_date <= weekEnd).length
+  const later = open.length - overdue - dueSoon   // due after 7 days, or no due date
+  const parts = [
+    { label: 'Overdue', n: overdue, bar: 'bg-red-500', dot: 'text-red-600' },
+    { label: 'Due in 7 days', n: dueSoon, bar: 'bg-amber-500', dot: 'text-amber-600' },
+    { label: 'Later', n: later, bar: 'bg-sky-500', dot: 'text-sky-600' },
+  ]
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-      <KpiTile icon={ListTodo} label="Open tasks" value={open.length} />
+      <KpiTile icon={ListTodo} label="Open tasks" value={open.length}>
+        {open.length > 0 && (
+          <>
+            <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-muted" role="img" aria-label={parts.map((p) => `${p.n} ${p.label.toLowerCase()}`).join(', ')}>
+              {parts.map((p) => p.n > 0 && <div key={p.label} className={p.bar} style={{ width: `${(p.n / open.length) * 100}%` }} />)}
+            </div>
+            <ul className="mt-2 space-y-0.5 text-xs">
+              {parts.map((p) => (
+                <li key={p.label} className="flex items-center gap-1.5 text-muted-foreground">
+                  <span aria-hidden className={`size-2 rounded-full ${p.bar}`} />
+                  <span className="flex-1">{p.label}</span>
+                  <span className="font-semibold tabular-nums text-foreground">{p.n}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </KpiTile>
       <KpiTile icon={CheckCircle2} label="Done tasks" value={done} tone="green" />
       <KpiTile icon={AlertTriangle} label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'green'} />
       <KpiTile icon={CalendarCheck} label="Due in 7 days" value={dueSoon} tone="amber" />
