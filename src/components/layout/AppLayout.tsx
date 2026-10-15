@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   BarChart3,
@@ -13,7 +13,9 @@ import {
   PanelLeftOpen,
   X,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 import { CompanySwitcher } from "@/components/layout/CompanySwitcher";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Avatar } from "@/components/Avatar";
@@ -71,6 +73,18 @@ export default function AppLayout() {
     }
   }
   const name = profile?.full_name || user?.email || "Account";
+  const qc = useQueryClient();
+
+  // a session left open past midnight is closed at the 23:59 cut-off; do it as soon as the app opens
+  useEffect(() => {
+    if (!user) return;
+    void supabase.rpc("close_stale_sessions").then(({ data }) => {
+      if (data && data > 0) {
+        toast.info("You forgot to clock out yesterday, so your session was closed automatically at 23:59. Ask a company admin to correct it if you finished earlier.");
+        void qc.invalidateQueries({ queryKey: ["attendance"] });
+      }
+    });
+  }, [user, qc]);
 
   async function onSignOut() {
     try {

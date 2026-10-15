@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { toast } from 'sonner'
 import { AttendanceReportDownload } from '@/components/attendance/AttendanceReportDownload'
 import { selectClass } from '@/components/projects/ProjectForm'
+import { Pill } from '@/components/Pill'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -74,7 +75,14 @@ export function PmAttendance() {
                 <TableCell>{formatTime(r.clock_in)}</TableCell>
                 <TableCell>
                   {r.clock_out ? (
-                    formatTime(r.clock_out)
+                    <>
+                      {formatTime(r.clock_out)}
+                      {r.auto_closed && (
+                        <span className="ml-1.5" title="Closed automatically at 23:59. Edit it if the real end time is known.">
+                          <Pill tone="amber">auto</Pill>
+                        </span>
+                      )}
+                    </>
                   ) : (
                     <em className={isStaleSession(r, now) ? 'text-destructive' : ''}>
                       {isStaleSession(r, now) ? 'forgot to clock out?' : 'in progress'}

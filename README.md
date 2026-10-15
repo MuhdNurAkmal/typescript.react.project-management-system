@@ -74,6 +74,7 @@ A project management system for lecturers running grant or industrial projects. 
 | `029_task_checklists.sql` | Checklists inside a task (tick box or percentage items) replace subtasks |
 | `030_leaner_activity_log.sql` | Activity log keeps only important events; removes old noisy rows |
 | `031_project_teams.sql` | Teams inside a project to assign several people at once |
+| `033_auto_clock_out.sql` | Open sessions are closed automatically at 23:59 (marked auto) |
 
    `000_reset.sql` is **destructive**: it drops every table this app created in the `public` schema so you can start over. Only use it on a project with test data.
 

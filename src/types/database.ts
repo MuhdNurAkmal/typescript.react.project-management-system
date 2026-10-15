@@ -146,6 +146,8 @@ export type Attendance = {
   clock_in: string
   clock_out: string | null
   note: string | null
+  /** Closed by the system at the 23:59 cut-off because nobody clocked out. */
+  auto_closed: boolean
 }
 
 export type TaskComment = {
@@ -335,6 +337,7 @@ export type Database = {
     Views: Record<string, never>
     Functions: {
       check_milestone_deadlines: { Args: { p_project_id: number }; Returns: number }
+      close_stale_sessions: { Args: Record<string, never>; Returns: number }
       set_task_assignees: { Args: { p_task_id: number; p_user_ids: string[] }; Returns: undefined }
       get_invite_info: { Args: { p_code: string }; Returns: { organization_name: string }[] }
       join_company: { Args: { p_code: string }; Returns: number }
