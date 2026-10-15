@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useOpenSessions } from '@/hooks/useAttendance'
+import { useConfirm } from '@/hooks/useConfirm'
 import { useOrg } from '@/hooks/useOrg'
 import { errorMessage } from '@/lib/errors'
 import { friendlyClockError } from '@/lib/attendanceUtils'
@@ -12,6 +13,7 @@ import { supabase } from '@/lib/supabase'
  */
 export function useClock() {
   const qc = useQueryClient()
+  const confirm = useConfirm()
   const { current, orgs } = useOrg()
   const { data: sessions = [], isLoading } = useOpenSessions()
   const orgId = current?.org.id
@@ -41,6 +43,15 @@ export function useClock() {
     canClock: !!current?.member,
     loading: isLoading,
     pending: mutation.isPending,
-    toggle: () => mutation.mutate(open ? 'clock_out' : 'clock_in'),
+    toggle: async () => {
+      if (!open) return mutation.mutate('clock_in')
+      // clocking out ends the session, so ask first (both the big button and the floating one)
+      const ok = await confirm({
+        title: 'Clock out?',
+        description: `Are you sure you want to clock out of ${current?.org.name ?? 'this company'}? This ends your current session.`,
+        confirmLabel: 'Clock out',
+      })
+      if (ok) mutation.mutate('clock_out')
+    },
   }
 }
