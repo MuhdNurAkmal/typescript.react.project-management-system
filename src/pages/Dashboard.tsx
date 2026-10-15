@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { StatusBadge } from '@/components/projects/badges'
 import { PriorityBadge, TaskStatusBadge } from '@/components/tasks/badges'
-import { AlertTriangle, CalendarCheck, CheckCircle2, Clock, ListTodo } from 'lucide-react'
+import { CheckCircle2, Clock, ListTodo } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { KpiTile } from '@/components/KpiTile'
 import { Pill } from '@/components/Pill'
@@ -112,7 +112,7 @@ function Kpis({ today }: { today: string }) {
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
       <KpiTile icon={ListTodo} label="Open tasks" value={open.length}>
         {open.length > 0 && (
           <>
@@ -132,8 +132,6 @@ function Kpis({ today }: { today: string }) {
         )}
       </KpiTile>
       <KpiTile icon={CheckCircle2} label="Done tasks" value={done} tone="green" />
-      <KpiTile icon={AlertTriangle} label="Overdue" value={overdue} tone={overdue > 0 ? 'red' : 'green'} />
-      <KpiTile icon={CalendarCheck} label="Due in 7 days" value={dueSoon} tone="amber" />
       <KpiTile icon={Clock} label="Hours today" value={formatDuration(minutesToday(rows ?? []))} tone="green" />
     </div>
   )
