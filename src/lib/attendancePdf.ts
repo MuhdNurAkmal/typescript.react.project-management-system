@@ -9,6 +9,7 @@ const BLUE_HEADER: [number, number, number] = [59, 130, 246] // weekend headings
 const GREEN: [number, number, number] = [22, 163, 74]
 const RED: [number, number, number] = [220, 38, 38]
 const GREY: [number, number, number] = [100, 116, 139]
+const INDIGO: [number, number, number] = [67, 56, 202] // leave / WFH codes
 
 /**
  * Draws the attendance sheet as a PDF: a tick for a weekday attended, an X for a weekday missed, weekends blank
@@ -34,6 +35,7 @@ export async function attendancePdf(sheet: SheetData, opts: { company: string; f
 
     const head = [['Name', ...piece.map((d) => `${format(parseISO(d.date), 'd')}\n${format(parseISO(d.date), 'EEEEEE')}`), 'Present']]
     const states: DayState[][] = sheet.rows.map((r) => piece.map((d) => r.cells[d.index]))
+    const codes = sheet.rows.map((r) => piece.map((d) => r.codes[d.index]))
     // the Present column counts the days on this page, so each page adds up on its own
     const body = sheet.rows.map((r, i) => {
       const mine = states[i]
@@ -68,8 +70,17 @@ export async function attendancePdf(sheet: SheetData, opts: { company: string; f
         const col = d.column.index
         if (d.section !== 'body' || col === 0 || col === lastCol) return
         const state = states[d.row.index][col - 1]
-        if (state !== 'present' && state !== 'absent') return
         const { x, y, width: w, height: h } = d.cell
+        const code = codes[d.row.index][col - 1]
+        if (code) {
+          doc.setFont('helvetica', 'bold')
+          doc.setFontSize(code.length > 2 ? 5.5 : 6.5)
+          doc.setTextColor(...INDIGO)
+          doc.text(code, x + w / 2, y + h / 2, { align: 'center', baseline: 'middle' })
+          doc.setFont('helvetica', 'normal')
+          return
+        }
+        if (state !== 'present' && state !== 'absent') return
         doc.setLineWidth(0.45)
         if (state === 'present') {
           doc.setDrawColor(...GREEN)
@@ -101,6 +112,13 @@ export async function attendancePdf(sheet: SheetData, opts: { company: string; f
     doc.rect(100, ly - 2, 5, 4, 'F')
     doc.text('Weekend', 107, ly + 1)
     doc.text('Blank = day not reached yet. "Present" = weekdays clocked in / weekdays so far on this page.', 130, ly + 1)
+    if (sheet.legend.length > 0) {
+      doc.setTextColor(...INDIGO)
+      doc.setFont('helvetica', 'bold')
+      doc.text(sheet.legend.map((l) => `${l.code} = ${l.name}`).join('     '), 14, ly + 7)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...GREY)
+    }
   })
 
   const total = doc.getNumberOfPages()

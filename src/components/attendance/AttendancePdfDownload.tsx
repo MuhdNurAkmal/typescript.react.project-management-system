@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useOrg } from '@/hooks/useOrg'
 import { attendancePdf } from '@/lib/attendancePdf'
-import { loadAttendanceRange, loadPeople } from '@/lib/attendanceLoad'
+import { loadApprovedLeave, loadAttendanceRange, loadPeople } from '@/lib/attendanceLoad'
 import { buildSheet } from '@/lib/attendanceSheet'
 import { errorMessage } from '@/lib/errors'
 
@@ -32,7 +32,8 @@ export function AttendancePdfDownload() {
       // clock-ins are matched to days in the viewer's own time, so load from midnight of the first day to the end of the last
       const rows = await loadAttendanceRange(current.org.id, new Date(`${from}T00:00:00`), new Date(new Date(`${to}T00:00:00`).getTime() + 86_400_000))
       const people = await loadPeople(current.org.id, [...new Set(rows.map((r) => r.user_id))])
-      const sheet = buildSheet(rows, people, from, to, today)
+      const { leaves, types } = await loadApprovedLeave(current.org.id, from, to)
+      const sheet = buildSheet(rows, people, from, to, today, leaves, types)
       if (sheet.rows.length === 0) return toast.info('There is nobody in this company yet.')
       const pdf = await attendancePdf(sheet, { company: current.org.name, from, to })
       const company = current.org.name.replace(/\W+/g, '-').toLowerCase()
@@ -62,7 +63,7 @@ export function AttendancePdfDownload() {
           </Button>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          One row per person, one column per day: a tick when they clocked in, an X when they did not on a weekday. Weekends are blank and blue; days that have not
+          One row per person, one column per day: a tick when they clocked in, an X when they did not on a weekday, or a code for approved leave and work from home (AL, MC, EL, UL, WFH). Weekends are blank and blue; days that have not
           happened yet are blank. Covers everyone in {current?.org.name}.
         </p>
       </CardContent>
