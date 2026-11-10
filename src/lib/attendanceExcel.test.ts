@@ -29,27 +29,41 @@ describe('attendanceExcel', () => {
   it('has a heading row with the days and a row per person', async () => {
     const ws = await open()
     expect(ws.getCell('A1').value).toBe('Attendance report')
-    expect(ws.getCell('A4').value).toBe('Name')
-    expect(ws.getCell('B4').value).toBe('1\nMo')
-    expect(ws.getCell('I4').value).toBe('Present')
-    expect(ws.getCell('A5').value).toBe('Aina')
-    expect(ws.getCell('A6').value).toBe('Budi')
+    expect(ws.getCell('A5').value).toBe('Name')
+    expect(ws.getCell('B5').value).toBe('1\nMo')
+    expect(ws.getCell('I5').value).toBe('Present')
+    expect(ws.getCell('A6').value).toBe('Aina')
+    expect(ws.getCell('A7').value).toBe('Budi')
   })
 
   it('writes a tick, an X, a leave code, and leaves weekends and upcoming days empty', async () => {
     const ws = await open()
     // Aina: Mon present, Tue missed, Wed AL, Thu missed (today), Fri not reached, Sat and Sun weekend
-    expect([2, 3, 4, 5, 6, 7, 8].map((c) => ws.getRow(5).getCell(c).value)).toEqual(['✓', '✗', 'AL', '✗', null, null, null])
-    expect(ws.getRow(5).getCell(9).value).toBe('1/3')
-    expect(ws.getRow(6).getCell(3).value).toBe('✓')
+    expect([2, 3, 4, 5, 6, 7, 8].map((c) => ws.getRow(6).getCell(c).value)).toEqual(['✓', '✗', 'AL', '✗', null, null, null])
+    expect(ws.getRow(6).getCell(9).value).toBe('1/3')
+    expect(ws.getRow(7).getCell(3).value).toBe('✓')
   })
 
   it('colours the weekend columns blue', async () => {
     const ws = await open()
     const fill = (addr: string) => (ws.getCell(addr).fill as { fgColor?: { argb?: string } }).fgColor?.argb
-    expect(fill('G5')).toBe('FF93C5FD') // Saturday, body
-    expect(fill('H6')).toBe('FF93C5FD') // Sunday, body
-    expect(fill('G4')).toBe('FF3B82F6') // Saturday, heading
-    expect(fill('B5')).toBeUndefined() // a weekday is not filled
+    expect(fill('G6')).toBe('FF93C5FD') // Saturday, body
+    expect(fill('H7')).toBe('FF93C5FD') // Sunday, body
+    expect(fill('G5')).toBe('FF3B82F6') // Saturday, heading
+    expect(fill('B6')).toBeUndefined() // a weekday is not filled
+  })
+
+  it('has a month row above the days, one merged cell per month, so each date can be placed', async () => {
+    const long = buildSheet(sessions, people, '2026-06-29', '2026-07-02', '2026-07-31')
+    const file = await attendanceExcel(long, { company: 'Demo', from: '2026-06-29', to: '2026-07-02' })
+    const { Workbook } = await import('exceljs')
+    const wb = new Workbook()
+    await wb.xlsx.load(await file.bytes())
+    const ws = wb.getWorksheet('Attendance')!
+    // columns B and C are 29 and 30 June, D and E are 1 and 2 July
+    expect(ws.getCell('B4').value).toBe('June 2026')
+    expect(ws.getCell('D4').value).toBe('July 2026')
+    expect(ws.getCell('C4').master.address).toBe('B4')
+    expect(ws.getCell('E4').master.address).toBe('D4')
   })
 })

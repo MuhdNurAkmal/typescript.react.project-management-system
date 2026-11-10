@@ -10,6 +10,8 @@ const INDIGO = 'FF4338CA'
 const GREY = 'FF64748B'
 const BORDER = { style: 'thin' as const, color: { argb: 'FFCBD5E1' } }
 const BORDERS = { top: BORDER, left: BORDER, bottom: BORDER, right: BORDER }
+const MONTH_EDGE = { style: 'medium' as const, color: { argb: 'FF334155' } }
+const MONTH_FILLS = ['FF334155', 'FF64748B'] // the month names alternate so neighbouring months are easy to tell apart
 
 /**
  * The same sheet as the PDF, as an Excel file: a tick or an X for every weekday, weekends blank and blue,
@@ -21,7 +23,7 @@ export async function attendanceExcel(sheet: SheetData, opts: { company: string;
   const wb = new Workbook()
   wb.creator = 'UrusProgres'
   wb.created = new Date()
-  const ws = wb.addWorksheet('Attendance', { views: [{ state: 'frozen', xSplit: 1, ySplit: 4 }] })
+  const ws = wb.addWorksheet('Attendance', { views: [{ state: 'frozen', xSplit: 1, ySplit: 5 }] })
   const range = `${format(parseISO(opts.from), 'd MMM yyyy')} to ${format(parseISO(opts.to), 'd MMM yyyy')}`
   const lastCol = sheet.days.length + 2 // name + days + present
 
@@ -30,8 +32,38 @@ export async function attendanceExcel(sheet: SheetData, opts: { company: string;
   ws.getCell('A2').value = `${opts.company}   |   ${range}`
   ws.getCell('A2').font = { size: 10, color: { argb: GREY } }
 
-  // heading row (row 4): name, one column per day, present
-  const head = ws.getRow(4)
+  // month row (row 4): one merged cell over the days of each month, so it is clear which month a date belongs to
+  const months: { label: string; first: number; last: number }[] = []
+  sheet.days.forEach((d, i) => {
+    const label = format(parseISO(d.date), 'MMMM yyyy')
+    const prev = months[months.length - 1]
+    if (prev && prev.label === label) prev.last = i + 2
+    else months.push({ label, first: i + 2, last: i + 2 })
+  })
+  const monthRow = ws.getRow(4)
+  monthRow.height = 20
+  months.forEach((m, k) => {
+    if (m.last > m.first) ws.mergeCells(4, m.first, 4, m.last)
+    const cell = monthRow.getCell(m.first)
+    cell.value = m.label
+    cell.font = { bold: true, size: 10, color: { argb: 'FFFFFFFF' } }
+    cell.alignment = { horizontal: 'center', vertical: 'middle' }
+    for (let c = m.first; c <= m.last; c++) {
+      monthRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: MONTH_FILLS[k % 2] } }
+      monthRow.getCell(c).border = BORDERS
+    }
+  })
+  for (const c of [1, sheet.days.length + 2]) {
+    monthRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: HEAD } }
+    monthRow.getCell(c).border = BORDERS
+  }
+  monthRow.getCell(1).value = 'Month'
+  monthRow.getCell(1).font = { bold: true, size: 10, color: { argb: 'FF1E293B' } }
+  monthRow.getCell(1).alignment = { vertical: 'middle' }
+  const monthStart = new Set(months.map((m) => m.first))
+
+  // heading row (row 5): name, one column per day, present
+  const head = ws.getRow(5)
   head.height = 32
   head.getCell(1).value = 'Name'
   sheet.days.forEach((d, i) => {
@@ -47,12 +79,12 @@ export async function attendanceExcel(sheet: SheetData, opts: { company: string;
   }
   for (let c = 1; c <= lastCol; c++) {
     head.getCell(c).alignment = { horizontal: c === 1 ? 'left' : 'center', vertical: 'middle', wrapText: true }
-    head.getCell(c).border = BORDERS
+    head.getCell(c).border = monthStart.has(c) && c > 2 ? { ...BORDERS, left: MONTH_EDGE } : BORDERS
   }
 
   // one row per person
   sheet.rows.forEach((r, i) => {
-    const row = ws.getRow(5 + i)
+    const row = ws.getRow(6 + i)
     row.height = 20
     row.getCell(1).value = r.name
     row.getCell(1).font = { bold: true, size: 10 }
@@ -77,11 +109,12 @@ export async function attendanceExcel(sheet: SheetData, opts: { company: string;
     total.value = `${r.present}/${r.workdays}`
     total.font = { bold: true, size: 10 }
     total.alignment = { horizontal: 'center', vertical: 'middle' }
-    for (let c = 1; c <= lastCol; c++) row.getCell(c).border = BORDERS
+    // a heavier line on the left of the first day of each month
+    for (let c = 1; c <= lastCol; c++) row.getCell(c).border = monthStart.has(c) && c > 2 ? { ...BORDERS, left: MONTH_EDGE } : BORDERS
   })
 
   // legend
-  let at = 5 + sheet.rows.length + 1
+  let at = 6 + sheet.rows.length + 1
   const note = (text: string, color = GREY, bold = false) => {
     const cell = ws.getCell(at++, 1)
     cell.value = text
