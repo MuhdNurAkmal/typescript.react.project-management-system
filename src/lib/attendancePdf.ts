@@ -17,7 +17,10 @@ const INDIGO: [number, number, number] = [67, 56, 202] // leave / WFH codes
  * jsPDF is loaded only when a report is made.
  */
 export async function attendancePdf(sheet: SheetData, opts: { company: string; from: string; to: string }): Promise<{ save: (name: string) => void; bytes: () => ArrayBuffer; pages: number }> {
-  const [{ jsPDF }, { default: autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')])
+  // the "/es" entry is the real ES module (its default export is the function); the plain entry is a CommonJS file
+  // whose default import turns into an object in the production build ("... is not a function")
+  const [{ jsPDF }, autoTableModule] = await Promise.all([import('jspdf'), import('jspdf-autotable/es')])
+  const autoTable = autoTableModule.default
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const range = `${format(parseISO(opts.from), 'd MMM yyyy')} to ${format(parseISO(opts.to), 'd MMM yyyy')}`
