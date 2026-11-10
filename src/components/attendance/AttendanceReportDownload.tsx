@@ -9,31 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useOrg } from '@/hooks/useOrg'
 import { detailCsv, monthlySummaryCsv, yearlySummaryCsv } from '@/lib/attendanceReport'
+import { loadAttendanceRange } from '@/lib/attendanceLoad'
 import { errorMessage } from '@/lib/errors'
 import { downloadCsv } from '@/lib/reportUtils'
 import { supabase } from '@/lib/supabase'
-import type { Attendance } from '@/types/database'
 import { cn } from '@/lib/utils'
-
-const PAGE = 1000
-
-/** Loads every attendance row of the company in [from, to), a page at a time (the API returns at most 1000 rows per request). */
-async function loadRange(orgId: number, from: Date, to: Date): Promise<Attendance[]> {
-  const all: Attendance[] = []
-  for (let offset = 0; ; offset += PAGE) {
-    const { data, error } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('organization_id', orgId)
-      .gte('clock_in', from.toISOString())
-      .lt('clock_in', to.toISOString())
-      .order('clock_in')
-      .range(offset, offset + PAGE - 1)
-    if (error) throw error
-    all.push(...data)
-    if (data.length < PAGE) return all
-  }
-}
 
 /** Company admins download a monthly or yearly attendance report as a CSV file (opens in Excel). */
 export function AttendanceReportDownload() {
@@ -53,7 +33,7 @@ export function AttendanceReportDownload() {
     try {
       const from = period === 'monthly' ? new Date(`${month}-01T00:00:00`) : new Date(year, 0, 1)
       const to = period === 'monthly' ? new Date(from.getFullYear(), from.getMonth() + 1, 1) : new Date(year + 1, 0, 1)
-      const rows = await loadRange(current.org.id, from, to)
+      const rows = await loadAttendanceRange(current.org.id, from, to)
       if (rows.length === 0) {
         toast.info('There is no attendance in that period.')
         return

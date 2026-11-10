@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
+import { AttendancePdfDownload } from '@/components/attendance/AttendancePdfDownload'
 import { AttendanceReportDownload } from '@/components/attendance/AttendanceReportDownload'
 import { selectClass } from '@/components/projects/ProjectForm'
 import { Pill } from '@/components/Pill'
@@ -106,6 +107,7 @@ export function PmAttendance() {
 
   return (
     <div className="space-y-4">
+      <AttendancePdfDownload />
       <AttendanceReportDownload />
       {isLoading && <p className="text-muted-foreground">Loading…</p>}
       {error && <p className="text-destructive">{error.message}</p>}
