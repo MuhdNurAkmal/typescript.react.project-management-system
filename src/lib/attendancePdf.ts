@@ -1,8 +1,5 @@
 import { format, parseISO } from 'date-fns'
-import { chunk, type DayState, type SheetData } from '@/lib/attendanceSheet'
-
-/** Days per page. Name + 31 narrow day columns + the total fit across A4 landscape. */
-const DAYS_PER_PAGE = 31
+import { type DayState, type SheetData } from '@/lib/attendanceSheet'
 
 const BLUE: [number, number, number] = [147, 197, 253] // weekend cells
 const BLUE_HEADER: [number, number, number] = [59, 130, 246] // weekend headings
@@ -13,7 +10,8 @@ const INDIGO: [number, number, number] = [67, 56, 202] // leave / WFH codes
 
 /**
  * Draws the attendance sheet as a PDF: a tick for a weekday attended, an X for a weekday missed, weekends blank
- * and blue, days that have not happened yet blank. A range longer than 31 days continues on the next page.
+ * and blue, days that have not happened yet blank. Every calendar month gets its own page (31 narrow day columns
+ * fit across A4 landscape), so two months selected make two pages.
  * jsPDF is loaded only when a report is made.
  */
 export async function attendancePdf(sheet: SheetData, opts: { company: string; from: string; to: string }): Promise<{ save: (name: string) => void; bytes: () => ArrayBuffer; pages: number }> {
@@ -25,7 +23,12 @@ export async function attendancePdf(sheet: SheetData, opts: { company: string; f
   const pageWidth = doc.internal.pageSize.getWidth()
   const range = `${format(parseISO(opts.from), 'd MMM yyyy')} to ${format(parseISO(opts.to), 'd MMM yyyy')}`
 
-  const pieces = chunk(sheet.days.map((d, i) => ({ ...d, index: i })), DAYS_PER_PAGE)
+  const byMonth = new Map<string, { date: string; weekend: boolean; index: number }[]>()
+  sheet.days.forEach((d, index) => {
+    const key = d.date.slice(0, 7)
+    byMonth.set(key, [...(byMonth.get(key) ?? []), { ...d, index }])
+  })
+  const pieces = [...byMonth.values()]
   pieces.forEach((piece, n) => {
     if (n > 0) doc.addPage()
     doc.setFontSize(15)
@@ -33,7 +36,7 @@ export async function attendancePdf(sheet: SheetData, opts: { company: string; f
     doc.text('Attendance report', 14, 16)
     doc.setFontSize(9)
     doc.setTextColor(...GREY)
-    doc.text(`${opts.company}   |   ${range}${pieces.length > 1 ? `   |   part ${n + 1} of ${pieces.length}` : ''}`, 14, 22)
+    doc.text(`${opts.company}   |   ${range}   |   ${format(parseISO(piece[0].date), 'MMMM yyyy')}`, 14, 22)
     doc.text(`Created ${format(new Date(), 'd MMM yyyy HH:mm')}`, pageWidth - 14, 16, { align: 'right' })
 
     const head = [['Name', ...piece.map((d) => `${format(parseISO(d.date), 'd')}\n${format(parseISO(d.date), 'EEEEEE')}`), 'Present']]

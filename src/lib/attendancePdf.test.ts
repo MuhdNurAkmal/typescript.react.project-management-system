@@ -23,9 +23,18 @@ describe('attendancePdf', () => {
     expect(pdf.pages).toBe(1)
   })
 
-  it('continues on a new page when the range is longer than 31 days', async () => {
+  it('gives every calendar month its own page', async () => {
     const sheet = buildSheet(sessions, people, '2026-06-01', '2026-07-20', '2026-07-31')
     const pdf = await attendancePdf(sheet, { company: 'Demo', from: '2026-06-01', to: '2026-07-20' })
     expect(pdf.pages).toBe(2)
+  })
+
+  it('makes one page per month, even for a short range that crosses a month end', async () => {
+    const crossing = buildSheet(sessions, people, '2026-06-29', '2026-07-02', '2026-07-31')
+    expect((await attendancePdf(crossing, { company: 'Demo', from: '2026-06-29', to: '2026-07-02' })).pages).toBe(2)
+    const three = buildSheet(sessions, people, '2026-04-10', '2026-06-20', '2026-07-31')
+    expect((await attendancePdf(three, { company: 'Demo', from: '2026-04-10', to: '2026-06-20' })).pages).toBe(3)
+    const oneMonth = buildSheet(sessions, people, '2026-05-01', '2026-05-31', '2026-07-31')
+    expect((await attendancePdf(oneMonth, { company: 'Demo', from: '2026-05-01', to: '2026-05-31' })).pages).toBe(1)
   })
 })
